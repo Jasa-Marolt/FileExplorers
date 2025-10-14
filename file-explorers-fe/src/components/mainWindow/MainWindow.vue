@@ -1,11 +1,12 @@
 <template>
-    <div class="main_window"></div>
-
+    <div class="main_window">
+        <FileExplorer></FileExplorer>
+    </div>
 </template>
 
 
 <script lang="ts" setup>
-
+import FileExplorer from './FileExplorer.vue';
 </script>
 
 <style lang="scss" scoped>

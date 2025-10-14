@@ -143,11 +143,11 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
 }
 
 .breadcrumb a {
-  color: rgba(0, 0, 0, 0.7);
+  color:white; 
   text-decoration: none;
 }
 .router-link-exact-active {
-  color: rgba(0, 0, 0, 0.87) !important;
+  color: red !important;
 }
 
 .search-container {

@@ -11,7 +11,7 @@ const router = createRouter({
           path: 'files/:id?',
           name: 'home',
           props: true,
-          component: () => import('../views/file-explorer.vue')
+          component: () => import('../views/HomeView.vue')
         }
       ]
     }

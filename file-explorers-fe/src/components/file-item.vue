@@ -51,13 +51,14 @@ withDefaults(
   overflow: hidden;
 
   &:hover {
-    background-color: rgba(100, 116, 139, 0.4);
+    background-color: rgba(23, 107, 7, 0.4);
     border-radius: 4px;
     color: white;
   }
 
   .item-label {
     max-width: 100%;
+    color:white;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
