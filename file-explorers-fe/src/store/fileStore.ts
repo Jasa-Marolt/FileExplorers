@@ -2,6 +2,7 @@ import { FileOrDirectory, generateFiles } from "@/files"
 import { Module, MutationTree } from "vuex";
 export interface FileState {
   filesystem: FileOrDirectory[];
+  openFolder:number|null;
 }
 export interface RootState{
 
@@ -15,7 +16,8 @@ interface FileMutations extends MutationTree<FileState> {
 export const fileStoreModule: Module<FileState, RootState> = {
   state(){
     return{
-      filesystem: [] as FileOrDirectory[] 
+      filesystem: [] as FileOrDirectory[],
+      openFolder:null
     }
   },
   getters:{

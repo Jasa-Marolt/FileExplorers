@@ -33,6 +33,7 @@
       </div>
     </div>
   </div>
+  {{ currentDirectoryId }}{{ JSON.stringify(fileId) }}
 </template>
 <script setup lang="ts">
 import FileItem from '@/components/file-item.vue'
@@ -42,13 +43,13 @@ import { useFileOrDirectoryStructure } from '@/composables/fileOrDirectory'
 import { useRouter, RouterLink } from 'vue-router'
 
 const props = defineProps<{
-  id?: string
+  fileId?: string
 }>()
 
 const filter = ref('')
 const files = ref(generateFiles(100))//TODO GET FILES FROM STORE
 
-const currentDirectoryId = computed(() => (props.id ? Number(props.id) : undefined))
+const currentDirectoryId = computed(() => (props.fileId ? Number(props.fileId) : undefined))
 const { itemsAtDirectory: currentDirectory, isInDirectory } = useFileOrDirectoryStructure(
   files,
   currentDirectoryId
