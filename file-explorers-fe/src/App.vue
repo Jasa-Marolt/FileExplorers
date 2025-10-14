@@ -6,8 +6,8 @@ import { RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style scoped></style>
-
+<style scoped lang="ts"></style>
+import {useStore} 
 
 <style lang="scss">
 #app {

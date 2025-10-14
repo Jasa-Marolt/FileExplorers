@@ -33,8 +33,8 @@ export function generateFiles(totalNumberOfFiles: number): FileOrDirectory[] {
     const hasTooManyRootFiles = rootFileCount >= totalNumberOfFiles / 5
     const pickFileFrom = hasTooManyRootFiles ? directoriesGenerated : files
 
-    const randomIndex = Math.floor(Math.random() * pickFileFrom.length)
-    const potentialParent = pickFileFrom[randomIndex]
+    const randIndex = Math.floor(Math.random() * pickFileFrom.length)
+    const potentialParent = pickFileFrom[randIndex]
     const file = generateFile(i, potentialParent?.isDirectory ? potentialParent.id : undefined)
 
     if (!file.parentDirectoryId) {
