@@ -8,7 +8,9 @@
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.5",
+    "@primevue/themes": "^4.4.1",
     "core-js": "^3.8.3",
+    "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
     "register-service-worker": "^1.7.2",
     "vue": "^3.2.13",

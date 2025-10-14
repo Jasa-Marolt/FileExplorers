@@ -1,13 +1,13 @@
 <template>
   <div class="top_bar">
-    <Textarea v-model="value" rows="2" fluid />
+    <InputText v-model="value" fluid disabled />
   </div>
 
 </template>
 
 
 <script lang="ts" setup>
-import Textarea from 'primevue/textarea';
+import InputText from 'primevue/inputtext';
 import { ref } from 'vue';
 const value = ref<string>("C:");
 </script>
@@ -17,10 +17,5 @@ const value = ref<string>("C:");
   background: #045908;
   width: 100%;
   height: 100%;
-}
-
-Button {
-  height: 100%;
-  width: 100%;
 }
 </style>
