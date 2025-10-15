@@ -1,0 +1,42 @@
+/* Base icon style */
+.papa {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Controls */
+.papa-home          { background-image: url('./icons/home.png'); }
+.papa-back          { background-image: url('./icons/back.png'); }
+.papa-forward       { background-image: url('./icons/forward.png'); }
+.papa-refresh       { background-image: url('./icons/refresh.png'); }
+.papa-search        { background-image: url('./icons/search.png'); }
+
+/* Context menu */
+.papa-new-folder    { background-image: url('./icons/new_folder.png'); }
+.papa-new-file      { background-image: url('./icons/new_file.png'); }
+.papa-cut           { background-image: url('./icons/cut.png'); }
+.papa-copy          { background-image: url('./icons/copy.png'); }
+.papa-paste         { background-image: url('./icons/paste.png'); }
+.papa-delete        { background-image: url('./icons/delete.png'); }
+.papa-rename        { background-image: url('./icons/rename.png'); }
+
+/* Menu */
+.papa-leaderboard   { background-image: url('./icons/leaderboard.png'); }
+.papa-profile       { background-image: url('./icons/profile.png'); }
+.papa-settings      { background-image: url('./icons/settings.png'); }
+
+/* File types */
+.papa-folder-closed { background-image: url('./icons/folder_closed.png'); }
+.papa-folder-open   { background-image: url('./icons/folder_open.png'); }
+
+.papa-file          { background-image: url('./icons/file.png'); }
+.papa-personM1      { background-image: url('./icons/personM1.png'); }
+.papa-personM2      { background-image: url('./icons/personM2.png'); }
+.papa-personF1      { background-image: url('./icons/personF1.png'); }
+.papa-personF2      { background-image: url('./icons/personF2.png'); }
+.papa-robber        { background-image: url('./icons/robber.png'); }
+.papa-bomb          { background-image: url('./icons/bomb.png'); }
