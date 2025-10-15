@@ -17,7 +17,7 @@ import TIps from '@/components/tipsWindow/TIps.vue'
 <style scoped lang="scss">
 .grid-layout {
     display: grid;
-    grid-template-columns: 0.5fr 2.5fr 0.75fr;
+    grid-template-columns: auto 2.5fr 0.75fr;
     /* 3 columns: left, middle, right */
     grid-template-rows: 5% 1fr;
     /* 2 rows: top bar + main content */

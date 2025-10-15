@@ -1,0 +1,35 @@
+:root {
+
+    --background-secondary: #1d371b;
+    --text: #fef7ff;
+    --secondary-text: #798378;
+    --primary: #294e26;
+    --border-color: #152914;
+    --element-background: #142713;
+}
+
+.pi {
+    color: var(--text);
+}
+
+
+.p-inputtext {
+    --p-inputtext-background: var(--element-background);
+    --p-inputtext-disabled-background: var(--element-background);
+    --p-inputtext-border-color: #152914;
+
+    --p-inputtext-color: var(--text);
+    --p-inputtext-disabled-color: var(--secondary-text);
+    --p-inputtext-placeholder-color: var(--secondary-text)
+}
+
+.p-button {
+    --p-button-primary-background: var(--element-background);
+    --p-button-primary-hover-background: var(--primary);
+    --p-button-primary-active-background: var(--border-color);
+    --p-button-primary-color: var(--text);
+    --p-button-primary-hover-color: var(--text);
+    --p-button-primary-active-color: var(--text);
+    justify-content: flex-start !important;
+
+}
