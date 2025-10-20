@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Papa Icons Test</title>
+<link rel="stylesheet" href="papaicons.css">
+<style>
+  body{background:#0f3d2e;color:#e6f0ea;font-family:sans-serif;text-align:center;padding:20px}
+  .icon{display:inline-block;margin:8px}
+  .papa{width:100px;height:100px}
+</style>
+</head>
+<body>
+<h2>Papa Icons Preview</h2>
+<div id="icons"></div>
+<script>
+const list=['home','back','forward','refresh','search','new-folder','new-file','cut','copy','paste','delete','rename','leaderboard','profile','settings','folder-closed','folder-open','file','person','robber','bomb'];
+document.getElementById('icons').innerHTML=list.map(i=>`<div class="icon"><i class="papa papa-${i}"></i><div>${i}</div></div>`).join('');
+</script>
+</body>
+</html>
