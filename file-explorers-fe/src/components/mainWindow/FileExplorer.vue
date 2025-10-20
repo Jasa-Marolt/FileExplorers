@@ -37,25 +37,48 @@
 </template>
 <script setup lang="ts">
 import FileItem from '@/components/file-item.vue'
-import { generateFiles, type FileOrDirectory } from '@/files'
-import { computed, ref } from 'vue'
+// Removed 'generateFiles' import as store handles file generation
+import { type FileOrDirectory } from '@/files'
+import { computed, ref, onMounted } from 'vue' // Added onMounted
 import { useFileOrDirectoryStructure } from '@/composables/fileOrDirectory'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex' // Import Vuex
+import { type State } from '@/store' // Assuming you have a typed store setup
 
 const props = defineProps<{
   fileId?: string
 }>()
 
+// --- STORE SETUP ---
+const store = useStore<State>() // Initialize the store
+
+// 1. Get files from the store using a getter
+const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
+
+// 2. Dispatch an action to generate initial files when the component mounts
+// (or you could do this in the main app setup)
+onMounted(() => {
+  // Check if the filesystem is empty before generating
+  if (files.value.length === 0) {
+    store.dispatch('fileStoreModule/generateRandomFilesystem', { count: 100 })
+  }
+})
+// --- END STORE SETUP ---
+
+
 const filter = ref('')
-const files = ref(generateFiles(100))//TODO GET FILES FROM STORE
+// Removed const files = ref(generateFiles(100))
 
 const currentDirectoryId = computed(() => (props.fileId ? Number(props.fileId) : undefined))
+
+// The composable now uses the computed 'files' from the store
 const { itemsAtDirectory: currentDirectory, isInDirectory } = useFileOrDirectoryStructure(
-  files,
+  files, 
   currentDirectoryId
 )
+
 const filteredFiles = computed(() =>
-  currentDirectory.value.files.filter((file:FileOrDirectory) =>
+  currentDirectory.value.files.filter((file: FileOrDirectory) =>
     file.isDirectory
       ? isInDirectory(file.id, filter.value)
       : file.name.toLowerCase().includes(filter.value.toLowerCase())
@@ -77,15 +100,13 @@ function handleDragStart(event: DragEvent, file: unknown) {
   event.dataTransfer!.setData('moved-item', JSON.stringify(file))
 }
 
-function moveFile(draggedItemId: number, newFolderId: number) {
-  files.value = files.value.map((file) =>
-    file.id === draggedItemId
-      ? {
-          ...file,
-          parentDirectoryId: newFolderId
-        }
-      : file
-  )
+// 3. Dispatch an action (e.g., 'moveFile') instead of local state mutation
+function moveFile(draggedItemId: number, newFolderId: number) {  
+  store.dispatch('fileStoreModule/moveFile', {
+    itemId: draggedItemId,
+    newParentId: newFolderId
+  })
+  
 }
 
 function handleDrop(event: DragEvent, file: FileOrDirectory) {
@@ -99,7 +120,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   if (isDroppingToSameFolder || !file.isDirectory) {
     return
   }
-  moveFile(draggedItem.id, file.id)
+  moveFile(draggedItem.id, file.id) // This now calls the function that should dispatch to the store
 }
 </script>
 
