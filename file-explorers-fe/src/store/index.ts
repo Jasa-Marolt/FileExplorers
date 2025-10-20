@@ -1,5 +1,9 @@
 import { createStore } from 'vuex'
+import {fileStoreModule, FileState}  from "./fileStore"
 
+export interface State {
+  fileStoreModule: FileState;
+}
 export default createStore({
   state: {
   },
@@ -10,5 +14,6 @@ export default createStore({
   actions: {
   },
   modules: {
+    fileStoreModule
   }
 })

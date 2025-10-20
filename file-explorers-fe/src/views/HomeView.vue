@@ -2,7 +2,7 @@
     <div class="grid-layout">
         <Bar class="bar" />
         <SideMenu class="side-menu" />
-        <MainWindow class="main-window" />
+        <MainWindow class="main-window" :fileId=props.id />
         <TIps class="tips" />
     </div>
 </template>
@@ -12,6 +12,10 @@ import Bar from '@/components/topBar/Bar.vue'
 import MainWindow from '@/components/mainWindow/MainWindow.vue'
 import SideMenu from '@/components/sideMenu/SideMenu.vue'
 import TIps from '@/components/tipsWindow/TIps.vue'
+
+const props = defineProps<{
+  id?: string
+}>()
 </script>
 
 <style scoped lang="scss">

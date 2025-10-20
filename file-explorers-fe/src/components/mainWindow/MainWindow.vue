@@ -1,11 +1,17 @@
 <template>
-    <div class="main_window"></div>
-
+    <div class="main_window">
+        <FileExplorer :fileId=fileId></FileExplorer>
+       
+    </div>
 </template>
 
 
 <script lang="ts" setup>
+import FileExplorer from './FileExplorer.vue';
 
+const props = defineProps<{
+  fileId?: string
+}>()
 </script>
 
 <style lang="scss" scoped>
