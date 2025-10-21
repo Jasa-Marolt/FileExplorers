@@ -6,9 +6,9 @@
 
     <IconField class="flex">
       <InputIcon class="pi pi-home" />
-      <InputText class="locationBar" v-model="value" fluid disabled />
+      <InputText class="locationBar" v-model="breadcrumbs" fluid disabled />
     </IconField>
-
+    {{ breadcrumbs }}
 
     <IconField>
       <InputText class="searchField" v-model="search" placeholder="Search" />
@@ -25,9 +25,26 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import 'primeicons/primeicons.css'
-import { ref } from 'vue';
-const value = ref<string>("C:  /  root  /  level_1  /  random_folder");
-const search = ref<string>("");
+import { ref, computed, watch } from 'vue';
+import { useStore } from 'vuex'; 
+import { type State } from '@/store';
+
+const store = useStore<State>(); 
+
+const breadcrumbs = computed(() => store.getters['fileStoreModule/getPathToRoot']);
+console.log("breadcrumbs",breadcrumbs.value)
+// V-model will now read from the getter and write to the action
+
+const search = computed<string>({
+  get: () => store.getters['fileStoreModule/getSearchQuery'],
+  set: (val) => {
+    store.dispatch('fileStoreModule/setSearchQuery', val)
+    
+    console.log("called set")
+  }
+});
+
+
 </script>
 
 <style lang="scss" scoped>

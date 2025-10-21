@@ -1,10 +1,7 @@
 <template>
   <div class="main-container">
-    <div class="search-container">
-      <input v-model="filter" type="text" class="search-field" placeholder="Search file" />
-    </div>
     <div>
-      <div class="breadcrumb">
+      <!-- <div class="breadcrumb">
         <router-link :to="{ name: 'home' }"> Home </router-link>
         <span v-if="currentDirectory.pathToRoot.length > 0"> / </span>
         <template v-for="(file, index) in currentDirectory.pathToRoot" :key="file.id">
@@ -13,27 +10,22 @@
           </router-link>
           <span v-if="index !== currentDirectory.pathToRoot.length - 1"> / </span>
         </template>
-      </div>
+      </div> -->
       <div v-if="filteredFiles.length === 0" class="no-files outline-container">
         No files in this directory
       </div>
       <div v-else class="grid-container outline-container">
+        <!-- <div style="color: white">
+          {{ currentDirectoryId }}
+          {{ searchQuery }}
+        </div> -->
         <!-- @dragover.prevent is needed to register the @drop event -->
-        <file-item
-          v-for="file in filteredFiles"
-          :key="file.id"
-          :is-directory="file.isDirectory"
-          :name="file.name"
-          draggable="true"
-          @dragover.prevent
-          @dragstart="handleDragStart($event, file)"
-          @drop="file.isDirectory ? handleDrop($event, file) : undefined"
-          @click="handleFileClick(file)"
-        />
+        <file-item v-for="file in filteredFiles" :key="file.id" :is-directory="file.isDirectory" :name="file.name"
+          draggable="true" @dragover.prevent @dragstart="handleDragStart($event, file)"
+          @drop="file.isDirectory ? handleDrop($event, file) : undefined" @click="handleFileClick(file)" />
       </div>
     </div>
   </div>
-  {{ currentDirectoryId }}{{ JSON.stringify(fileId) }}
 </template>
 <script setup lang="ts">
 import FileItem from '@/components/file-item.vue'
@@ -45,16 +37,14 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex' // Import Vuex
 import { type State } from '@/store' // Assuming you have a typed store setup
 
-const props = defineProps<{
-  fileId?: string
-}>()
 
 // --- STORE SETUP ---
 const store = useStore<State>() // Initialize the store
 
 // 1. Get files from the store using a getter
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
-
+const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
+const currentDirectoryId = computed(() => store.getters["fileStoreModule/getCurrentFile"])
 // 2. Dispatch an action to generate initial files when the component mounts
 // (or you could do this in the main app setup)
 onMounted(() => {
@@ -66,24 +56,30 @@ onMounted(() => {
 // --- END STORE SETUP ---
 
 
-const filter = ref('')
-// Removed const files = ref(generateFiles(100))
 
-const currentDirectoryId = computed(() => (props.fileId ? Number(props.fileId) : undefined))
 
-// The composable now uses the computed 'files' from the store
-const { itemsAtDirectory: currentDirectory, isInDirectory } = useFileOrDirectoryStructure(
-  files, 
-  currentDirectoryId
-)
 
-const filteredFiles = computed(() =>
-  currentDirectory.value.files.filter((file: FileOrDirectory) =>
-    file.isDirectory
-      ? isInDirectory(file.id, filter.value)
-      : file.name.toLowerCase().includes(filter.value.toLowerCase())
+
+
+const filteredFiles = computed(() => {
+  const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) =>{
+    console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value)
+   return  file.parentDirectoryId === (currentDirectoryId.value)
+  }
+  );
+
+  console.log("currentDirectoryFiles", currentDirectoryFiles,"files", files)
+  console.log("recalculating filtered files");
+  if (!searchQuery.value) {
+    console.log("no search querry")
+    return currentDirectoryFiles
+  }
+
+  const lowerSearch = searchQuery.value.toLowerCase()
+  return currentDirectoryFiles.filter((file: FileOrDirectory) =>
+    file.name.toLowerCase().includes(lowerSearch)
   )
-)
+})
 
 const router = useRouter()
 function handleFileClick(file: FileOrDirectory) {
@@ -96,17 +92,17 @@ function handleFileClick(file: FileOrDirectory) {
 }
 
 function handleDragStart(event: DragEvent, file: unknown) {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   event.dataTransfer!.setData('moved-item', JSON.stringify(file))
 }
 
-// 3. Dispatch an action (e.g., 'moveFile') instead of local state mutation
-function moveFile(draggedItemId: number, newFolderId: number) {  
+
+function moveFile(draggedItemId: number, newFolderId: number) {
   store.dispatch('fileStoreModule/moveFile', {
     itemId: draggedItemId,
     newParentId: newFolderId
   })
-  
+
 }
 
 function handleDrop(event: DragEvent, file: FileOrDirectory) {
@@ -120,7 +116,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   if (isDroppingToSameFolder || !file.isDirectory) {
     return
   }
-  moveFile(draggedItem.id, file.id) // This now calls the function that should dispatch to the store
+  moveFile(draggedItem.id, file.id)
 }
 </script>
 
@@ -132,6 +128,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   justify-content: center;
   align-items: center;
 }
+
 .grid-container {
   display: grid;
   grid-auto-rows: 100px;
@@ -140,6 +137,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   justify-content: start;
   padding: 10px;
 }
+
 .outline-container {
   width: 70vw;
   border: 1px solid #ccc;
@@ -164,9 +162,10 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
 }
 
 .breadcrumb a {
-  color:white; 
+  color: white;
   text-decoration: none;
 }
+
 .router-link-exact-active {
   color: red !important;
 }
@@ -178,6 +177,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   border-radius: 5px;
   margin-top: 24px;
 }
+
 .search-field {
   padding: 8px;
   font-size: 16px;
