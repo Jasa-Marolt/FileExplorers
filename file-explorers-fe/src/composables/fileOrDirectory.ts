@@ -33,15 +33,26 @@ export function buildFileStructure(files: FileOrDirectory[]) {
 }
 
 export function buildPathToRoot(flatDirectory: FlatDirectory, directoryId: number, paths: Directory[]) {
+  if(!flatDirectory|| !directoryId){
+    console.log("cannot build path to root", flatDirectory, directoryId)
+    return []
+  }
+
+  console.log("building path to root", JSON.stringify(flatDirectory), directoryId)
   const directory = flatDirectory.get(directoryId)
   if (directory) {
     paths.push(directory)
+    console.log("yes dir");
+  }else{
+     console.log("no dir", flatDirectory.get(directoryId));
   }
 
   if (directory?.parentDirectoryId) {
     buildPathToRoot(flatDirectory, directory.parentDirectoryId, paths)
-  }
+  }else{
 
+  }
+  console.log("returning paths", paths)
   return paths
 }
 export function useDirectoryPath(

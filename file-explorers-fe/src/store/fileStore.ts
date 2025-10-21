@@ -34,32 +34,16 @@ export const fileStoreModule: Module<FileState, RootState> = {
   getters: {
     getFilesystem(state: FileState) { return state.filesystem },
     getSearchQuery(state: FileState) { return state.searchQuery },
-    getCurrentFile(state: FileState) { 
+    getCurrentFile(state: FileState) {
       console.log("returning current file id", state.openFolder)
-      return state.openFolder },
-    getPathToRoot(state: FileState) {
-      const currentDirectoryId = state.openFolder;
+      return state.openFolder
+    },
 
-      if (currentDirectoryId === null) {
-        return []; 
-      }
-
-      const { flatDirectory } = buildFileStructure(state.filesystem);
-
-
-      const pathFromFolderToRoot = buildPathToRoot(
-        flatDirectory,
-        currentDirectoryId,
-        []
-      );
-
-      console.log("returning path to root", pathFromFolderToRoot)
-      return pathFromFolderToRoot.slice().reverse();
-    }
   },
   mutations: {
     SET_FILESYSTEM(state, payload: FileOrDirectory[]) {
       state.filesystem = payload;
+      console.log("set filesystem ", state.filesystem)
     },
     MOVE_FILE(state, payload: MoveFilePayload) {
       // Find the item in the filesystem array
@@ -85,7 +69,8 @@ export const fileStoreModule: Module<FileState, RootState> = {
     //copy file
 
     generateRandomFilesystem({ commit }, payload: { count: number }) {
-      console.log("setting file mutation");
+
+      console.log("generating random filesystem")
       commit("SET_FILESYSTEM", generateFiles(payload.count));
     },
     addFile({ commit }, file: FileOrDirectory) {

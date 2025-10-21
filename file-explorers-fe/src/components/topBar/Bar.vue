@@ -4,16 +4,16 @@
     <i class="pi pi-arrow-right"></i>
     <i class="pi pi-sync"></i>
 
-    <IconField class="flex">
+    <!-- <IconField class="flex">
       <InputIcon class="pi pi-home" />
       <InputText class="locationBar" v-model="breadcrumbs" fluid disabled />
-    </IconField>
-    {{ breadcrumbs }}
-
+    </IconField> -->
+    <!-- {{ JSON.stringify(breadcrumbs) }} -->
     <IconField>
       <InputText class="searchField" v-model="search" placeholder="Search" />
       <InputIcon class="pi pi-search" />
     </IconField>
+    {{ JSON.stringify(filesystem) }}
 
   </div>
 
@@ -28,12 +28,25 @@ import 'primeicons/primeicons.css'
 import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex'; 
 import { type State } from '@/store';
+import { buildPathToRoot } from '@/composables/fileOrDirectory';
+import { FileOrDirectory } from '@/files';
 
 const store = useStore<State>(); 
+const filesystem = computed(()=>store.getters["filesStoreModule/getFilesystem"])
+const activeId = computed(()=>store.getters["filesStoreModule/getCurrentFile"])
+const breadcrumbs = ref<FileOrDirectory[]>([]);
 
-const breadcrumbs = computed(() => store.getters['fileStoreModule/getPathToRoot']);
-console.log("breadcrumbs",breadcrumbs.value)
-// V-model will now read from the getter and write to the action
+watch(
+    [filesystem, activeId], 
+    ([newFilesystem, newActiveId]) => {
+      console.log("WATCH TRIGGERED ", filesystem, activeId)
+        breadcrumbs.value = buildPathToRoot(newFilesystem, newActiveId, []);
+    }, 
+    {
+        deep: true,
+        immediate: true 
+    }
+);
 
 const search = computed<string>({
   get: () => store.getters['fileStoreModule/getSearchQuery'],
@@ -72,5 +85,4 @@ const search = computed<string>({
   /* let it expand */
 }
 
-.locationBar {}
 </style>

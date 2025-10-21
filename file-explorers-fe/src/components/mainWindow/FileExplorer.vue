@@ -11,14 +11,15 @@
           <span v-if="index !== currentDirectory.pathToRoot.length - 1"> / </span>
         </template>
       </div> -->
+      <!-- <div style="color: white">
+        {{ currentDirectoryId }}
+        {{ searchQuery }}
+        {{ JSON.stringify(files) }}
+      </div> -->
       <div v-if="filteredFiles.length === 0" class="no-files outline-container">
         No files in this directory
       </div>
       <div v-else class="grid-container outline-container">
-        <!-- <div style="color: white">
-          {{ currentDirectoryId }}
-          {{ searchQuery }}
-        </div> -->
         <!-- @dragover.prevent is needed to register the @drop event -->
         <file-item v-for="file in filteredFiles" :key="file.id" :is-directory="file.isDirectory" :name="file.name"
           draggable="true" @dragover.prevent @dragstart="handleDragStart($event, file)"
@@ -63,8 +64,9 @@ onMounted(() => {
 
 const filteredFiles = computed(() => {
   const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) =>{
-    console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value)
-   return  file.parentDirectoryId === (currentDirectoryId.value)
+    console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
+
+   return  file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value) 
   }
   );
 
