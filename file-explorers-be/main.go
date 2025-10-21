@@ -28,11 +28,13 @@ func main() {
 	}
 
 	authRepo := repository.NewAuthRepository(db)
+	levelRepo := repository.NewLevelRepository(db)
 
 	jwtService := service.NewJwtService(cfg)
+	levelRepoService := service.NewLevelService(levelRepo, jwtService)
 	authService := service.NewAuthService(authRepo, jwtService)
 
-	srv := server.NewControllers(authService)
+	srv := server.NewControllers(authService, levelRepoService)
 
 	r := router.NewRouter(srv)
 

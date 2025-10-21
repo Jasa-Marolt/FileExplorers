@@ -1,19 +1,25 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"file-explorers-be/models"
 	"file-explorers-be/service"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
-	authService service.AuthService
+	authService  service.AuthService
+	levelService service.LevelService
 }
 
-func NewControllers(authService service.AuthService) Server {
+func NewControllers(authService service.AuthService, levelService service.LevelService) Server {
 	return Server{
-		authService: authService,
+		authService:  authService,
+		levelService: levelService,
 	}
 }
 
@@ -65,4 +71,48 @@ func (c Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WriteSuccess(w, nil, "Password changed successfully")
+}
+
+func (c Server) GetLevelData(w http.ResponseWriter, r *http.Request) {
+	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, "Invalid levelId")
+		return
+	}
+
+	data, err := c.levelService.GetLevelData(levelId)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, err.Error())
+		return
+	}
+
+	WriteSuccess(w, data, "Level data retrieved successfully")
+}
+
+func (c Server) GetLevels(w http.ResponseWriter, r *http.Request) {
+	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
+	data, err := c.levelService.GetLevels(ctx)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, err.Error())
+		return
+	}
+
+	WriteSuccess(w, data, "Levels retrieved successfully")
+}
+
+func (c Server) SolvedLevel(w http.ResponseWriter, r *http.Request) {
+	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, "Invalid levelId")
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
+	data, err := c.levelService.SolvedLevel(ctx, levelId)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, err.Error())
+		return
+	}
+
+	WriteSuccess(w, data, "Level marked as solved successfully")
 }

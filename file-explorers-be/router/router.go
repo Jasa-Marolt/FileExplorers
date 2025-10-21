@@ -21,5 +21,12 @@ func NewRouter(srv server.Server) *chi.Mux {
 		r.Post("/change-password", srv.ChangePassword)
 	})
 
+	// Level routes
+	router.Route("/level", func(r chi.Router) {
+		r.Get("/{levelId}", srv.GetLevelData)
+		r.Post("/{levelId}", srv.SolvedLevel)
+		r.Get("/", srv.GetLevels)
+	})
+
 	return router
 }
