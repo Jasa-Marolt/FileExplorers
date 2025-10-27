@@ -28,6 +28,7 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import FileItem from '@/components/file-item.vue'
 // Removed 'generateFiles' import as store handles file generation
@@ -64,7 +65,7 @@ onMounted(() => {
 
 const filteredFiles = computed(() => {
   const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) =>{
-    console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
+    //console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
 
    return  file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value) 
   }

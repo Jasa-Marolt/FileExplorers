@@ -4,16 +4,15 @@
     <i class="pi pi-arrow-right"></i>
     <i class="pi pi-sync"></i>
 
-    <!-- <IconField class="flex">
+    <IconField class="flex">
       <InputIcon class="pi pi-home" />
-      <InputText class="locationBar" v-model="breadcrumbs" fluid disabled />
-    </IconField> -->
-    <!-- {{ JSON.stringify(breadcrumbs) }} -->
+      <InputText class="locationBar" v-model="breadcrumbsPath" fluid disabled />
+    </IconField> 
+
     <IconField>
       <InputText class="searchField" v-model="search" placeholder="Search" />
       <InputIcon class="pi pi-search" />
     </IconField>
-    {{ JSON.stringify(filesystem) }}
 
   </div>
 
@@ -32,30 +31,30 @@ import { buildPathToRoot } from '@/composables/fileOrDirectory';
 import { FileOrDirectory } from '@/files';
 
 const store = useStore<State>(); 
-const filesystem = computed(()=>store.getters["filesStoreModule/getFilesystem"])
-const activeId = computed(()=>store.getters["filesStoreModule/getCurrentFile"])
-const breadcrumbs = ref<FileOrDirectory[]>([]);
+const filesystem = computed(()=>store.getters["fileStoreModule/getFilesystem"])
 
-watch(
-    [filesystem, activeId], 
-    ([newFilesystem, newActiveId]) => {
-      console.log("WATCH TRIGGERED ", filesystem, activeId)
-        breadcrumbs.value = buildPathToRoot(newFilesystem, newActiveId, []);
-    }, 
-    {
-        deep: true,
-        immediate: true 
-    }
-);
+const activeId = computed(()=>store.getters["fileStoreModule/getCurrentFile"])
+const breadcrumbs =  computed(()=>store.getters["fileStoreModule/getPathToRoot"])
 
-const search = computed<string>({
-  get: () => store.getters['fileStoreModule/getSearchQuery'],
-  set: (val) => {
-    store.dispatch('fileStoreModule/setSearchQuery', val)
-    
-    console.log("called set")
+const breadcrumbsPath = computed(()=>{
+  if (!breadcrumbs.value || !Array.isArray(breadcrumbs.value)) {
+    return "" // Return an empty string if there are no breadcrumbs
   }
-});
+
+  // Map the array to extract the 'name' property and join them with '/'
+  return breadcrumbs.value.reverse()
+    .map((file: FileOrDirectory) => file.name)
+    .join("/")
+})
+
+// const search = computed<string>({
+//   get: () => store.getters['fileStoreModule/getSearchQuery'],
+//   set: (val) => {
+//     store.dispatch('fileStoreModule/setSearchQuery', val)
+    
+//     console.log("called set")
+//   }
+// });
 
 
 </script>

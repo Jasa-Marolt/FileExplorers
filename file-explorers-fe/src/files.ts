@@ -47,6 +47,6 @@ export function generateFiles(totalNumberOfFiles: number): FileOrDirectory[] {
     files.push(file)
   }
   
-  console.log("generated filesystem ", files)
+  // console.log("generated filesystem ", files)
   return files
 }

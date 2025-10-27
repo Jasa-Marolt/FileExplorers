@@ -1,5 +1,5 @@
 import { FileOrDirectory, generateFiles } from "@/files"
-import { useFileOrDirectoryStructure, useDirectoryPath, useDirectorySearch, buildFileStructure, buildPathToRoot } from "@/composables/fileOrDirectory"
+import { useFileOrDirectoryStructure, useDirectoryPath, useDirectorySearch, buildFileStructure } from "@/composables/fileOrDirectory"
 
 import { Module, MutationTree } from "vuex";
 export interface FileState {
@@ -32,12 +32,30 @@ export const fileStoreModule: Module<FileState, RootState> = {
     }
   },
   getters: {
-    getFilesystem(state: FileState) { return state.filesystem },
+    getFilesystem(state: FileState) {
+      console.log("RETURNING FILESYSTEM", state.filesystem)
+      return state.filesystem
+    },
     getSearchQuery(state: FileState) { return state.searchQuery },
     getCurrentFile(state: FileState) {
       console.log("returning current file id", state.openFolder)
       return state.openFolder
     },
+    getPathToRoot(state: FileState) {
+      if (!state.openFolder) {
+        return [] as FileOrDirectory[]
+      }
+      var path = [] as FileOrDirectory[]
+      var folderId = state.openFolder
+      var file = state.filesystem.find((file) => {return file.id == folderId})
+      while (file) {
+        path.push(file);
+        if(!file.parentDirectoryId)break
+        folderId = file.parentDirectoryId
+        file = state.filesystem.find(file => file.id === folderId)
+      }
+      return path
+    }
 
   },
   mutations: {
@@ -70,7 +88,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
 
     generateRandomFilesystem({ commit }, payload: { count: number }) {
 
-      console.log("generating random filesystem")
+      // console.log("generating random filesystem")
       commit("SET_FILESYSTEM", generateFiles(payload.count));
     },
     addFile({ commit }, file: FileOrDirectory) {
