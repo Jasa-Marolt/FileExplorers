@@ -5,10 +5,15 @@ type LevelRequest struct {
 }
 
 type LevelResponse struct {
-	Data  interface{} `json:"data,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type LevelStatus struct {
-    LevelID   int  `json:"level_id"`
-    Solved    bool `json:"solved"`
+	LevelID int  `json:"level_id"`
+	Solved  bool `json:"solved"`
+}
+
+type LeaderboardEntry struct {
+	Username     string `json:"username"`
+	LevelsSolved int    `json:"levels_solved"`
 }

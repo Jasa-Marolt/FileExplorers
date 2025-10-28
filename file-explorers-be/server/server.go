@@ -116,3 +116,18 @@ func (c Server) SolvedLevel(w http.ResponseWriter, r *http.Request) {
 
 	WriteSuccess(w, data, "Level marked as solved successfully")
 }
+
+func (c Server) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
+	data, err := c.levelService.GetLeaderboard(ctx)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, err.Error())
+		return
+	}
+
+	WriteSuccess(w, data, "Leaderboard retrieved successfully")
+}
+
+func (c Server) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	WriteSuccess(w, nil, "Server is healthy")
+}

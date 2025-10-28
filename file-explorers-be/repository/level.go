@@ -10,6 +10,7 @@ type LevelRepository interface {
 	GetLevelsWithSolved(userId int) (levels []models.LevelStatus, err error)
 	GetLevelData(level int) (data []byte, err error)
 	MarkLevelSolved(userId, level int) (err error)
+	GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error)
 }
 
 type levelRepo struct {
@@ -65,5 +66,30 @@ func (repo *levelRepo) GetLevelData(level int) (data []byte, err error) {
 func (repo *levelRepo) MarkLevelSolved(userId, level int) (err error) {
 	sql := "INSERT INTO user_levels (user_id, level_id) VALUES (?, ?)"
 	_, err = repo.db.Exec(sql, userId, level)
+	return
+}
+
+func (repo *levelRepo) GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error) {
+	sql := `
+		SELECT u.username, COUNT(ul.level_id) AS levels_solved
+		FROM users u
+		LEFT JOIN user_levels ul ON u.id = ul.user_id
+		GROUP BY u.id
+		ORDER BY levels_solved DESC
+	`
+	rows, err := repo.db.Query(sql)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var entry models.LeaderboardEntry
+		err = rows.Scan(&entry.Username, &entry.LevelsSolved)
+		if err != nil {
+			return
+		}
+		leaderboard = append(leaderboard, entry)
+	}
 	return
 }
