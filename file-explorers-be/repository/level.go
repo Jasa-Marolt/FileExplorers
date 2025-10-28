@@ -73,8 +73,8 @@ func (repo *levelRepo) GetLeaderboard() (leaderboard []models.LeaderboardEntry, 
 	sql := `
 		SELECT u.username, COUNT(ul.level_id) AS levels_solved
 		FROM users u
-		LEFT JOIN user_levels ul ON u.user_id = ul.user_id
-		GROUP BY u.user_id
+		LEFT JOIN user_levels ul ON u.id = ul.user_id
+		GROUP BY u.id
 		ORDER BY levels_solved DESC
 	`
 	rows, err := repo.db.Query(sql)
