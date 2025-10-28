@@ -28,5 +28,9 @@ func NewRouter(srv server.Server) *chi.Mux {
 		r.Get("/", srv.GetLevels)
 	})
 
+	router.Route("/", func(r chi.Router) {
+		r.Get("/leaderboard", srv.GetLeaderboard)
+		r.Get("/health", srv.HealthCheck)
+	})
 	return router
 }
