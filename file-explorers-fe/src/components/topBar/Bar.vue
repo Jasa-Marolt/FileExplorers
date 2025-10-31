@@ -25,9 +25,28 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import 'primeicons/primeicons.css'
-import { ref } from 'vue';
-const value = ref<string>("C:  /  root  /  level_1  /  random_folder");
+import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 const search = ref<string>("");
+
+const value = computed(() => {
+  const routeName = route.name as string;
+  
+  switch(routeName) {
+    case 'landing':
+      return 'Home';
+    case 'profile':
+      return 'Profile';
+    case 'game':
+      return route.params.id ? `Game  /  Level_${route.params.id}` : 'Game';
+    case 'home':
+      return route.params.id ? `Files  /  Folder_${route.params.id}` : 'Files';
+    default:
+      return 'File Explorers';
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -52,8 +71,5 @@ const search = ref<string>("");
 
 .flex {
   flex: 1;
-  /* let it expand */
 }
-
-.locationBar {}
 </style>

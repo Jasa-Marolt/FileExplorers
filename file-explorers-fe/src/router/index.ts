@@ -9,7 +9,14 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: { name: 'home' }
+          name: 'landing',
+          component: () => import('../views/HomeView.vue')
+        },
+        {
+          path: 'game/:id?',
+          name: 'game',
+          props: true,
+          component: () => import('../views/HomeView.vue')
         },
         {
           path: 'files/:id?',

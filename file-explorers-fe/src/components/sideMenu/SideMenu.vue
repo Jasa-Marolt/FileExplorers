@@ -3,12 +3,19 @@
         <div class="menu-group">
             <Button 
                 type="button" 
+                label="Home" 
+                icon="pi pi-home" 
+                @click="goToHome"
+            />
+            <Button 
+                type="button" 
                 :label="isAuthenticated ? user?.username : 'Guest'" 
                 :icon="isAuthenticated ? 'pi pi-user' : 'pi pi-sign-in'" 
                 @click="goToProfile"
                 class="profile-button"
             />
-            <Button type="button" label="Level_1" icon="pi pi-folder" />
+            <Button type="button" label="Leaderboard" icon="pi pi-star" /> 
+            <Button type="button" label="Settings" icon="pi pi-cog" /> 
         </div>
 
         <Divider />
@@ -34,6 +41,10 @@ const router = useRouter();
 
 const isAuthenticated = computed(() => store.getters['userStoreModule/isAuthenticated']);
 const user = computed(() => store.getters['userStoreModule/getUser']);
+
+const goToHome = () => {
+    router.push({ name: 'landing' });
+};
 
 const goToProfile = () => {
     router.push({ name: 'profile' });
