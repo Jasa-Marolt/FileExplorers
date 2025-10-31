@@ -131,6 +131,9 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 .grid-container {
   display: grid;

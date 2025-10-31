@@ -1,6 +1,7 @@
 package service
 
 import (
+	"file-explorers-be/models"
 	"file-explorers-be/repository"
 	"fmt"
 
@@ -12,8 +13,8 @@ var (
 )
 
 type AuthService interface {
-	Authenticate(username, password string) (jwt string, err error)
-	Register(username, email, password string) (jwt string, err error)
+	Authenticate(username, password string) (jwt string, user models.User, err error)
+	Register(username, email, password string) (jwt string, user models.User, err error)
 	PasswordChange(username, old, password string) (err error)
 }
 
@@ -29,20 +30,25 @@ func NewAuthService(repo repository.AuthRepository, jwtService JwtService) AuthS
 	}
 }
 
-func (s *authService) Authenticate(username, password string) (jwt string, err error) {
+func (s *authService) Authenticate(username, password string) (jwt string, user models.User, err error) {
 	data, err := s.repo.Authenticate(username)
 	if err != nil {
 		return
 	}
 
 	if !s.checkPasswordHash(password, data.Password) {
-		return "", ErrInvalidCredentials
+		return "", models.User{}, ErrInvalidCredentials
 	}
 
-	return s.jwtService.GenerateToken(data)
+	token, err := s.jwtService.GenerateToken(data)
+	if err != nil {
+		return "", models.User{}, err
+	}
+
+	return token, data, nil
 }
 
-func (s *authService) Register(username, email, password string) (jwt string, err error) {
+func (s *authService) Register(username, email, password string) (jwt string, user models.User, err error) {
 	hashedPassword, err := s.hashPassword(password)
 	if err != nil {
 		return
@@ -53,11 +59,16 @@ func (s *authService) Register(username, email, password string) (jwt string, er
 		return
 	}
 
-	return s.jwtService.GenerateToken(data)
+	token, err := s.jwtService.GenerateToken(data)
+	if err != nil {
+		return "", models.User{}, err
+	}
+
+	return token, data, nil
 }
 
 func (s *authService) PasswordChange(username, old, password string) (err error) {
-	_, err = s.Authenticate(username, old)
+	_, _, err = s.Authenticate(username, old)
 	if err != nil {
 		return err
 	}
