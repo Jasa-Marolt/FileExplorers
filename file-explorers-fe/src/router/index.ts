@@ -28,6 +28,16 @@ const router = createRouter({
           path: 'profile',
           name: 'profile',
           component: () => import('../views/HomeView.vue')
+        },
+        {
+          path: 'leaderboard',
+          name: 'leaderboard',
+          component: () => import('../views/HomeView.vue')
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: () => import('../views/HomeView.vue')
         }
       ]
     }

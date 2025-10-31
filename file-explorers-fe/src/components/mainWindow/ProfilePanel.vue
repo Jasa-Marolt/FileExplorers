@@ -225,28 +225,36 @@ const handleLogout = () => {
 
 <style scoped lang="scss">
 .profile-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
   height: 100%;
-  padding: 24px;
-  color: var(--text);
   overflow-y: auto;
+  padding: 40px 20px;
+  color: var(--text);
 }
 
 .profile-content,
 .auth-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
   width: 100%;
 }
 
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .profile-title {
-  font-size: 32px;
+  font-size: 48px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 40px 0;
   color: var(--text);
   text-align: center;
 }

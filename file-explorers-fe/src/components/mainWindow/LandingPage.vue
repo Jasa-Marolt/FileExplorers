@@ -8,7 +8,7 @@
         <p>
           Think you know your way around computers? <strong>Think again.</strong> Dive into <strong>File Explorers</strong> 
           and master the hidden skills that separate casual users from tech pros. Compete with friends, 
-          unlock achievements, and become the ultimate file system ninja!
+          unlock achievements, and become the ultimate file system master!
         </p>
       </div>
 
@@ -25,7 +25,7 @@
     </div>
 
     <div class="features-section">
-      <h2>Why This Game Slaps 🔥</h2>
+      <h2>Why This Game Slaps</h2>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">
@@ -78,20 +78,20 @@
     </div>
 
     <div class="how-it-works">
-      <h2>How It Works ⚡</h2>
+      <h2>How It Works</h2>
       <div class="steps">
         <div class="step">
           <div class="step-number">1</div>
           <h3>Pick Your Challenge</h3>
           <p>Start easy or jump straight to hard mode</p>
         </div>
-        <div class="step-arrow">→</div>
+        <i class="pi pi-arrow-right"></i>
         <div class="step">
           <div class="step-number">2</div>
           <h3>Crush the Mission</h3>
           <p>Complete tasks, solve puzzles, beat the clock</p>
         </div>
-        <div class="step-arrow">→</div>
+        <i class="pi pi-arrow-right"></i>
         <div class="step">
           <div class="step-number">3</div>
           <h3>Unlock & Repeat</h3>
@@ -101,7 +101,7 @@
     </div>
 
     <div class="cta-section">
-      <h2>Ready to Dominate? 💪</h2>
+      <h2>Ready to Dominate?</h2>
       <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
       <button @click="startPlaying" class="btn btn-primary btn-large">
         <i class="pi pi-play"></i>
@@ -141,7 +141,7 @@ const goToProfile = () => {
 
 .hero-section {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -303,7 +303,7 @@ const goToProfile = () => {
 .how-it-works {
   max-width: 1200px;
   margin: 80px auto;
-  padding: 60px 20px;
+  padding: 40px 20px;
   text-align: center;
   background: var(--element-background);
   border: 2px solid var(--border-color);
@@ -356,15 +356,9 @@ const goToProfile = () => {
   color: var(--secondary-text);
 }
 
-.step-arrow {
-  font-size: 40px;
-  color: var(--primary);
-  font-weight: 700;
-}
-
 .cta-section {
   text-align: center;
-  padding: 80px 20px;
+  padding: 0px 20px;
   max-width: 800px;
   margin: 0 auto;
 
@@ -396,10 +390,6 @@ const goToProfile = () => {
 
   .steps {
     flex-direction: column;
-  }
-
-  .step-arrow {
-    transform: rotate(90deg);
   }
 }
 </style>

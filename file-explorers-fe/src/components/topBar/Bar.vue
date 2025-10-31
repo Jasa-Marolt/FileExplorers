@@ -39,6 +39,10 @@ const value = computed(() => {
       return 'Home';
     case 'profile':
       return 'Profile';
+    case 'leaderboard':
+      return 'Leaderboard';
+    case 'settings':
+      return 'Settings';
     case 'game':
       return route.params.id ? `Game  /  Level_${route.params.id}` : 'Game';
     case 'home':

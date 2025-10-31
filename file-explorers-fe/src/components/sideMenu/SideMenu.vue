@@ -10,12 +10,22 @@
             <Button 
                 type="button" 
                 :label="isAuthenticated ? user?.username : 'Guest'" 
-                :icon="isAuthenticated ? 'pi pi-user' : 'pi pi-sign-in'" 
+                :icon="'pi pi-user'" 
                 @click="goToProfile"
                 class="profile-button"
             />
-            <Button type="button" label="Leaderboard" icon="pi pi-star" /> 
-            <Button type="button" label="Settings" icon="pi pi-cog" /> 
+            <Button 
+                type="button" 
+                label="Leaderboard" 
+                icon="pi pi-trophy" 
+                @click="goToLeaderboard"
+            /> 
+            <Button 
+                type="button" 
+                label="Settings" 
+                icon="pi pi-cog" 
+                @click="goToSettings"
+            /> 
         </div>
 
         <Divider />
@@ -48,6 +58,14 @@ const goToHome = () => {
 
 const goToProfile = () => {
     router.push({ name: 'profile' });
+};
+
+const goToLeaderboard = () => {
+    router.push({ name: 'leaderboard' });
+};
+
+const goToSettings = () => {
+    router.push({ name: 'settings' });
 };
 </script>
 
