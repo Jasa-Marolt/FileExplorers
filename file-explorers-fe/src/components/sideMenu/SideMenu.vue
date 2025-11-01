@@ -11,11 +11,10 @@
         <Divider />
 
         <div class="menu-group">
-            <Button type="button" label="Level_1" icon="pi pi-folder" @click="openLevel(1)"/>
-            <Button type="button" label="Level_2" icon="pi pi-folder"  @click="openLevel(2)"/>
-            <Button type="button" label="Level_3" icon="pi pi-folder"  @click="openLevel(3)"/>
-            <Button type="button" label="Level_4" icon="pi pi-folder"  @click="openLevel(4)"/>
-            <Button type="button" label="Level_5" icon="pi pi-folder"  @click="openLevel(5)"/>
+            <Button v-for="(level, idx) in levels" :key="level.id ?? idx" type="button"
+                :label="level.name ?? `Level ${idx + 1}`" 
+                :icon="currentLevel.id === (level.id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'" 
+                @click="openLevel(level.id ?? idx + 1)" />
         </div>
     </div>
 </template>
@@ -24,14 +23,17 @@
 <script lang="ts" setup>
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
-import { computed } from 'vue';
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { FileOrDirectory } from '@/files';
 import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
+import { Level } from '@/store/levelStore';
 
 const store = useStore();
 const router = useRouter();
+const loading = ref(true);
+const error = ref('');
 
 const isAuthenticated = computed(() => store.getters['userStoreModule/isAuthenticated']);
 const user = computed(() => store.getters['userStoreModule/getUser']);
@@ -39,7 +41,6 @@ const user = computed(() => store.getters['userStoreModule/getUser']);
 const goToHome = () => {
     router.push({ name: 'landing' });
 };
-
 const goToProfile = () => {
     router.push({ name: 'profile' });
 };
@@ -52,35 +53,35 @@ const goToSettings = () => {
     router.push({ name: 'settings' });
 };
 
-function openLevel(num: number) {
+const levels = ref<null | Level[]>(null);
+
+const currentLevel = computed(() => store.getters["levelStoreModule/currentLevel"]);
+
+watch(
+    () => store.getters["levelStoreModule/levels"],
+    (newLevels) => {
+        console.log("levels updated", newLevels);
+        levels.value = newLevels;
+    },
+    { immediate: true }
+);
+
+async function openLevel(num: number) {
     let newLevel = [] as FileOrDirectory[];
-    switch (num) {
-        case 1:
-            newLevel = Level1Filesystem;
-            break;
-        case 2:
-            newLevel = Level2Filesystem;
-            break;
-        case 3:
-            newLevel = Level3Filesystem;
-            break;
-        case 4:
-            newLevel = Level4Filesystem;
-            break;
-        case 5:
-            newLevel = Level5Filesystem;
-            break;
-
-    }
-
-    if (newLevel.length === 0) {
-        return;
-    }
+    newLevel = await store.dispatch("levelStoreModule/fetchLevel", num);
     console.log("opening new level")
 
-  router.push({ name: 'game' });
-   store.dispatch("fileStoreModule/setFilesystem", newLevel);
+    router.push({ name: 'game' });
+    store.dispatch("fileStoreModule/setFilesystem", newLevel);
 }
+
+
+
+onBeforeMount(() => {
+
+    store.dispatch("levelStoreModule/fetchLevels");
+
+});
 
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="main-container">
+  <div class="main-container" @contextmenu.prevent="onContextMenu">
     <div>
       <!-- <div class="breadcrumb">
         <router-link :to="{ name: 'home' }"> Home </router-link>
@@ -10,7 +10,7 @@
           </router-link>
           <span v-if="index !== currentDirectory.pathToRoot.length - 1"> / </span>
         </template>
-      </div> -->
+</div> -->
       <!-- <div style="color: white">
         {{ currentDirectoryId }}
         {{ searchQuery }}
@@ -26,6 +26,8 @@
           @drop="file.isDirectory ? handleDrop($event, file) : undefined" @click="handleFileClick(file)" />
       </div>
     </div>
+    <GameContextMenu v-if="menu.visible" :x="menu.x" :y="menu.y" :items="menu.items" @select="onMenuSelect"
+      @close="closeMenu" />
   </div>
 </template>
 
@@ -38,8 +40,8 @@ import { useFileOrDirectoryStructure } from '@/composables/fileOrDirectory'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex' // Import Vuex
 import { type State } from '@/store' // Assuming you have a typed store setup
-
-
+import GameContextMenu from './GameContextMenu.vue';
+import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
 // --- STORE SETUP ---
 const store = useStore<State>() // Initialize the store
 
@@ -64,14 +66,14 @@ onMounted(() => {
 
 
 const filteredFiles = computed(() => {
-  const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) =>{
+  const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
     //console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
 
-   return  file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value) 
+    return file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value)
   }
   );
 
-  console.log("currentDirectoryFiles", currentDirectoryFiles,"files", files)
+  console.log("currentDirectoryFiles", currentDirectoryFiles, "files", files)
   console.log("recalculating filtered files");
   if (!searchQuery.value) {
     console.log("no search querry")
@@ -120,6 +122,122 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
     return
   }
   moveFile(draggedItem.id, file.id)
+}
+
+
+
+const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string }[] }>({
+  visible: false,
+  x: 0,
+  y: 0,
+  items: [],
+})
+
+function onContextMenu(e: MouseEvent) {
+  // Only show the custom context menu when in the game route
+
+
+  // Populate items — adjust these to your game's actions
+  menu.value.items = [
+    { label: 'Open', action: EContextMenuAction.Open },
+    { label: 'Create new folder', action: EContextMenuAction.NewFolder },
+    { label: 'Create new file', action: EContextMenuAction.NewFile },
+    { label: 'Copy', action: EContextMenuAction.Copy },
+    { label: 'Cut', action: EContextMenuAction.Cut },
+    { label: 'Paste', action: EContextMenuAction.Paste },
+    { label: 'Rename', action: EContextMenuAction.Rename },
+    { label: 'Properties', action: EContextMenuAction.Properties },
+  ]
+
+  // Position the menu at the click location; clamp to viewport if needed
+  const x = e.clientX
+  const y = e.clientY
+  // Optionally clamp so menu doesn't overflow viewport
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const menuW = 200 // approx
+  const menuH = menu.value.items.length * 36
+
+  menu.value.x = x + (x + menuW > vw ? -menuW : 0)
+  menu.value.y = y + (y + menuH > vh ? -menuH : 0)
+  menu.value.visible = true
+}
+
+function closeMenu() {
+  menu.value.visible = false
+}
+
+function onMenuSelect(action: string) {
+  function openItem() {
+    console.log('action=open');
+    // TODO: implement opening logic, e.g. navigate or load file content
+  }
+
+  function createNewFolder() {
+    console.log('action=new_folder');
+    // TODO: show create-folder dialog / call API
+  }
+
+  function createNewFile() {
+    console.log('action=new_file');
+    // TODO: show create-file dialog / call API
+  }
+
+  function copyItem() {
+    console.log('action=copy');
+    // TODO: copy selected item to clipboard/state
+  }
+
+  function cutItem() {
+    console.log('action=cut');
+    // TODO: cut selected item to clipboard/state
+  }
+
+  function pasteItem() {
+    console.log('action=paste');
+    // TODO: paste from clipboard/state into current folder
+  }
+
+  function renameItem() {
+    console.log('action=rename');
+    // TODO: prompt for new name and apply rename
+  }
+  function properiesItem() {
+    console.log('action=rename');
+    // TODO: prompt for new name and apply rename
+  }
+
+
+  const enumAction = action as unknown as EContextMenuAction;
+  switch (enumAction) {
+    case EContextMenuAction.Open:
+      openItem();
+      break;
+    case EContextMenuAction.NewFolder:
+      createNewFolder();
+      break;
+    case EContextMenuAction.NewFile:
+      createNewFile();
+      break;
+    case EContextMenuAction.Copy:
+      copyItem();
+      break;
+    case EContextMenuAction.Cut:
+      cutItem();
+      break;
+    case EContextMenuAction.Paste:
+      pasteItem();
+      break;
+    case EContextMenuAction.Rename:
+      renameItem();
+      break;
+    case EContextMenuAction.Properties:
+      properiesItem();
+      break;
+    default:
+      console.warn('Unknown context menu action:', action);
+  }
+  closeMenu()
 }
 </script>
 

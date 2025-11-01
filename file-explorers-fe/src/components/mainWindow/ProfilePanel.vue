@@ -3,7 +3,7 @@
     <!-- Logged In View -->
     <div v-if="isAuthenticated" class="profile-content">
       <h2 class="profile-title">Profile</h2>
-      
+
       <div class="user-info outline-container">
         <div class="info-item">
           <span class="label">Username:</span>
@@ -29,16 +29,10 @@
     <!-- Login/Register View -->
     <div v-else class="auth-content">
       <div class="auth-tabs">
-        <button 
-          :class="['tab', { active: activeTab === 'login' }]" 
-          @click="activeTab = 'login'"
-        >
+        <button :class="['tab', { active: activeTab === 'login' }]" @click="activeTab = 'login'">
           Login
         </button>
-        <button 
-          :class="['tab', { active: activeTab === 'register' }]" 
-          @click="activeTab = 'register'"
-        >
+        <button :class="['tab', { active: activeTab === 'register' }]" @click="activeTab = 'register'">
           Register
         </button>
       </div>
@@ -46,33 +40,21 @@
       <!-- Login Form -->
       <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form outline-container">
         <h3>Login to Your Account</h3>
-        
+
         <div v-if="error" class="error-message">
           {{ error }}
         </div>
 
         <div class="form-group">
           <label for="login-username">Username</label>
-          <input 
-            id="login-username"
-            v-model="loginForm.username" 
-            type="text" 
-            required
-            placeholder="Enter your username"
-            class="input-field"
-          />
+          <input id="login-username" v-model="loginForm.username" type="text" required placeholder="Enter your username"
+            class="input-field" />
         </div>
 
         <div class="form-group">
           <label for="login-password">Password</label>
-          <input 
-            id="login-password"
-            v-model="loginForm.password" 
-            type="password" 
-            required
-            placeholder="Enter your password"
-            class="input-field"
-          />
+          <input id="login-password" v-model="loginForm.password" type="password" required
+            placeholder="Enter your password" class="input-field" />
         </div>
 
         <button type="submit" class="btn btn-primary" :disabled="loading">
@@ -83,58 +65,33 @@
       <!-- Register Form -->
       <form v-if="activeTab === 'register'" @submit.prevent="handleRegister" class="auth-form outline-container">
         <h3>Create New Account</h3>
-        
+
         <div v-if="error" class="error-message">
           {{ error }}
         </div>
 
         <div class="form-group">
           <label for="register-username">Username</label>
-          <input 
-            id="register-username"
-            v-model="registerForm.username" 
-            type="text" 
-            required
-            placeholder="Choose a username"
-            class="input-field"
-          />
+          <input id="register-username" v-model="registerForm.username" type="text" required
+            placeholder="Choose a username" class="input-field" />
         </div>
 
         <div class="form-group">
           <label for="register-email">Email</label>
-          <input 
-            id="register-email"
-            v-model="registerForm.email" 
-            type="email" 
-            required
-            placeholder="Enter your email"
-            class="input-field"
-          />
+          <input id="register-email" v-model="registerForm.email" type="email" required placeholder="Enter your email"
+            class="input-field" />
         </div>
 
         <div class="form-group">
           <label for="register-password">Password</label>
-          <input 
-            id="register-password"
-            v-model="registerForm.password" 
-            type="password" 
-            required
-            minlength="6"
-            placeholder="Choose a password (min 6 characters)"
-            class="input-field"
-          />
+          <input id="register-password" v-model="registerForm.password" type="password" required minlength="6"
+            placeholder="Choose a password (min 6 characters)" class="input-field" />
         </div>
 
         <div class="form-group">
           <label for="register-confirm">Confirm Password</label>
-          <input 
-            id="register-confirm"
-            v-model="registerForm.confirmPassword" 
-            type="password" 
-            required
-            placeholder="Confirm your password"
-            class="input-field"
-          />
+          <input id="register-confirm" v-model="registerForm.confirmPassword" type="password" required
+            placeholder="Confirm your password" class="input-field" />
         </div>
 
         <button type="submit" class="btn btn-primary" :disabled="loading">
@@ -187,6 +144,7 @@ const handleLogin = async () => {
     }
   } finally {
     loading.value = false;
+    store.dispatch("levelStoreModule/fetchLevels");
   }
 };
 
@@ -214,6 +172,7 @@ const handleRegister = async () => {
     }
   } finally {
     loading.value = false;
+    store.dispatch("levelStoreModule/fetchLevels");
   }
 };
 
