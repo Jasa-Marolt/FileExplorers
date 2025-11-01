@@ -15,7 +15,7 @@
 
     <IconField class="flex">
       <InputIcon class="pi pi-home" />
-      <InputText class="locationBar" v-model="breadcrumbsPath" fluid disabled />
+      <InputText class="locationBar" v-model="pathValue" fluid disabled />
     </IconField> 
 
     <IconField>
@@ -45,7 +45,7 @@ import { FileOrDirectory } from '@/files';
 const route = useRoute();
 const search = ref<string>("");
 
-const value = computed(() => {
+const pathValue = computed(() => {
   const routeName = route.name as string;
   
   switch(routeName) {
@@ -58,9 +58,9 @@ const value = computed(() => {
     case 'settings':
       return 'Settings';
     case 'game':
-      return route.params.id ? `Game  /  Level_${route.params.id}` : 'Game';
+      return breadcrumbsPath.value;
     case 'home':
-      return route.params.id ? `Files  /  Folder_${route.params.id}` : 'Files';
+      return "home";
     default:
       return 'File Explorers';
   }
@@ -81,11 +81,11 @@ const breadcrumbsPath = computed(()=>{
   if (!breadcrumbs.value || !Array.isArray(breadcrumbs.value)) {
     return "" // Return an empty string if there are no breadcrumbs
   }
-
+  const prefix = "C: "
   // Map the array to extract the 'name' property and join them with '/'
-  return breadcrumbs.value.reverse()
+  return prefix + breadcrumbs.value.reverse()
     .map((file: FileOrDirectory) => file.name)
-    .join("/")
+    .join(" / ")
 })
 
 function historyGoBack(){
