@@ -79,6 +79,10 @@ export const fileStoreModule: Module<FileState, RootState> = {
     SET_FILESYSTEM(state, payload: FileOrDirectory[]) {
       state.filesystem = payload;
       console.log("set filesystem ", state.filesystem)
+
+      state.history.index = -1;
+      state.history.recentFoldersId = []
+      state.openFolder = null
     },
     MOVE_FILE(state, payload: MoveFilePayload) {
       // Find the item in the filesystem array
@@ -135,6 +139,10 @@ export const fileStoreModule: Module<FileState, RootState> = {
 
       // console.log("generating random filesystem")
       commit("SET_FILESYSTEM", generateFiles(payload.count));
+    },
+    setFilesystem({commit}, payload:FileOrDirectory[]){
+
+      commit("SET_FILESYSTEM", payload);
     },
     addFile({ commit }, file: FileOrDirectory) {
       console.log("todo add file");
