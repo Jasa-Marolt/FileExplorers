@@ -66,6 +66,13 @@ onMounted(() => {
 
 
 const filteredFiles = computed(() => {
+  if (searchQuery.value) {
+    
+    const lowerSearch = searchQuery.value.toLowerCase()
+    return files.value.filter((file: FileOrDirectory) =>
+      file.name.toLowerCase().includes(lowerSearch)
+    )
+  }
   const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
     //console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
 
@@ -73,17 +80,8 @@ const filteredFiles = computed(() => {
   }
   );
 
-  console.log("currentDirectoryFiles", currentDirectoryFiles, "files", files)
-  console.log("recalculating filtered files");
-  if (!searchQuery.value) {
-    console.log("no search querry")
-    return currentDirectoryFiles
-  }
+  return currentDirectoryFiles
 
-  const lowerSearch = searchQuery.value.toLowerCase()
-  return currentDirectoryFiles.filter((file: FileOrDirectory) =>
-    file.name.toLowerCase().includes(lowerSearch)
-  )
 })
 
 const router = useRouter()
