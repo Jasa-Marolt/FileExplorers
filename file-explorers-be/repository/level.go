@@ -9,6 +9,7 @@ import (
 type LevelRepository interface {
 	GetLevelsWithSolved(userId int) (levels []models.LevelStatus, err error)
 	GetLevelData(level int) (data []byte, err error)
+	StartedLevel(userId, level int) (err error)
 	MarkLevelSolved(userId, level int) (err error)
 	GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error)
 }
@@ -63,20 +64,35 @@ func (repo *levelRepo) GetLevelData(level int) (data []byte, err error) {
 	return
 }
 
-func (repo *levelRepo) MarkLevelSolved(userId, level int) (err error) {
+func (repo *levelRepo) StartedLevel(userId, level int) (err error) {
 	sql := "INSERT INTO user_levels (user_id, level_id) VALUES (?, ?)"
+	_, err = repo.db.Exec(sql, userId, level)
+	return
+}
+
+func (repo *levelRepo) MarkLevelSolved(userId, level int) (err error) {
+	sql := "UPDATE user_levels SET solved_at = NOW() WHERE user_id = ? AND level_id = ?"
 	_, err = repo.db.Exec(sql, userId, level)
 	return
 }
 
 func (repo *levelRepo) GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error) {
 	sql := `
-		SELECT u.username, COUNT(ul.level_id) AS levels_solved
-		FROM users u
-		LEFT JOIN user_levels ul ON u.id = ul.user_id
-		GROUP BY u.id
-		ORDER BY levels_solved DESC
-	`
+        SELECT 
+            u.username, 
+            COUNT(CASE WHEN ul.solved_at IS NOT NULL THEN 1 END) AS levels_solved,
+            COALESCE(SUM(
+                CASE 
+                    WHEN ul.solved_at IS NOT NULL AND ul.started_at IS NOT NULL 
+                    THEN TIMESTAMPDIFF(SECOND, ul.started_at, ul.solved_at)
+                    ELSE 0
+                END
+            ), 0) AS total_time
+        FROM users u
+        LEFT JOIN user_levels ul ON u.id = ul.user_id
+        GROUP BY u.id
+        ORDER BY levels_solved DESC, total_time ASC
+    `
 	rows, err := repo.db.Query(sql)
 	if err != nil {
 		return
@@ -85,7 +101,7 @@ func (repo *levelRepo) GetLeaderboard() (leaderboard []models.LeaderboardEntry, 
 
 	for rows.Next() {
 		var entry models.LeaderboardEntry
-		err = rows.Scan(&entry.Username, &entry.LevelsSolved)
+		err = rows.Scan(&entry.Username, &entry.LevelsSolved, &entry.TotalTime)
 		if err != nil {
 			return
 		}

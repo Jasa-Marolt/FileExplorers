@@ -41,7 +41,21 @@ func (s *levelService) GetLevelData(level int) (data interface{}, err error) {
 	}
 
 	err = json.Unmarshal(dataJson, &data)
+	
 	return
+}
+
+func (s *levelService) StartedLevel(ctx context.Context, level int) (levels []models.LevelStatus, err error) {
+	jwt, err := s.jwtService.DecodeTokenFromCtx(ctx)
+	if err != nil {
+		return
+	}
+
+	err = s.repo.MarkLevelSolved(jwt.UserID, level)
+	if err != nil {
+		return
+	}
+	return s.GetLevels(ctx)
 }
 
 func (s *levelService) SolvedLevel(ctx context.Context, level int) (levels []models.LevelStatus, err error) {

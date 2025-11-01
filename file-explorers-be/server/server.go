@@ -106,6 +106,23 @@ func (c Server) GetLevels(w http.ResponseWriter, r *http.Request) {
 	WriteSuccess(w, data, "Levels retrieved successfully")
 }
 
+func (c Server) StartLevel(w http.ResponseWriter, r *http.Request) {
+	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, "Invalid levelId")
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
+	data, err := c.levelService.SolvedLevel(ctx, levelId)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, err, err.Error())
+		return
+	}
+
+	WriteSuccess(w, data, "Level marked as started successfully")
+}
+
 func (c Server) SolvedLevel(w http.ResponseWriter, r *http.Request) {
 	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
 	if err != nil {

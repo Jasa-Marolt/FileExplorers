@@ -16,4 +16,5 @@ type LevelStatus struct {
 type LeaderboardEntry struct {
 	Username     string `json:"username"`
 	LevelsSolved int    `json:"levels_solved"`
+	TotalTime    int64  `json:"total_time"`
 }
