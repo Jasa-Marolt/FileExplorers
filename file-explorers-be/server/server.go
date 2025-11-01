@@ -30,14 +30,17 @@ func (c Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, err := c.authService.Authenticate(req.Username, req.Password)
+	jwt, user, err := c.authService.Authenticate(req.Username, req.Password)
 	if err != nil {
 		WriteError(w, http.StatusUnauthorized, err, err.Error())
 		return
 	}
 
 	w.Header().Set("Authorization", "Bearer "+jwt)
-	WriteSuccess(w, nil, "Login successful")
+	WriteSuccess(w, map[string]interface{}{
+		"token": jwt,
+		"user":  user,
+	}, "Login successful")
 }
 
 func (c Server) Register(w http.ResponseWriter, r *http.Request) {
@@ -47,14 +50,17 @@ func (c Server) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, err := c.authService.Register(req.Username, req.Email, req.Password)
+	jwt, user, err := c.authService.Register(req.Username, req.Email, req.Password)
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
 	w.Header().Set("Authorization", "Bearer "+jwt)
-	WriteCreated(w, nil, "Registration successful")
+	WriteCreated(w, map[string]interface{}{
+		"token": jwt,
+		"user":  user,
+	}, "Registration successful")
 }
 
 func (c Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
