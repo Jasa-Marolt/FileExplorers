@@ -1,11 +1,14 @@
 import { FileOrDirectory, generateFiles } from "@/files"
 import { useFileOrDirectoryStructure, useDirectoryPath, useDirectorySearch, buildFileStructure } from "@/composables/fileOrDirectory"
-
 import { Module, MutationTree } from "vuex";
 export interface FileState {
   filesystem: FileOrDirectory[];
   openFolder: number | null;
   searchQuery: string;
+  history: {
+    recentFoldersId: (number|null)[],
+    index: number
+  }
 }
 export interface RootState {
 
@@ -16,6 +19,9 @@ interface FileMutations extends MutationTree<FileState> {
   MOVE_FILE(state: FileState, payload: MoveFilePayload): void;
   SET_SEARCH_QUERY(state: FileState, payload: string): void;
   SET_OPEN_FOLDER(state: FileState, payload: number | null): void;
+  ADD_TO_HISTORY(state: FileState, payload: number|null): void;
+  HISTORY_BACK(state: FileState): void;
+  HISTORY_FORWARD(state: FileState): void;
 }
 
 interface MoveFilePayload {
@@ -29,6 +35,10 @@ export const fileStoreModule: Module<FileState, RootState> = {
       filesystem: [] as FileOrDirectory[],
       openFolder: null,
       searchQuery: "",
+      history: {
+        recentFoldersId: [],
+        index: -1,
+      }
     }
   },
   getters: {
@@ -47,16 +57,23 @@ export const fileStoreModule: Module<FileState, RootState> = {
       }
       var path = [] as FileOrDirectory[]
       var folderId = state.openFolder
-      var file = state.filesystem.find((file) => {return file.id == folderId})
+      var file = state.filesystem.find((file) => { return file.id == folderId })
       while (file) {
         path.push(file);
-        if(!file.parentDirectoryId)break
+        if (!file.parentDirectoryId) break
         folderId = file.parentDirectoryId
         file = state.filesystem.find(file => file.id === folderId)
       }
       return path
-    }
-
+    },
+    // Returns true if can go forward, false otherwise
+    canHistoryNavigateForward(state:FileState): boolean {
+      return state.history.index < state.history.recentFoldersId.length - 1;
+    },
+        // Returns true if can go back, false otherwise
+    canHistoryNavigateBack(state:FileState): boolean {
+      return state.history.index > 0;
+    },
   },
   mutations: {
     SET_FILESYSTEM(state, payload: FileOrDirectory[]) {
@@ -78,8 +95,36 @@ export const fileStoreModule: Module<FileState, RootState> = {
       state.searchQuery = payload;
     },
     SET_OPEN_FOLDER(state, payload: number | null) {
-      state.openFolder = payload
+      state.history.recentFoldersId = state.history.recentFoldersId.slice(0, state.history.index + 1);
+      state.history.recentFoldersId.push(payload);
+      state.history.index = state.history.recentFoldersId.length - 1;
+      state.openFolder = payload;
+    },
+    ADD_TO_HISTORY(state, payload: number | null) {
+      state.history.recentFoldersId.splice(state.history.index)//clear saved future history
+      state.history.recentFoldersId.push(payload);
+      state.history.index++;
+      state.openFolder = payload;
+    },
+    HISTORY_BACK(state) {
+      if (state.history.index <= 0) {
+        console.log("cannot go back in history");
+        return;
+      }
+
+      state.history.index--;
+      state.openFolder = state.history.recentFoldersId[state.history.index];
+    },
+    HISTORY_FORWARD(state) {
+      if (state.history.recentFoldersId.length <= state.history.index + 1) {
+        console.log("cannot go forward in history");
+        return;
+      }
+
+      state.history.index++;
+      state.openFolder = state.history.recentFoldersId[state.history.index];
     }
+
   } as FileMutations,
   actions: {
     //add file
@@ -104,7 +149,21 @@ export const fileStoreModule: Module<FileState, RootState> = {
     setOpenFolder({ commit }, payload: number | null) {
       console.log("setting open folder to ", payload)
       commit("SET_OPEN_FOLDER", payload)
-    }
+    },
+
+    navigateHistoryBack({ commit }) {
+      console.log("navigating history back")
+      commit("HISTORY_BACK");
+    },
+
+    navigateHistoryForward({ commit }) {
+      console.log("navigating history forward")
+      commit("HISTORY_FORWARD");
+    },
+
+
+
+
   },
 
 }

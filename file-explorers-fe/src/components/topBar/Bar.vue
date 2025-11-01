@@ -1,7 +1,16 @@
 <template>
   <div class="top_bar">
-    <i class="pi pi-arrow-left"></i>
-    <i class="pi pi-arrow-right"></i>
+<i 
+  class="pi pi-arrow-left" 
+  :class="{ 'disabled-arrow': !historyBackPossible }" 
+  @click="historyGoBack"
+></i>
+
+<i 
+  class="pi pi-arrow-right" 
+  :class="{ 'disabled-arrow': !historyForwardPossible }" 
+  @click="historyGoForward"
+></i>
     <i class="pi pi-sync"></i>
 
     <IconField class="flex">
@@ -65,6 +74,9 @@ const filesystem = computed(()=>store.getters["fileStoreModule/getFilesystem"])
 const activeId = computed(()=>store.getters["fileStoreModule/getCurrentFile"])
 const breadcrumbs =  computed(()=>store.getters["fileStoreModule/getPathToRoot"])
 
+const historyForwardPossible = computed(()=>store.getters["fileStoreModule/canHistoryNavigateForward"])
+const historyBackPossible = computed(()=>store.getters["fileStoreModule/canHistoryNavigateBack"])
+
 const breadcrumbsPath = computed(()=>{
   if (!breadcrumbs.value || !Array.isArray(breadcrumbs.value)) {
     return "" // Return an empty string if there are no breadcrumbs
@@ -75,6 +87,13 @@ const breadcrumbsPath = computed(()=>{
     .map((file: FileOrDirectory) => file.name)
     .join("/")
 })
+
+function historyGoBack(){
+  store.dispatch("fileStoreModule/navigateHistoryBack");
+}
+function historyGoForward(){
+  store.dispatch("fileStoreModule/navigateHistoryForward"); 
+}
 
 // const search = computed<string>({
 //   get: () => store.getters['fileStoreModule/getSearchQuery'],
@@ -110,5 +129,15 @@ const breadcrumbsPath = computed(()=>{
 
 .flex {
   flex: 1;
+}
+.disabled-arrow {
+  /* Set the color to a light gray */
+  color: #ccc; 
+  
+  /* Change the cursor to indicate it's not clickable */
+  cursor: default; 
+  
+  /* Optional: Make it slightly transparent */
+  opacity: 0.6; 
 }
 </style>
