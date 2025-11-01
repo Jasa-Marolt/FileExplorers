@@ -43,7 +43,7 @@ import { buildPathToRoot } from '@/composables/fileOrDirectory';
 import { FileOrDirectory } from '@/files';
 
 const route = useRoute();
-const search = ref<string>("");
+// const search = ref<string>("");
 
 const pathValue = computed(() => {
   const routeName = route.name as string;
@@ -95,14 +95,14 @@ function historyGoForward(){
   store.dispatch("fileStoreModule/navigateHistoryForward"); 
 }
 
-// const search = computed<string>({
-//   get: () => store.getters['fileStoreModule/getSearchQuery'],
-//   set: (val) => {
-//     store.dispatch('fileStoreModule/setSearchQuery', val)
+const search = computed<string>({
+  get: () => store.getters['fileStoreModule/getSearchQuery'],
+  set: (val) => {
+    store.dispatch('fileStoreModule/setSearchQuery', val)
     
-//     console.log("called set")
-//   }
-// });
+    console.log("called set")
+  }
+});
 
 
 </script>

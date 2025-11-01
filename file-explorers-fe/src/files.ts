@@ -3,6 +3,8 @@ export interface FileOrDirectory {
   name: string
   isDirectory: boolean
   parentDirectoryId: number | undefined
+  filetype?:string,
+  fileContent?:string,
 }
 
 export function generateFiles(totalNumberOfFiles: number): FileOrDirectory[] {
