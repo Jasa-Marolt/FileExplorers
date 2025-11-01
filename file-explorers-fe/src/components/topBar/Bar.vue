@@ -6,9 +6,8 @@
 
     <IconField class="flex">
       <InputIcon class="pi pi-home" />
-      <InputText class="locationBar" v-model="value" fluid disabled />
-    </IconField>
-
+      <InputText class="locationBar" v-model="breadcrumbsPath" fluid disabled />
+    </IconField> 
 
     <IconField>
       <InputText class="searchField" v-model="search" placeholder="Search" />
@@ -25,8 +24,14 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import 'primeicons/primeicons.css'
-import { ref, computed } from 'vue';
+
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { useStore } from 'vuex'; 
+import { type State } from '@/store';
+import { buildPathToRoot } from '@/composables/fileOrDirectory';
+import { FileOrDirectory } from '@/files';
 
 const route = useRoute();
 const search = ref<string>("");
@@ -51,6 +56,36 @@ const value = computed(() => {
       return 'File Explorers';
   }
 });
+
+
+
+const store = useStore<State>(); 
+const filesystem = computed(()=>store.getters["fileStoreModule/getFilesystem"])
+
+const activeId = computed(()=>store.getters["fileStoreModule/getCurrentFile"])
+const breadcrumbs =  computed(()=>store.getters["fileStoreModule/getPathToRoot"])
+
+const breadcrumbsPath = computed(()=>{
+  if (!breadcrumbs.value || !Array.isArray(breadcrumbs.value)) {
+    return "" // Return an empty string if there are no breadcrumbs
+  }
+
+  // Map the array to extract the 'name' property and join them with '/'
+  return breadcrumbs.value.reverse()
+    .map((file: FileOrDirectory) => file.name)
+    .join("/")
+})
+
+// const search = computed<string>({
+//   get: () => store.getters['fileStoreModule/getSearchQuery'],
+//   set: (val) => {
+//     store.dispatch('fileStoreModule/setSearchQuery', val)
+    
+//     console.log("called set")
+//   }
+// });
+
+
 </script>
 
 <style lang="scss" scoped>
