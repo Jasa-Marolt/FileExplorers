@@ -12,10 +12,23 @@ import Bar from '@/components/topBar/Bar.vue'
 import MainWindow from '@/components/mainWindow/MainWindow.vue'
 import SideMenu from '@/components/sideMenu/SideMenu.vue'
 import TIps from '@/components/tipsWindow/TIps.vue'
-
+import { watch } from 'vue'
+import { useStore } from 'vuex' // Import Vuex
+import { type State } from '@/store' // Assuming you have a typed store setup
 const props = defineProps<{
-  id?: string
+    id?: string
 }>()
+
+
+const store = useStore<State>() // Initialize the store
+watch(
+  () => props.id, // The source to watch (a getter function)
+  (newId) => {
+    // This runs on initial setup and every time props.id changes
+    store.dispatch('fileStoreModule/setOpenFolder', newId);
+  },
+  { immediate: true } // Run the handler immediately on component setup
+);
 </script>
 
 <style scoped lang="scss">

@@ -1,6 +1,6 @@
 <template>
     <div class="main_window">
-        <FileExplorer :fileId=fileId></FileExplorer>
+        <FileExplorer ></FileExplorer>
        
     </div>
 </template>
@@ -9,9 +9,6 @@
 <script lang="ts" setup>
 import FileExplorer from './FileExplorer.vue';
 
-const props = defineProps<{
-  fileId?: string
-}>()
 </script>
 
 <style lang="scss" scoped>

@@ -9,7 +9,7 @@ type FlatDirectory = Map<number, Directory>
  * Preferring this flat structure to a recursive one because it makes lookup easier and faster
  * @param files The files from which to build the structure
  */
-function buildFileStructure(files: FileOrDirectory[]) {
+export function buildFileStructure(files: FileOrDirectory[]) {
   const flatDirectory: FlatDirectory = new Map()
   const rootDirectory: FileOrDirectory[] = []
 
@@ -32,58 +32,105 @@ function buildFileStructure(files: FileOrDirectory[]) {
   }
 }
 
-function buildPathToRoot(flatDirectory: FlatDirectory, directoryId: number, paths: Directory[]) {
+export function buildPathToRoot(flatDirectory: FlatDirectory, directoryId: number, paths: Directory[]) {
+  if(!flatDirectory|| !directoryId){
+    console.log("cannot build path to root", flatDirectory, directoryId)
+    return []
+  }
+
+  console.log("building path to root", JSON.stringify(flatDirectory), directoryId)
   const directory = flatDirectory.get(directoryId)
   if (directory) {
     paths.push(directory)
+    console.log("yes dir");
+  }else{
+     console.log("no dir", flatDirectory.get(directoryId));
   }
 
   if (directory?.parentDirectoryId) {
     buildPathToRoot(flatDirectory, directory.parentDirectoryId, paths)
-  }
+  }else{
 
+  }
+  console.log("returning paths", paths)
   return paths
 }
-
-export function useFileOrDirectoryStructure(
-  files: Ref<FileOrDirectory[]>,
+export function useDirectoryPath(
+  directoryStructure: ComputedRef<ReturnType<typeof buildFileStructure>>,
   currentDirectoryId: ComputedRef<number | undefined>
 ) {
-  const directoryStructure = computed(() => buildFileStructure(files.value))
   const currentDirectoryPathToRoot: Record<string, Directory[] | undefined> = {}
 
-  function isInDirectory(directoryId: number, filename?: string): boolean {
-    if (!filename) {
-      return true
+  const pathToRoot = computed(() => {
+    const id = currentDirectoryId.value
+    if (id === undefined) {
+      return []
     }
 
+    // Check cache
+    const cachedPath = currentDirectoryPathToRoot[id]
+    if (cachedPath) {
+      return cachedPath.slice().reverse() // Return reversed for display
+    }
+
+    // Build and cache
+    const directoryHierarchy = buildPathToRoot(
+      directoryStructure.value.flatDirectory,
+      id,
+      []
+    )
+    currentDirectoryPathToRoot[id] = directoryHierarchy
+
+    // Return reversed for display
+    return directoryHierarchy.slice().reverse()
+  })
+
+  return { pathToRoot }
+}
+
+// --- Directory Search Utility (e.g., in a separate file: 'search-utils.ts') ---
+
+/**
+ * Checks if a filename (needle) exists within a directory or any of its subdirectories.
+ * Performs a recursive search.
+ */
+export function useDirectorySearch(
+  directoryStructure: ComputedRef<ReturnType<typeof buildFileStructure>>
+) {
+  function isInDirectory(directoryId: number, filename?: string): boolean {
     const needle = filename?.toLowerCase()
-    if (!directoryStructure.value.flatDirectory.get(directoryId)) {
-      return false
+
+    if (!needle) {
+      return true
     }
 
     const directory = directoryStructure.value.flatDirectory.get(directoryId)
-    if (needle && directory?.name.toLowerCase().includes(needle)) {
-      return true
-    }
-
-    if (!directory?.children) {
+    if (!directory) {
       return false
     }
 
-    if (needle) {
-      const matchFoundInChildren = directory.children.some(
-        (file) => !needle || file.name.toLowerCase().includes(needle)
-      )
-      if (matchFoundInChildren) {
-        return true
-      }
+    // 1. Check current directory name
+    if (directory.name.toLowerCase().includes(needle)) {
+      return true
     }
 
+    if (!directory.children) {
+      return false
+    }
+
+    // 2. Check direct children (files and directories)
+    const matchFoundInChildren = directory.children.some(
+      (file) => file.name.toLowerCase().includes(needle)
+    )
+    if (matchFoundInChildren) {
+      return true
+    }
+
+    // 3. Recurse into subdirectories
     const directoriesInChildren = directory.children.filter(({ isDirectory }) => isDirectory)
 
-    for (const directory of directoriesInChildren) {
-      if (isInDirectory(directory.id, needle)) {
+    for (const subDirectory of directoriesInChildren) {
+      if (isInDirectory(subDirectory.id, needle)) {
         return true
       }
     }
@@ -91,48 +138,50 @@ export function useFileOrDirectoryStructure(
     return false
   }
 
+  return { isInDirectory }
+}
+
+
+// --- Main Composable (Original file) ---
+
+export function useFileOrDirectoryStructure(
+  files: FileOrDirectory[],
+  currentDirectoryId: ComputedRef<number | undefined>
+) {
+  const directoryStructure = computed(() => buildFileStructure(files))
+
+  // Extracted utilities
+  const { pathToRoot } = useDirectoryPath(directoryStructure, currentDirectoryId)
+  const { isInDirectory } = useDirectorySearch(directoryStructure)
+
+  const itemsAtDirectory = computed(() => {
+    const id = currentDirectoryId.value
+
+    if (id === undefined) {
+      return {
+        files: directoryStructure.value.rootDirectory,
+        pathToRoot: [],
+      }
+    }
+
+    const currentDirectory = directoryStructure.value.flatDirectory.get(id)
+
+    if (!currentDirectory) {
+      // PathToRoot is already an empty array if id is invalid/not found
+      return {
+        files: [],
+        pathToRoot: [],
+      }
+    }
+
+    return {
+      files: currentDirectory.children ?? [],
+      pathToRoot: pathToRoot.value, // Already computed and reversed
+    }
+  })
+
   return {
-    itemsAtDirectory: readonly(
-      computed(() => {
-        let directoryHierarchy: Directory[] = []
-        let currentDirectory: Directory | undefined = undefined
-
-        if (!currentDirectoryId.value) {
-          return {
-            files: directoryStructure.value.rootDirectory,
-            pathToRoot: directoryHierarchy
-          }
-        }
-        if (!directoryStructure.value.flatDirectory.get(currentDirectoryId.value)) {
-          return {
-            files: [],
-            pathToRoot: directoryHierarchy
-          }
-        }
-
-        // Builds the path structure in the form of a an array containing all the directories.
-        // It only builds this structure if the directory is visited and saves it so that when
-        // the path is visited the saved version is used instead.
-        const path = currentDirectoryPathToRoot[currentDirectoryId.value]
-        if (path) {
-          directoryHierarchy = path
-        } else {
-          directoryHierarchy = buildPathToRoot(
-            directoryStructure.value.flatDirectory,
-            currentDirectoryId.value,
-            []
-          )
-          currentDirectoryPathToRoot[currentDirectoryId.value] = directoryHierarchy
-        }
-
-        currentDirectory = directoryStructure.value.flatDirectory.get(currentDirectoryId.value)
-
-        return {
-          files: currentDirectory?.children ?? [],
-          pathToRoot: directoryHierarchy.slice().reverse()
-        }
-      })
-    ),
-    isInDirectory
+    itemsAtDirectory: readonly(itemsAtDirectory),
+    isInDirectory,
   }
 }

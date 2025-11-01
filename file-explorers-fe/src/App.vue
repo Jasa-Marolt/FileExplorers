@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+
 </script>
 
 <template>
   <RouterView />
 </template>
 
-<style scoped lang="ts"></style>
-import {useStore} 
+
 
 <style lang="scss">
 #app {
