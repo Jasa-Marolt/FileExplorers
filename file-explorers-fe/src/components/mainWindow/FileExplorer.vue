@@ -91,7 +91,7 @@ function handleFileClick(file: FileOrDirectory) {
     return
   }
 
-  router.push({ name: 'home', params: { id: file.id } })
+  store.dispatch("fileStoreModule/setOpenFolder",file.id)
 }
 
 function handleDragStart(event: DragEvent, file: unknown) {
