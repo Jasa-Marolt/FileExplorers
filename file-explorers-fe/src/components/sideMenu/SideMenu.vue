@@ -77,6 +77,8 @@ function openLevel(num: number) {
         return;
     }
     console.log("opening new level")
+
+  router.push({ name: 'game' });
    store.dispatch("fileStoreModule/setFilesystem", newLevel);
 }
 
