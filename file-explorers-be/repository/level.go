@@ -2,13 +2,14 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
 	"file-explorers-be/models"
 	"fmt"
 )
 
 type LevelRepository interface {
 	GetLevelsWithSolved(userId int) (levels []models.LevelStatus, err error)
-	GetLevelData(level int) (data []byte, err error)
+	GetLevelData(level int) (data models.LevelData, err error)
 	StartedLevel(userId, level int) (err error)
 	MarkLevelSolved(userId, level int) (err error)
 	GetLeaderboard(timeFilter string) (leaderboard []models.LeaderboardEntry, err error)
@@ -27,7 +28,8 @@ func NewLevelRepository(db *sql.DB) LevelRepository {
 func (repo *levelRepo) GetLevelsWithSolved(userId int) (levels []models.LevelStatus, err error) {
 	sql := `
         SELECT l.level_Id, 
-               CASE WHEN ul.level_id IS NOT NULL THEN TRUE ELSE FALSE END AS solved
+               CASE WHEN ul.level_id IS NOT NULL THEN TRUE ELSE FALSE END AS solved, 
+			   l.name, l.difficulty
         FROM levels l
         LEFT JOIN user_levels ul ON l.level_Id = ul.level_id AND ul.user_id = ?
     `
@@ -39,7 +41,12 @@ func (repo *levelRepo) GetLevelsWithSolved(userId int) (levels []models.LevelSta
 
 	for rows.Next() {
 		var ls models.LevelStatus
-		err = rows.Scan(&ls.LevelID, &ls.Solved)
+		err = rows.Scan(
+			&ls.LevelID,
+			&ls.Solved,
+			&ls.Name,
+			&ls.Difficulty,
+		)
 		if err != nil {
 			return
 		}
@@ -48,19 +55,33 @@ func (repo *levelRepo) GetLevelsWithSolved(userId int) (levels []models.LevelSta
 	return
 }
 
-func (repo *levelRepo) GetLevelData(level int) (data []byte, err error) {
-	sql := "SELECT level_data FROM levels WHERE level_id=?"
+func (repo *levelRepo) GetLevelData(level int) (data models.LevelData, err error) {
+	sql := "SELECT level_data, name, description, difficulty, instructions  FROM levels WHERE level_id=?"
 	rows, err := repo.db.Query(sql, level)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
+	var tmp []byte
+
 	if rows.Next() {
-		err = rows.Scan(&data)
+		err = rows.Scan(
+			&tmp,
+			&data.Name,
+			&data.Description,
+			&data.Difficulty,
+			&data.Instructions,
+		)
 	} else {
 		err = fmt.Errorf("level not found")
 	}
+
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(tmp, &data.Data)
 	return
 }
 
@@ -107,7 +128,7 @@ func (repo *levelRepo) GetLeaderboard(timeFilter string) (leaderboard []models.L
         HAVING levels_solved >= 0
         ORDER BY levels_solved DESC, total_time ASC
     `, timeCondition, timeCondition)
-	
+
 	rows, err := repo.db.Query(sql)
 	if err != nil {
 		return

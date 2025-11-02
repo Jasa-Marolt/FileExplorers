@@ -80,13 +80,14 @@ func (c Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c Server) GetLevelData(w http.ResponseWriter, r *http.Request) {
+	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
 	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, err, "Invalid levelId")
 		return
 	}
 
-	data, err := c.levelService.GetLevelData(levelId)
+	data, err := c.levelService.GetLevelData(ctx, levelId)
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, err, err.Error())
 		return
@@ -142,13 +143,13 @@ func (c Server) SolvedLevel(w http.ResponseWriter, r *http.Request) {
 
 func (c Server) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
-	
+
 	// Get timeFilter query parameter (default to "all")
 	timeFilter := r.URL.Query().Get("timeFilter")
 	if timeFilter == "" {
 		timeFilter = "all"
 	}
-	
+
 	data, err := c.levelService.GetLeaderboard(ctx, timeFilter)
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, err, err.Error())
