@@ -93,7 +93,7 @@ function handleFileClick(file: FileOrDirectory) {
     return
   }
 
-  store.dispatch("fileStoreModule/setOpenFolder",file.id)
+  store.dispatch("fileStoreModule/setOpenFolder", file.id)
 }
 
 function handleDragStart(event: DragEvent, file: unknown) {
@@ -146,7 +146,8 @@ function onContextMenu(e: MouseEvent) {
     { label: 'Cut', action: EContextMenuAction.Cut },
     { label: 'Paste', action: EContextMenuAction.Paste },
     { label: 'Rename', action: EContextMenuAction.Rename },
-    { label: 'Properties', action: EContextMenuAction.Properties },
+    // { label: 'Properties', action: EContextMenuAction.Properties },
+    { label: 'Delete', action: EContextMenuAction.Delete },
   ]
 
   // Position the menu at the click location; clamp to viewport if needed
@@ -206,7 +207,10 @@ function onMenuSelect(action: string) {
     console.log('action=rename');
     // TODO: prompt for new name and apply rename
   }
-
+  function deleteItem() {
+    console.log('action delete');
+    // TODO: prompt for new name and apply rename
+  }
 
   const enumAction = action as unknown as EContextMenuAction;
   switch (enumAction) {
@@ -233,6 +237,9 @@ function onMenuSelect(action: string) {
       break;
     case EContextMenuAction.Properties:
       properiesItem();
+      break;
+    case EContextMenuAction.Delete:
+      deleteItem();
       break;
     default:
       console.warn('Unknown context menu action:', action);

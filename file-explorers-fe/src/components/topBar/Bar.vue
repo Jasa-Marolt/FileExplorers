@@ -11,7 +11,7 @@
       :class="{ 'disabled-arrow': !historyForwardPossible }" 
       @click="historyGoForward"
     ></i>
-    <i class="pi pi-sync"></i>
+    <i class="pi pi-sync" :class="{ 'disabled-arrow': isNotGame}"@click="resetLevel" ></i>
 
     <IconField class="flex">
       <InputIcon class="pi pi-home" />
@@ -43,8 +43,25 @@ import { buildPathToRoot } from '@/composables/fileOrDirectory';
 import { FileOrDirectory } from '@/files';
 
 const route = useRoute();
-const search = ref<string>("");
+// const search = ref<string>("");
 
+const isNotGame = computed(()=>{
+  const routeName = route.name as string;
+  return routeName != "game"; 
+
+
+})
+
+const resetLevel =async () =>{
+  
+    
+    const level = store.getters["levelStoreModule/currentLevel"];
+    store.dispatch("fileStoreModule/setFilesystem", level);
+
+
+
+
+}
 const pathValue = computed(() => {
   const routeName = route.name as string;
   
@@ -82,6 +99,7 @@ const breadcrumbsPath = computed(()=>{
     return "" // Return an empty string if there are no breadcrumbs
   }
   const prefix = "C: "
+  //get current level name and add to prefix
   // Map the array to extract the 'name' property and join them with '/'
   return prefix + breadcrumbs.value.reverse()
     .map((file: FileOrDirectory) => file.name)
@@ -95,14 +113,14 @@ function historyGoForward(){
   store.dispatch("fileStoreModule/navigateHistoryForward"); 
 }
 
-// const search = computed<string>({
-//   get: () => store.getters['fileStoreModule/getSearchQuery'],
-//   set: (val) => {
-//     store.dispatch('fileStoreModule/setSearchQuery', val)
+const search = computed<string>({
+  get: () => store.getters['fileStoreModule/getSearchQuery'],
+  set: (val) => {
+    store.dispatch('fileStoreModule/setSearchQuery', val)
     
-//     console.log("called set")
-//   }
-// });
+    console.log("called set")
+  }
+});
 
 
 </script>
