@@ -47,5 +47,6 @@ const currentFileId = computed(() => {
   height: 100%;
   position: relative;
   /* needed for absolute menu positioning */
+  overflow: hidden;
 }
 </style>

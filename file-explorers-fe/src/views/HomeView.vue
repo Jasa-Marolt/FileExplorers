@@ -17,6 +17,8 @@ import TIps from '@/components/tipsWindow/TIps.vue'
 import { watch } from 'vue'
 import { useStore } from 'vuex' // Import Vuex
 import { type State } from '@/store' // Assuming you have a typed store setup
+import { loadSettings } from '@/composables/useSettings'
+
 const props = defineProps<{
     id?: string
 }>()
@@ -31,25 +33,18 @@ const showTips = computed(() => {
   return isGamePage && tipsEnabled.value
 })
 
-const loadSettings = () => {
-  const saved = localStorage.getItem('fileExplorersSettings')
-  if (saved) {
-    try {
-      const settings = JSON.parse(saved)
-      tipsEnabled.value = settings.showTips !== undefined ? settings.showTips : false
-    } catch (error) {
-      console.error('Failed to load settings:', error)
-    }
-  }
+const loadTipsSetting = () => {
+  const settings = loadSettings()
+  tipsEnabled.value = settings.showTips
 }
 
-// Watch for changes in localStorage
+// Watch for changes in settings
 const handleStorageChange = () => {
-  loadSettings()
+  loadTipsSetting()
 }
 
 onMounted(() => {
-  loadSettings()
+  loadTipsSetting()
   window.addEventListener('storage', handleStorageChange)
   // Also listen for custom event when settings are saved
   window.addEventListener('settingsUpdated', handleStorageChange)
@@ -77,10 +72,11 @@ watch(
     display: grid;
     grid-template-columns: auto 2.5fr 0.75fr;
     /* 3 columns: left, middle, right */
-    grid-template-rows: 5% 1fr;
+    grid-template-rows: auto 1fr;
     /* 2 rows: top bar + main content */
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 
     &.no-tips {
         grid-template-columns: auto 1fr;

@@ -13,7 +13,7 @@
         <div class="menu-group">
             <Button v-for="(level, idx) in levels" :key="level.id ?? idx" type="button"
                 :label="level.name ?? `Level ${idx + 1}`" 
-                :icon="currentLevel.id === (level.id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'" 
+                :icon="currentLevel?.id === (level.id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'" 
                 @click="openLevel(level.id ?? idx + 1)" />
         </div>
     </div>
@@ -95,6 +95,8 @@ onBeforeMount(() => {
     height: 100%;
     padding: 0.5rem;
     gap: 0.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .menu-group {

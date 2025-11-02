@@ -1,16 +1,16 @@
 <template>
   <div class="top_bar">
-<i 
-  class="pi pi-arrow-left" 
-  :class="{ 'disabled-arrow': !historyBackPossible }" 
-  @click="historyGoBack"
-></i>
+    <i 
+      class="pi pi-arrow-left" 
+      :class="{ 'disabled-arrow': !historyBackPossible }" 
+      @click="historyGoBack"
+    ></i>
 
-<i 
-  class="pi pi-arrow-right" 
-  :class="{ 'disabled-arrow': !historyForwardPossible }" 
-  @click="historyGoForward"
-></i>
+    <i 
+      class="pi pi-arrow-right" 
+      :class="{ 'disabled-arrow': !historyForwardPossible }" 
+      @click="historyGoForward"
+    ></i>
     <i class="pi pi-sync"></i>
 
     <IconField class="flex">
@@ -112,11 +112,10 @@ function historyGoForward(){
   background: var(--background-secondary);
   border-bottom: 3px solid var(--border-color);
   width: 100%;
-  height: 100%;
+  height: auto;
   display: flex;
   align-items: center;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  padding: 0.5rem;
   gap: 0.5rem;
 
 }
@@ -131,13 +130,8 @@ function historyGoForward(){
   flex: 1;
 }
 .disabled-arrow {
-  /* Set the color to a light gray */
   color: #ccc; 
-  
-  /* Change the cursor to indicate it's not clickable */
   cursor: default; 
-  
-  /* Optional: Make it slightly transparent */
   opacity: 0.6; 
 }
 </style>

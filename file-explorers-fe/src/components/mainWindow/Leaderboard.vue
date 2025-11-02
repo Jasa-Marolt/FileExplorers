@@ -4,7 +4,7 @@
       <h1> Leaderboard</h1>
       <p class="subtitle">See who's crushing it!</p>
     </div>
-
+    <!--
     <div class="filters">
       <button 
         :class="['filter-btn', { active: timeFilter === 'all' }]"
@@ -25,7 +25,7 @@
         This Week
       </button>
     </div>
-
+    -->
     <div v-if="loading" class="loading">
       <i class="pi pi-spinner pi-spin"></i>
       <p>Loading leaderboard...</p>

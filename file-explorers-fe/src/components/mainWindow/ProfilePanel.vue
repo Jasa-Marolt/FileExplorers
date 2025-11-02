@@ -179,6 +179,8 @@ const handleRegister = async () => {
 const handleLogout = () => {
   store.dispatch('userStoreModule/logout');
   error.value = '';
+  // Refresh the page to reset all state
+  window.location.reload();
 };
 </script>
 
