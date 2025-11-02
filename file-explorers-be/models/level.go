@@ -5,6 +5,7 @@ type LevelRequest struct {
 }
 
 type LevelData struct {
+	LevelID      int         `json:"level_id,omitempty"`
 	Data         interface{} `json:"data,omitempty"`
 	Name         string      `json:"name,omitempty"`
 	Description  string      `json:"description,omitempty"`
