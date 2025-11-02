@@ -4,7 +4,7 @@
       <h1> Leaderboard</h1>
       <p class="subtitle">See who's crushing it!</p>
     </div>
-    <!--
+
     <div class="filters">
       <button 
         :class="['filter-btn', { active: timeFilter === 'all' }]"
@@ -25,7 +25,7 @@
         This Week
       </button>
     </div>
-    -->
+
     <div v-if="loading" class="loading">
       <i class="pi pi-spinner pi-spin"></i>
       <p>Loading leaderboard...</p>
@@ -44,7 +44,7 @@
           <div class="player-name">{{ currentUserRank.username }}</div>
           <div class="player-stats">
             <span><i class="pi pi-flag"></i> {{ currentUserRank.levelsCompleted }} levels</span>
-            <span><i class="pi pi-star-fill"></i> {{ currentUserRank.score }} points</span>
+            <span><i class="pi pi-clock"></i> {{ formatAvgTime(currentUserRank.avgTime) }} avg</span>
           </div>
         </div>
       </div>
@@ -68,12 +68,14 @@
             </div>
             <div class="player-stats">
               <span><i class="pi pi-flag"></i> {{ player.levelsCompleted }} levels</span>
+              <span><i class="pi pi-clock"></i> {{ formatAvgTime(player.avgTime) }} avg</span>
             </div>
           </div>
-
-          <div class="player-score">
-            {{ player.score }}
+          <!--
+          <div class="player-time">
+            {{ player.levelsCompleted }} <i class="pi pi-flag"></i> | {{ formatAvgTime(player.avgTime) }}
           </div>
+          -->
         </div>
       </div>
 
@@ -86,7 +88,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 
 interface LeaderboardEntry {
@@ -94,6 +96,7 @@ interface LeaderboardEntry {
   username: string;
   score: number;
   levelsCompleted: number;
+  avgTime: number;
   rank: number;
 }
 
@@ -127,27 +130,52 @@ const getRankClass = (rank: number): string => {
   return '';
 };
 
+const formatAvgTime = (seconds: number): string => {
+  if (!seconds || seconds === 0) return '0s';
+  
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  if (mins > 0) {
+    return `${mins}m ${secs}s`;
+  }
+  return `${secs}s`;
+};
+
 const fetchLeaderboard = async () => {
   loading.value = true;
   error.value = '';
   
   try {
-    const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:8080'}/leaderboard`);
+    // Build URL with time filter query parameter
+    const url = `${process.env.VUE_APP_API_URL || 'http://localhost:8080'}/leaderboard?timeFilter=${timeFilter.value}`;
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error('Failed to fetch leaderboard');
     }
 
     const result = await response.json();
+    console.log('Leaderboard API response:', result);
     
     if (result.success && result.data) {
-      leaderboardData.value = result.data.map((entry: any, index: number) => ({
-        id: entry.user_id || entry.id,
-        username: entry.username,
-        score: entry.total_score || entry.score || 0,
-        levelsCompleted: entry.levels_completed || 0,
-        rank: index + 1
-      }));
+      leaderboardData.value = result.data.map((entry: any, index: number) => {
+        console.log('Mapping entry:', entry);
+        const totalTime = entry.total_time || entry.totalTime || entry.TotalTime || 0;
+        const levelsCompleted = entry.levels_solved || entry.levelsSolved || entry.LevelsSolved || entry.levels_completed || entry.levelsCompleted || 0;
+        const avgTime = levelsCompleted > 0 ? totalTime / levelsCompleted : 0;
+        
+        return {
+          id: entry.user_id || entry.id || entry.userId || index,
+          username: entry.username || entry.Username,
+          score: totalTime,
+          levelsCompleted: levelsCompleted,
+          avgTime: avgTime,
+          rank: index + 1
+        };
+      });
+
+      console.log('Mapped leaderboard data:', leaderboardData.value);
 
       // Find current user's rank
       if (isAuthenticated.value && user.value) {
@@ -165,6 +193,11 @@ const fetchLeaderboard = async () => {
     loading.value = false;
   }
 };
+
+// Watch for time filter changes and refetch data
+watch(timeFilter, () => {
+  fetchLeaderboard();
+});
 
 onMounted(() => {
   fetchLeaderboard();
@@ -381,11 +414,11 @@ onMounted(() => {
   color: var(--secondary-text);
 }
 
-.player-score {
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--text);
-  min-width: 100px;
+.player-time {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 120px;
   text-align: right;
 }
 
@@ -409,7 +442,7 @@ onMounted(() => {
     flex-wrap: wrap;
   }
 
-  .player-score {
+  .player-time {
     width: 100%;
     text-align: center;
   }

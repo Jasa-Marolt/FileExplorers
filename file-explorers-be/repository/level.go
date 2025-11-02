@@ -11,7 +11,7 @@ type LevelRepository interface {
 	GetLevelData(level int) (data []byte, err error)
 	StartedLevel(userId, level int) (err error)
 	MarkLevelSolved(userId, level int) (err error)
-	GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error)
+	GetLeaderboard(timeFilter string) (leaderboard []models.LeaderboardEntry, err error)
 }
 
 type levelRepo struct {
@@ -76,23 +76,38 @@ func (repo *levelRepo) MarkLevelSolved(userId, level int) (err error) {
 	return
 }
 
-func (repo *levelRepo) GetLeaderboard() (leaderboard []models.LeaderboardEntry, err error) {
-	sql := `
+func (repo *levelRepo) GetLeaderboard(timeFilter string) (leaderboard []models.LeaderboardEntry, err error) {
+	// Build the time filter condition based on timeFilter
+	timeCondition := "1=1"
+	switch timeFilter {
+	case "week":
+		timeCondition = "ul.solved_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+	case "month":
+		timeCondition = "ul.solved_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+	case "all":
+		fallthrough
+	default:
+		timeCondition = "1=1" // No filter for all time
+	}
+
+	sql := fmt.Sprintf(`
         SELECT 
             u.username, 
-            COUNT(CASE WHEN ul.solved_at IS NOT NULL THEN 1 END) AS levels_solved,
+            COUNT(CASE WHEN ul.solved_at IS NOT NULL AND (%s) THEN 1 END) AS levels_solved,
             COALESCE(SUM(
                 CASE 
-                    WHEN ul.solved_at IS NOT NULL AND ul.started_at IS NOT NULL 
+                    WHEN ul.solved_at IS NOT NULL AND ul.started_at IS NOT NULL AND (%s)
                     THEN TIMESTAMPDIFF(SECOND, ul.started_at, ul.solved_at)
                     ELSE 0
                 END
             ), 0) AS total_time
         FROM users u
         LEFT JOIN user_levels ul ON u.id = ul.user_id
-        GROUP BY u.id
+        GROUP BY u.id, u.username
+        HAVING levels_solved >= 0
         ORDER BY levels_solved DESC, total_time ASC
-    `
+    `, timeCondition, timeCondition)
+	
 	rows, err := repo.db.Query(sql)
 	if err != nil {
 		return

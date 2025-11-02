@@ -11,7 +11,7 @@ type LevelService interface {
 	GetLevels(ctx context.Context) (levels []models.LevelStatus, err error)
 	GetLevelData(level int) (data interface{}, err error)
 	SolvedLevel(ctx context.Context, level int) (levels []models.LevelStatus, err error)
-	GetLeaderboard(ctx context.Context) (leaderboard []models.LeaderboardEntry, err error)
+	GetLeaderboard(ctx context.Context, timeFilter string) (leaderboard []models.LeaderboardEntry, err error)
 }
 
 type levelService struct {
@@ -71,6 +71,6 @@ func (s *levelService) SolvedLevel(ctx context.Context, level int) (levels []mod
 	return s.GetLevels(ctx)
 }
 
-func (s *levelService) GetLeaderboard(ctx context.Context) (leaderboard []models.LeaderboardEntry, err error) {
-	return s.repo.GetLeaderboard()
+func (s *levelService) GetLeaderboard(ctx context.Context, timeFilter string) (leaderboard []models.LeaderboardEntry, err error) {
+	return s.repo.GetLeaderboard(timeFilter)
 }

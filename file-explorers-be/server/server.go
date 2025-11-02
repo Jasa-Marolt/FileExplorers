@@ -142,7 +142,14 @@ func (c Server) SolvedLevel(w http.ResponseWriter, r *http.Request) {
 
 func (c Server) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
-	data, err := c.levelService.GetLeaderboard(ctx)
+	
+	// Get timeFilter query parameter (default to "all")
+	timeFilter := r.URL.Query().Get("timeFilter")
+	if timeFilter == "" {
+		timeFilter = "all"
+	}
+	
+	data, err := c.levelService.GetLeaderboard(ctx, timeFilter)
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, err, err.Error())
 		return
