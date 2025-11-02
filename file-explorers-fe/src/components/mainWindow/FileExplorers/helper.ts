@@ -7,4 +7,5 @@ export enum EContextMenuAction {
     Paste = "paste",
     Rename = "rename",
     Properties = "properties",
+    Delete = "delete",
 }
