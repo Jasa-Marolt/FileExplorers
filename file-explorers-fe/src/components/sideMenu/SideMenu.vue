@@ -13,7 +13,7 @@
         <div class="menu-group">
             <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
                 :label="level.name ?? `Level ${idx + 1}`"
-                :icon="currentLevel?.id === (level.level_id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'"
+                :icon="currentLevel?.level_id === (level.level_id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'"
                 @click="openLevel(level.level_id ?? idx + 1)" />
         </div>
     </div>
