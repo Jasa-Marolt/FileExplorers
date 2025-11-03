@@ -3,11 +3,12 @@
     <div class="hero-section">
       <h1 class="title">File Explorers</h1>
       <p class="tagline">Level Up Your Tech Skills with Epic File System Challenges</p>
-      
+
       <div class="description">
         <p>
-          Think you know your way around computers? <strong>Think again.</strong> Dive into <strong>File Explorers</strong> 
-          and master the hidden skills that separate casual users from tech pros. Compete with friends, 
+          Think you know your way around computers? <strong>Think again.</strong> Dive into <strong>File
+            Explorers</strong>
+          and master the hidden skills that separate casual users from tech pros. Compete with friends,
           unlock achievements, and become the ultimate file system master!
         </p>
       </div>
@@ -17,10 +18,7 @@
           <i class="pi pi-play"></i>
           Start Playing Now
         </button>
-        <button v-if="!isAuthenticated" @click="goToProfile" class="btn btn-secondary">
-          <i class="pi pi-user-plus"></i>
-          Sign Up and Track Your Score
-        </button>
+
       </div>
     </div>
 
@@ -101,12 +99,11 @@
     </div>
 
     <div class="cta-section">
-      <h2>Ready to Dominate?</h2>
-      <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
-      <button @click="startPlaying" class="btn btn-primary btn-large">
-        <i class="pi pi-play"></i>
-        Let's Go!
-      </button>
+      < <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
+        <button @click="startPlaying" class="btn btn-primary btn-large">
+          <i class="pi pi-play"></i>
+          Let's Go!
+        </button>
     </div>
   </div>
 </template>
@@ -115,14 +112,29 @@
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import { Level } from '@/store/levelStore';
 
 const store = useStore();
 const router = useRouter();
 
 const isAuthenticated = computed(() => store.getters['userStoreModule/isAuthenticated']);
 
-const startPlaying = () => {
-  router.push({ name: 'game' });
+const startPlaying = async () => {
+  if (isAuthenticated.value) {
+    let level: Level = store.getters["levelStoreModule/currentLevel"];
+    if (level == null || level == undefined) {
+      level = (await store.dispatch("levelStoreModule/fetchLevel", 1));
+      console.log("opening new level")
+
+      router.push({ name: 'game' });
+      store.dispatch("fileStoreModule/setFilesystem", level.data);
+    }
+    router.push({ name: 'game', });
+    store.dispatch("fileStoreModule/setFilesystem", level.data);
+
+  } else {
+    router.push({ name: 'profile' });
+  }
 };
 
 const goToProfile = () => {
@@ -167,7 +179,7 @@ const goToProfile = () => {
   line-height: 1.8;
   margin-bottom: 40px;
   color: var(--text);
-  
+
   p {
     margin: 0;
   }

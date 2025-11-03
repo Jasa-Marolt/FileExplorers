@@ -1,22 +1,14 @@
 <template>
   <div class="top_bar">
-    <i 
-      class="pi pi-arrow-left" 
-      :class="{ 'disabled-arrow': !historyBackPossible }" 
-      @click="historyGoBack"
-    ></i>
+    <i class="pi pi-arrow-left" :class="{ 'disabled-arrow': !historyBackPossible }" @click="historyGoBack"></i>
 
-    <i 
-      class="pi pi-arrow-right" 
-      :class="{ 'disabled-arrow': !historyForwardPossible }" 
-      @click="historyGoForward"
-    ></i>
-    <i class="pi pi-sync" :class="{ 'disabled-arrow': isNotGame}"@click="resetLevel" ></i>
+    <i class="pi pi-arrow-right" :class="{ 'disabled-arrow': !historyForwardPossible }" @click="historyGoForward"></i>
+    <i class="pi pi-sync" :class="{ 'disabled-arrow': isNotGame }" @click="resetLevel"></i>
 
     <IconField class="flex">
       <InputIcon class="pi pi-home" />
       <InputText class="locationBar" v-model="pathValue" fluid disabled />
-    </IconField> 
+    </IconField>
 
     <IconField>
       <InputText class="searchField" v-model="search" placeholder="Search" />
@@ -37,35 +29,27 @@ import 'primeicons/primeicons.css'
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useStore } from 'vuex'; 
+import { useStore } from 'vuex';
 import { type State } from '@/store';
 import { buildPathToRoot } from '@/composables/fileOrDirectory';
 import { FileOrDirectory } from '@/files';
 
 const route = useRoute();
-// const search = ref<string>("");
 
-const isNotGame = computed(()=>{
+
+const isNotGame = computed(() => {
   const routeName = route.name as string;
-  return routeName != "game"; 
-
-
+  return routeName != "game";
 })
 
-const resetLevel =async () =>{
-  
-    
-    const level = store.getters["levelStoreModule/currentLevel"];
-    store.dispatch("fileStoreModule/setFilesystem", level);
-
-
-
-
+const resetLevel = async () => {
+  const level = store.getters["levelStoreModule/currentLevel"];
+  store.dispatch("fileStoreModule/setFilesystem", level.data);
 }
 const pathValue = computed(() => {
   const routeName = route.name as string;
-  
-  switch(routeName) {
+
+  switch (routeName) {
     case 'landing':
       return 'Home';
     case 'profile':
@@ -85,39 +69,39 @@ const pathValue = computed(() => {
 
 
 
-const store = useStore<State>(); 
-const filesystem = computed(()=>store.getters["fileStoreModule/getFilesystem"])
+const store = useStore<State>();
+const filesystem = computed(() => store.getters["fileStoreModule/getFilesystem"])
 
-const activeId = computed(()=>store.getters["fileStoreModule/getCurrentFile"])
-const breadcrumbs =  computed(()=>store.getters["fileStoreModule/getPathToRoot"])
+const activeId = computed(() => store.getters["fileStoreModule/getCurrentFile"])
+const breadcrumbs = computed(() => store.getters["fileStoreModule/getPathToRoot"])
 
-const historyForwardPossible = computed(()=>store.getters["fileStoreModule/canHistoryNavigateForward"])
-const historyBackPossible = computed(()=>store.getters["fileStoreModule/canHistoryNavigateBack"])
+const historyForwardPossible = computed(() => (store.getters["fileStoreModule/canHistoryNavigateForward"] && !isNotGame.value))
+const historyBackPossible = computed(() => (store.getters["fileStoreModule/canHistoryNavigateBack"] && !isNotGame.value))
 
-const breadcrumbsPath = computed(()=>{
+const breadcrumbsPath = computed(() => {
   if (!breadcrumbs.value || !Array.isArray(breadcrumbs.value)) {
     return "" // Return an empty string if there are no breadcrumbs
   }
-  const prefix = "C: "
-  //get current level name and add to prefix
-  // Map the array to extract the 'name' property and join them with '/'
+  const level = store.getters["levelStoreModule/currentLevel"];
+  const prefix = "C: " + level.name + " / "
+
   return prefix + breadcrumbs.value.reverse()
     .map((file: FileOrDirectory) => file.name)
     .join(" / ")
 })
 
-function historyGoBack(){
+function historyGoBack() {
   store.dispatch("fileStoreModule/navigateHistoryBack");
 }
-function historyGoForward(){
-  store.dispatch("fileStoreModule/navigateHistoryForward"); 
+function historyGoForward() {
+  store.dispatch("fileStoreModule/navigateHistoryForward");
 }
 
 const search = computed<string>({
   get: () => store.getters['fileStoreModule/getSearchQuery'],
   set: (val) => {
     store.dispatch('fileStoreModule/setSearchQuery', val)
-    
+
     console.log("called set")
   }
 });
@@ -147,9 +131,10 @@ const search = computed<string>({
 .flex {
   flex: 1;
 }
+
 .disabled-arrow {
-  color: #ccc; 
-  cursor: default; 
-  opacity: 0.6; 
+  color: #ccc;
+  cursor: default;
+  opacity: 0.6;
 }
 </style>

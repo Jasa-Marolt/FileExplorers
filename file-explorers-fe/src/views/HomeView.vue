@@ -20,17 +20,16 @@ import { type State } from '@/store' // Assuming you have a typed store setup
 import { loadSettings } from '@/composables/useSettings'
 
 const props = defineProps<{
-    id?: string
+  id?: string
 }>()
 
 const route = useRoute()
 const tipsEnabled = ref(false)
 
-// Only show tips on game/file explorer pages, not on landing, profile, leaderboard, or settings
+// Only show tips on the 'game' route
 const showTips = computed(() => {
   const routeName = route.name as string
-  const isGamePage = routeName === 'game' || routeName === 'home'
-  return isGamePage && tipsEnabled.value
+  return routeName === 'game'
 })
 
 const loadTipsSetting = () => {
@@ -69,45 +68,45 @@ watch(
 
 <style scoped lang="scss">
 .grid-layout {
-    display: grid;
-    grid-template-columns: auto 2.5fr 0.75fr;
-    /* 3 columns: left, middle, right */
-    grid-template-rows: auto 1fr;
-    /* 2 rows: top bar + main content */
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 2.5fr 0.75fr;
+  /* 3 columns: left, middle, right */
+  grid-template-rows: auto 1fr;
+  /* 2 rows: top bar + main content */
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 
-    &.no-tips {
-        grid-template-columns: auto 1fr;
-        /* 2 columns when tips are hidden */
-    }
+  &.no-tips {
+    grid-template-columns: auto 1fr;
+    /* 2 columns when tips are hidden */
+  }
 }
 
 /* Place components in specific grid areas */
 .bar {
-    grid-column: 1 / 4;
-    /* spans all 3 columns */
-    grid-row: 1;
+  grid-column: 1 / 4;
+  /* spans all 3 columns */
+  grid-row: 1;
 
-    .no-tips & {
-        grid-column: 1 / 3;
-        /* spans 2 columns when tips are hidden */
-    }
+  .no-tips & {
+    grid-column: 1 / 3;
+    /* spans 2 columns when tips are hidden */
+  }
 }
 
 .side-menu {
-    grid-column: 1;
-    grid-row: 2;
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .main-window {
-    grid-column: 2;
-    grid-row: 2;
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .tips {
-    grid-column: 3;
-    grid-row: 2;
+  grid-column: 3;
+  grid-row: 2;
 }
 </style>
