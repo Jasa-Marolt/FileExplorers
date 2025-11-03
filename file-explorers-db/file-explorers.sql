@@ -20,10 +20,14 @@ VALUES (
 
 CREATE TABLE IF NOT EXISTS levels (
     level_Id INT AUTO_INCREMENT PRIMARY KEY,
-    level_data JSON NOT NULL
+    level_data JSON NOT NULL,
+    name VARCHAR(100) DEFAULT "",
+    description TEXT,
+    difficulty INT DEFAULT 1,
+    instructions TEXT
 );
 
-INSERT INTO levels (level_data) VALUES 
+INSERT INTO levels (level_data, name, description, difficulty, instructions) VALUES 
     ('[
         {
             "id": 0,
@@ -49,7 +53,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": false,
             "parentDirectoryId": 2
         }
-    ]'),
+    ]', 'Level 1', 'A simple level with nested folders.', 1, 'Find the message.txt file inside Folder2.'),
     ('[
         {
             "id": 0,
@@ -81,7 +85,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": true,
             "parentDirectoryId": null
         }
-    ]'),
+    ]', 'Level 2', 'Multiple files with the same name.', 2, 'Identify the correct Civilian file.'),
     ('[
         {
             "id": 0,
@@ -113,7 +117,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": false,
             "parentDirectoryId": null
         }
-    ]'),
+    ]', 'Level 3', 'Distinguishing between similar files.', 2, 'Find the Zombie file among Civilians.'),
     ('[
         {
             "id": 0,
@@ -151,7 +155,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": false,
             "parentDirectoryId": 4
         }
-    ]'),
+    ]', 'Level 4', 'Deeply nested folders.', 3, 'Locate the end.txt file at the deepest level.'),
     ('[
         {
             "id": 0,
@@ -183,7 +187,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": false,
             "parentDirectoryId": null
         }
-    ]'),
+    ]', 'Level 5', 'All files look the same.', 1, 'Find the unique Civilian file.'),
     ('[
         {
             "id": 0,
@@ -330,7 +334,7 @@ INSERT INTO levels (level_data) VALUES
             "isDirectory": false,
             "parentDirectoryId": 22
         }
-    ]');
+    ]', 'Level 6', 'Extremely deep nesting.', 4, 'Find the Civilian file at the deepest level.');
 
 CREATE TABLE IF NOT EXISTS user_levels (
     id INT AUTO_INCREMENT PRIMARY KEY,
