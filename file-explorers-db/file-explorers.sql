@@ -20,7 +20,11 @@ VALUES (
 
 CREATE TABLE IF NOT EXISTS levels (
     level_Id INT AUTO_INCREMENT PRIMARY KEY,
-    level_data JSON NOT NULL
+    level_data JSON NOT NULL,
+    name VARCHAR(100) DEFAULT "",
+    description TEXT,
+    difficulty INT DEFAULT 1,
+    instructions TEXT
 );
 
 INSERT INTO levels (level_data) VALUES 

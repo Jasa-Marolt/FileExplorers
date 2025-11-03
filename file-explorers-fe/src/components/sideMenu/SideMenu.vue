@@ -11,10 +11,10 @@
         <Divider />
 
         <div class="menu-group">
-            <Button v-for="(level, idx) in levels" :key="level.id ?? idx" type="button"
-                :label="level.name ?? `Level ${idx + 1}`" 
-                :icon="currentLevel?.id === (level.id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'" 
-                @click="openLevel(level.id ?? idx + 1)" />
+            <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
+                :label="level.name ?? `Level ${idx + 1}`"
+                :icon="currentLevel?.id === (level.level_id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'"
+                @click="openLevel(level.level_id ?? idx + 1)" />
         </div>
     </div>
 </template>
@@ -27,7 +27,7 @@ import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { FileOrDirectory } from '@/files';
-import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
+// import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
 import { Level } from '@/store/levelStore';
 
 const store = useStore();
@@ -97,6 +97,8 @@ onBeforeMount(() => {
     height: 100%;
     padding: 0.5rem;
     gap: 0.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .menu-group {

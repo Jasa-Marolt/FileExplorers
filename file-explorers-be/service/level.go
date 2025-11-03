@@ -2,16 +2,15 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"file-explorers-be/models"
 	"file-explorers-be/repository"
 )
 
 type LevelService interface {
 	GetLevels(ctx context.Context) (levels []models.LevelStatus, err error)
-	GetLevelData(level int) (data interface{}, err error)
+	GetLevelData(ctx context.Context, level int) (data models.LevelData, err error)
 	SolvedLevel(ctx context.Context, level int) (levels []models.LevelStatus, err error)
-	GetLeaderboard(ctx context.Context) (leaderboard []models.LeaderboardEntry, err error)
+	GetLeaderboard(ctx context.Context, timeFilter string) (leaderboard []models.LeaderboardEntry, err error)
 }
 
 type levelService struct {
@@ -34,15 +33,13 @@ func (s *levelService) GetLevels(ctx context.Context) (levels []models.LevelStat
 	return s.repo.GetLevelsWithSolved(jwt.UserID)
 }
 
-func (s *levelService) GetLevelData(level int) (data interface{}, err error) {
-	dataJson, err := s.repo.GetLevelData(level)
+func (s *levelService) GetLevelData(ctx context.Context, level int) (data models.LevelData, err error) {
+	_, err = s.jwtService.DecodeTokenFromCtx(ctx)
 	if err != nil {
 		return
 	}
+	return s.repo.GetLevelData(level)
 
-	err = json.Unmarshal(dataJson, &data)
-	
-	return
 }
 
 func (s *levelService) StartedLevel(ctx context.Context, level int) (levels []models.LevelStatus, err error) {
@@ -71,6 +68,6 @@ func (s *levelService) SolvedLevel(ctx context.Context, level int) (levels []mod
 	return s.GetLevels(ctx)
 }
 
-func (s *levelService) GetLeaderboard(ctx context.Context) (leaderboard []models.LeaderboardEntry, err error) {
-	return s.repo.GetLeaderboard()
+func (s *levelService) GetLeaderboard(ctx context.Context, timeFilter string) (leaderboard []models.LeaderboardEntry, err error) {
+	return s.repo.GetLeaderboard(timeFilter)
 }

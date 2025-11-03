@@ -7,6 +7,10 @@ import store from "./store";
 import PrimeVue from "primevue/config";
 import Aura from "@primevue/themes/aura";
 
+// Initialize settings before mounting the app
+import { initializeSettings } from "./composables/useSettings";
+initializeSettings();
+
 const app = createApp(App).use(store).use(router);
 app.use(PrimeVue, {
     theme: {

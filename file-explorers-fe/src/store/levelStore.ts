@@ -8,7 +8,7 @@ import { FileOrDirectory } from "@/files";
 //     solved?: boolean;
 // }
 export interface Level {
-    id: number,
+    level_id: number,
     name: string,
     startingFileSystem: FileOrDirectory[], // Support both naming conventions
     levelSolution: solutionFileInterface[],
@@ -66,9 +66,9 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             state.currentLevel = null;
         },
         MARK_LEVEL_SOLVED(state, levelId) {
-            const level = state.levels.find((l) => l.id === levelId);
+            const level = state.levels.find((l) => l.level_id === levelId);
             if (level) level.solved = true;
-            if (state.currentLevel?.id === levelId)
+            if (state.currentLevel?.level_id === levelId)
                 state.currentLevel.solved = true;
         },
     } as LevelMutations,
@@ -88,26 +88,45 @@ export const levelStoreModule: Module<LevelState, RootState> = {
                     }
                 );
 
-                if (!res.ok) throw new Error("Failed to fetch levels");
+                if (!res.ok) {
+                    console.error("Failed to fetch levels, status:", res);
+                    throw new Error("Failed to fetch levels");
+                }
 
                 const result = await res.json();
-                console.log("Fetched level:", result);
+                console.log("Fetched levels:", result);
                 commit("SET_LEVELS", result.data);
             } catch (error) {
                 console.error("Error fetching levels:", error);
             }
         },
 
-        async fetchLevel({ commit }, levelId: number) {
-            const res = await fetch(
-                `${
-                    process.env.VUE_APP_API_URL || "http://localhost:8080"
-                }/level/${levelId}`
-            );
-            const result = await res.json();
-            console.log("GOT RESULT ", result.data)
-            commit("SET_CURRENT_LEVEL", result.data);
-            return result.data;
+        async fetchLevel({ commit, rootGetters }, levelId: number) {
+            try {
+                const token = rootGetters["userStoreModule/getToken"];
+                const res = await fetch(
+                    `${
+                        process.env.VUE_APP_API_URL || "http://localhost:8080"
+                    }/level/${levelId}`,
+                    {
+                        headers: token
+                            ? { Authorization: `Bearer ${token}` }
+                            : {},
+                    }
+                );
+
+                if (!res.ok) {
+                    console.error("Failed to fetch level, status:", res);
+                    throw new Error("Failed to fetch level");
+                }
+
+                const result = await res.json();
+                console.log("Fetched level:", result.data);
+                commit("SET_CURRENT_LEVEL", result.data);
+                return result.data;
+            } catch (error) {
+                console.error("Error fetching level:", error);
+            }
         },
 
         async solveLevel({ commit, rootGetters }, levelId: number) {

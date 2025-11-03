@@ -111,6 +111,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
+import { loadSettings, saveSettings as saveSetting, defaultSettings, folderColorMap } from '@/composables/useSettings';
 
 // Settings state
 const selectedFolderColor = ref('default');
@@ -135,10 +136,8 @@ const folderColors = [
 
 const selectFolderColor = (color: string) => {
   selectedFolderColor.value = color;
-  const selectedColor = folderColors.find(c => c.value === color);
-  if (selectedColor) {
-    document.documentElement.style.setProperty('--primary', selectedColor.hex);
-  }
+  const colorHex = folderColorMap[color] || folderColorMap.default;
+  document.documentElement.style.setProperty('--primary', colorHex);
 };
 
 const saveSettings = () => {
@@ -150,10 +149,7 @@ const saveSettings = () => {
     showTips: showTips.value,
   };
 
-  localStorage.setItem('fileExplorersSettings', JSON.stringify(settings));
-  
-  // Dispatch custom event to notify other components
-  window.dispatchEvent(new Event('settingsUpdated'));
+  saveSetting(settings);
   
   saveMessage.value = 'Settings saved successfully!';
   saveSuccess.value = true;
@@ -164,17 +160,16 @@ const saveSettings = () => {
 };
 
 const resetSettings = () => {
-  selectedFolderColor.value = 'default';
-  iconSize.value = 'medium';
-  soundEnabled.value = true;
-  animationsEnabled.value = true;
-  showTips.value = true;
+  selectedFolderColor.value = defaultSettings.folderColor;
+  iconSize.value = defaultSettings.iconSize;
+  soundEnabled.value = defaultSettings.soundEnabled;
+  animationsEnabled.value = defaultSettings.animationsEnabled;
+  showTips.value = defaultSettings.showTips;
 
   localStorage.removeItem('fileExplorersSettings');
-  document.documentElement.style.setProperty('--primary', '#294e26');
-
-  // Dispatch custom event to notify other components
-  window.dispatchEvent(new Event('settingsUpdated'));
+  
+  // Apply default settings
+  saveSetting(defaultSettings);
 
   saveMessage.value = 'Settings reset to default';
   saveSuccess.value = true;
@@ -184,27 +179,20 @@ const resetSettings = () => {
   }, 3000);
 };
 
-const loadSettings = () => {
-  const saved = localStorage.getItem('fileExplorersSettings');
-  if (saved) {
-    try {
-      const settings = JSON.parse(saved);
-      selectedFolderColor.value = settings.folderColor || 'default';
-      iconSize.value = settings.iconSize || 'medium';
-      soundEnabled.value = settings.soundEnabled !== undefined ? settings.soundEnabled : true;
-      animationsEnabled.value = settings.animationsEnabled !== undefined ? settings.animationsEnabled : true;
-      showTips.value = settings.showTips !== undefined ? settings.showTips : false;
+const loadSettingsFromStorage = () => {
+  const settings = loadSettings();
+  selectedFolderColor.value = settings.folderColor;
+  iconSize.value = settings.iconSize;
+  soundEnabled.value = settings.soundEnabled;
+  animationsEnabled.value = settings.animationsEnabled;
+  showTips.value = settings.showTips;
 
-      // Apply folder color
-      selectFolderColor(selectedFolderColor.value);
-    } catch (error) {
-      console.error('Failed to load settings:', error);
-    }
-  }
+  // Apply folder color to ensure it's visible
+  selectFolderColor(selectedFolderColor.value);
 };
 
 onMounted(() => {
-  loadSettings();
+  loadSettingsFromStorage();
 });
 </script>
 
