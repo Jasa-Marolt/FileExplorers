@@ -11,10 +11,10 @@
         <Divider />
 
         <div class="menu-group">
-            <Button v-for="(level, idx) in levels" :key="level.id ?? idx" type="button"
-                :label="level.name ?? `Level ${idx + 1}`" 
-                :icon="currentLevel?.id === (level.id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'" 
-                @click="openLevel(level.id ?? idx + 1)" />
+            <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
+                :label="level.name ?? `Level ${idx + 1}`"
+                :icon="currentLevel?.id === (level.level_id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'"
+                @click="openLevel(level.level_id ?? idx + 1)" />
         </div>
     </div>
 </template>
@@ -68,7 +68,7 @@ watch(
 
 async function openLevel(num: number) {
     let newLevel = [] as FileOrDirectory[];
-    newLevel = await store.dispatch("levelStoreModule/fetchLevel", num);
+    newLevel = (await store.dispatch("levelStoreModule/fetchLevel", num)).data;
     console.log("opening new level")
 
     router.push({ name: 'game' });
