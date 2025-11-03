@@ -43,7 +43,7 @@ export const Level1Filesystem = {
         }
 
     ],
-    startingFilesystem: [
+    startingFileSystem: [
         {
             id: 0,
             name: "guide.txt",

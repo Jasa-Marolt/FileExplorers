@@ -10,12 +10,12 @@ import { FileOrDirectory } from "@/files";
 export interface Level {
     id: number,
     name: string,
-    startingFilesystem: FileOrDirectory[],
+    startingFileSystem: FileOrDirectory[], // Support both naming conventions
     levelSolution: solutionFileInterface[],
     difficulty: string,
     description: string,
     instructions: string,
-    solved:boolean;
+    solved?:boolean;
 }
 export interface solutionFileInterface {
     id?: number,
@@ -105,7 +105,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
                 }/level/${levelId}`
             );
             const result = await res.json();
-
+            console.log("GOT RESULT ", result.data)
             commit("SET_CURRENT_LEVEL", result.data);
             return result.data;
         },

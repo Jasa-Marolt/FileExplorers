@@ -67,12 +67,14 @@ watch(
 );
 
 async function openLevel(num: number) {
-    let newLevel = [] as FileOrDirectory[];
-    newLevel = await store.dispatch("levelStoreModule/fetchLevel", num);
-    console.log("opening new level")
+    const levelData = await store.dispatch("levelStoreModule/fetchLevel", num);
+    console.log("opening new level", levelData.startingFileSystem);
 
+    // Extract the startingFilesystem from the level data
+    const filesystem = levelData.startingFileSystem;
+    
     router.push({ name: 'game' });
-    store.dispatch("fileStoreModule/setFilesystem", newLevel);
+    store.dispatch("fileStoreModule/setFilesystem", filesystem);
 }
 
 
