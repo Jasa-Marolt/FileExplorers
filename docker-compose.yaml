@@ -22,7 +22,7 @@ services:
       retries: 20
     networks:
       fileExplorers:
-        ipv4_address: 172.21.0.10
+        ipv4_address: 172.30.0.10
 
   fe-backend:
     container_name: fe-backend
@@ -34,11 +34,11 @@ services:
         condition: service_healthy
     networks:
       fileExplorers:
-        ipv4_address: 172.21.0.11
+        ipv4_address: 172.30.0.11
 
 networks:
   fileExplorers:
     external: true
     ipam:
       config:
-        - subnet: 172.21.0.0/16
+        - subnet: 172.30.0.0/16
