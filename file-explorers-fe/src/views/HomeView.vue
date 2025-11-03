@@ -3,7 +3,7 @@
         <Bar class="bar" />
         <SideMenu class="side-menu" />
         <MainWindow class="main-window" :fileId=props.id />
-        <TIps v-if="showTips" class="tips" />
+        <Tips v-if="showTips" class="tips" />
     </div>
 </template>
 
@@ -13,7 +13,7 @@ import { useRoute } from 'vue-router'
 import Bar from '@/components/topBar/Bar.vue'
 import MainWindow from '@/components/mainWindow/MainWindow.vue'
 import SideMenu from '@/components/sideMenu/SideMenu.vue'
-import TIps from '@/components/tipsWindow/TIps.vue'
+import Tips from '@/components/tipsWindow/Tips.vue'
 import { watch } from 'vue'
 import { useStore } from 'vuex' // Import Vuex
 import { type State } from '@/store' // Assuming you have a typed store setup
