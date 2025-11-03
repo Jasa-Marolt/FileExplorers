@@ -1,143 +1,173 @@
 <template>
-  <div class="main-container" @contextmenu.prevent="onContextMenu">
-    <div>
-      <!-- <div class="breadcrumb">
-        <router-link :to="{ name: 'home' }"> Home </router-link>
-        <span v-if="currentDirectory.pathToRoot.length > 0"> / </span>
-        <template v-for="(file, index) in currentDirectory.pathToRoot" :key="file.id">
-          <router-link :to="{ name: 'home', params: { id: file.id } }" class="link">
-            {{ file.name }}
-          </router-link>
-          <span v-if="index !== currentDirectory.pathToRoot.length - 1"> / </span>
-        </template>
-</div> -->
-      <!-- <div style="color: white">
-        {{ currentDirectoryId }}
-        {{ searchQuery }}
-        {{ JSON.stringify(files) }}
-      </div> -->
-      <div v-if="filteredFiles.length === 0" class="no-files outline-container">
-        No files in this directory
-      </div>
-      <div v-else class="grid-container outline-container">
-        <!-- @dragover.prevent is needed to register the @drop event -->
-        <file-item v-for="file in filteredFiles" :key="file.id" :is-directory="file.isDirectory" :name="file.name"
-          draggable="true" @dragover.prevent @dragstart="handleDragStart($event, file)"
-          @drop="file.isDirectory ? handleDrop($event, file) : undefined" @click="handleFileClick(file)" />
-      </div>
+  <div class="main-container" @contextmenu.prevent="onContextMenu" @click="handleBackgroundClick">
+
+    <div v-if="filteredFiles.length === 0" class="no-files outline-container">
+      No files in this directory
     </div>
+    <div v-else class="grid-container outline-container">
+      <file-item class="file-item" v-for="file in filteredFiles" :key="file.id" :is-directory="file.isDirectory"
+        :name="file.name"
+        :class="{ 'selected': (store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[]).some((f: FileOrDirectory) => f.id === file.id) }"
+        draggable="true" @dragover.prevent @dragstart="handleDragStart($event, file)"
+        @drop="file.isDirectory ? handleDrop($event, file) : undefined"
+        @click="(event: MouseEvent) => handleFileClick(file, event)" @dblclick="() => handleFileDoubleClick(file)"
+        @contextmenu.prevent.stop="(event: MouseEvent) => onFileContextMenu(event, file)" />
+    </div>
+
     <GameContextMenu v-if="menu.visible" :x="menu.x" :y="menu.y" :items="menu.items" @select="onMenuSelect"
       @close="closeMenu" />
+
+    <NameInputDialog :visible="dialog.visible" :title="dialog.title" :placeholder="dialog.placeholder"
+      :default-value="dialog.defaultValue" @confirm="onDialogConfirm" @cancel="onDialogCancel" />
   </div>
 </template>
 
 <script setup lang="ts">
 import FileItem from '@/components/file-item.vue'
-// Removed 'generateFiles' import as store handles file generation
 import { type FileOrDirectory } from '@/files'
-import { computed, ref, onMounted } from 'vue' // Added onMounted
+import { computed, ref, onMounted } from 'vue'
 import { useFileOrDirectoryStructure } from '@/composables/fileOrDirectory'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex' // Import Vuex
-import { type State } from '@/store' // Assuming you have a typed store setup
+import { useStore } from 'vuex'
+import { type State } from '@/store'
 import GameContextMenu from './GameContextMenu.vue';
+import NameInputDialog from './FileExplorers/NameInputDialog.vue';
 import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
-// --- STORE SETUP ---
-const store = useStore<State>() // Initialize the store
-
-// 1. Get files from the store using a getter
+const store = useStore<State>()
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
 const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
 const currentDirectoryId = computed(() => store.getters["fileStoreModule/getCurrentFile"])
-// 2. Dispatch an action to generate initial files when the component mounts
-// (or you could do this in the main app setup)
 onMounted(() => {
-  // Check if the filesystem is empty before generating
   if (files.value.length === 0) {
     store.dispatch('fileStoreModule/generateRandomFilesystem', { count: 100 })
   }
 })
-// --- END STORE SETUP ---
-
-
-
-
-
-
-
 const filteredFiles = computed(() => {
   const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
-    //console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
-
     return file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value)
-  }
-  );
-
-  console.log("currentDirectoryFiles", currentDirectoryFiles, "files", files)
-  console.log("recalculating filtered files");
+  });
   if (!searchQuery.value) {
-    console.log("no search querry")
     return currentDirectoryFiles
   }
-
   const lowerSearch = searchQuery.value.toLowerCase()
   return currentDirectoryFiles.filter((file: FileOrDirectory) =>
     file.name.toLowerCase().includes(lowerSearch)
   )
 })
-
 const router = useRouter()
-function handleFileClick(file: FileOrDirectory) {
-  if (!file.isDirectory) {
-    console.error('File opening is not implemented yet')
-    return
+function handleFileClick(file: FileOrDirectory, event: MouseEvent) {
+  const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
+  if (event.ctrlKey || event.metaKey) {
+    const index = selectedFiles.findIndex((f: FileOrDirectory) => f.id === file.id);
+    if (index === -1) {
+      selectedFiles.push(file);
+    } else {
+      selectedFiles.splice(index, 1);
+    }
+  } else if (event.shiftKey) {
+    const currentIndex = filteredFiles.value.findIndex((f: FileOrDirectory) => f.id === file.id);
+    const lastSelectedIndex = filteredFiles.value.findIndex((f: FileOrDirectory) => f.id === selectedFiles[selectedFiles.length - 1]?.id);
+    if (lastSelectedIndex !== -1) {
+      const [start, end] = [currentIndex, lastSelectedIndex].sort((a, b) => a - b);
+      store.dispatch('fileStoreModule/setSelectedFiles', filteredFiles.value.slice(start, end + 1));
+    } else {
+      store.dispatch('fileStoreModule/setSelectedFiles', [file]);
+    }
+  } else {
+    store.dispatch('fileStoreModule/setSelectedFiles', [file]);
   }
-
-  store.dispatch("fileStoreModule/setOpenFolder", file.id)
 }
-
+function handleBackgroundClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (target.closest('.file-item')) {
+    return;
+  }
+  store.dispatch('fileStoreModule/setSelectedFiles', []);
+}
+function handleFileDoubleClick(file: FileOrDirectory) {
+  if (file.isDirectory) {
+    store.dispatch("fileStoreModule/setOpenFolder", file.id);
+  } else {
+    console.error('File opening is not implemented yet');
+  }
+}
 function handleDragStart(event: DragEvent, file: unknown) {
-
   event.dataTransfer!.setData('moved-item', JSON.stringify(file))
 }
-
-
 function moveFile(draggedItemId: number, newFolderId: number) {
   store.dispatch('fileStoreModule/moveFile', {
     itemId: draggedItemId,
     newParentId: newFolderId
   })
-
 }
-
 function handleDrop(event: DragEvent, file: FileOrDirectory) {
   const draggedItemData = event.dataTransfer?.getData('moved-item')
   if (!draggedItemData) {
     return
   }
   const draggedItem = JSON.parse(draggedItemData) as FileOrDirectory
-
   const isDroppingToSameFolder = file.id === draggedItem.id
   if (isDroppingToSameFolder || !file.isDirectory) {
     return
   }
   moveFile(draggedItem.id, file.id)
 }
-
-
-
 const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string }[] }>({
   visible: false,
   x: 0,
   y: 0,
   items: [],
 })
-
+const dialog = ref<{
+  visible: boolean;
+  title: string;
+  placeholder: string;
+  defaultValue: string;
+  action: 'createFile' | 'createFolder' | 'rename' | null;
+}>({
+  visible: false,
+  title: '',
+  placeholder: '',
+  defaultValue: '',
+  action: null,
+})
+function showDialog(action: 'createFile' | 'createFolder' | 'rename', title: string, placeholder: string, defaultValue = '') {
+  dialog.value = {
+    visible: true,
+    title,
+    placeholder,
+    defaultValue,
+    action,
+  }
+}
+function onDialogConfirm(value: string) {
+  const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
+  switch (dialog.value.action) {
+    case 'createFile':
+      store.dispatch('fileStoreModule/createFile', { name: value });
+      break;
+    case 'createFolder':
+      store.dispatch('fileStoreModule/createFolder', { name: value });
+      break;
+    case 'rename':
+      if (selectedFiles.length === 1) {
+        store.dispatch('fileStoreModule/renameFile', { id: selectedFiles[0].id, newName: value });
+      }
+      break;
+  }
+  dialog.value.visible = false;
+}
+function onDialogCancel() {
+  dialog.value.visible = false;
+}
+function onFileContextMenu(e: MouseEvent, file: FileOrDirectory) {
+  const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
+  if (!selectedFiles.some((f: FileOrDirectory) => f.id === file.id)) {
+    store.dispatch('fileStoreModule/setSelectedFiles', [file]);
+  }
+  onContextMenu(e);
+}
 function onContextMenu(e: MouseEvent) {
-  // Only show the custom context menu when in the game route
-
-
-  // Populate items — adjust these to your game's actions
   menu.value.items = [
     { label: 'Open', action: EContextMenuAction.Open },
     { label: 'Create new folder', action: EContextMenuAction.NewFolder },
@@ -146,72 +176,55 @@ function onContextMenu(e: MouseEvent) {
     { label: 'Cut', action: EContextMenuAction.Cut },
     { label: 'Paste', action: EContextMenuAction.Paste },
     { label: 'Rename', action: EContextMenuAction.Rename },
-    // { label: 'Properties', action: EContextMenuAction.Properties },
     { label: 'Delete', action: EContextMenuAction.Delete },
   ]
-
-  // Position the menu at the click location; clamp to viewport if needed
   const x = e.clientX
   const y = e.clientY
-  // Optionally clamp so menu doesn't overflow viewport
   const vw = window.innerWidth
   const vh = window.innerHeight
-  const menuW = 200 // approx
+  const menuW = 200
   const menuH = menu.value.items.length * 36
-
   menu.value.x = x + (x + menuW > vw ? -menuW : 0)
   menu.value.y = y + (y + menuH > vh ? -menuH : 0)
   menu.value.visible = true
 }
-
 function closeMenu() {
   menu.value.visible = false
 }
-
 function onMenuSelect(action: string) {
+  const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
   function openItem() {
-    console.log('action=open');
-    // TODO: implement opening logic, e.g. navigate or load file content
+    if (selectedFiles.length === 1 && selectedFiles[0].isDirectory) {
+      store.dispatch('fileStoreModule/setOpenFolder', selectedFiles[0].id);
+    }
   }
-
   function createNewFolder() {
-    console.log('action=new_folder');
-    // TODO: show create-folder dialog / call API
+    showDialog('createFolder', 'Create New Folder', 'Folder name');
   }
-
   function createNewFile() {
-    console.log('action=new_file');
-    // TODO: show create-file dialog / call API
+    showDialog('createFile', 'Create New File', 'File name');
   }
-
   function copyItem() {
-    console.log('action=copy');
-    // TODO: copy selected item to clipboard/state
+    const selectedIds = selectedFiles.map(f => f.id);
+    store.dispatch('fileStoreModule/copyFiles', selectedIds);
   }
-
   function cutItem() {
-    console.log('action=cut');
-    // TODO: cut selected item to clipboard/state
+    const selectedIds = selectedFiles.map(f => f.id);
+    store.dispatch('fileStoreModule/copyFiles', selectedIds);
+    store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
-
   function pasteItem() {
-    console.log('action=paste');
-    // TODO: paste from clipboard/state into current folder
+    store.dispatch('fileStoreModule/pasteFiles');
   }
-
   function renameItem() {
-    console.log('action=rename');
-    // TODO: prompt for new name and apply rename
-  }
-  function properiesItem() {
-    console.log('action=rename');
-    // TODO: prompt for new name and apply rename
+    if (selectedFiles.length === 1) {
+      showDialog('rename', 'Rename', 'New name', selectedFiles[0].name);
+    }
   }
   function deleteItem() {
-    console.log('action delete');
-    // TODO: prompt for new name and apply rename
+    const selectedIds = selectedFiles.map(f => f.id);
+    store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
-
   const enumAction = action as unknown as EContextMenuAction;
   switch (enumAction) {
     case EContextMenuAction.Open:
@@ -234,9 +247,6 @@ function onMenuSelect(action: string) {
       break;
     case EContextMenuAction.Rename:
       renameItem();
-      break;
-    case EContextMenuAction.Properties:
-      properiesItem();
       break;
     case EContextMenuAction.Delete:
       deleteItem();
@@ -267,18 +277,21 @@ function onMenuSelect(action: string) {
   gap: 24px;
   justify-content: start;
   padding: 10px;
+  width: 100%;
+  height: 100%;
 }
 
 .outline-container {
-  width: 70vw;
-  border: 1px solid #ccc;
+  width: 100%;
   border-radius: 4px;
   padding: 24px;
+  height: 100%;
 }
 
 .no-files {
   font-size: 20px;
   text-align: center;
+  color: var(--text);
 }
 
 .breadcrumb {
@@ -318,5 +331,11 @@ function onMenuSelect(action: string) {
   background-color: rgba(255, 255, 255, 0.6);
   color: rgba(0, 0, 0, 0.7);
   border-radius: 4px;
+}
+
+.selected {
+  background-color: var(--element-background);
+  border: 2px solid var(--p-button-primary-border-color, #007bff);
+  border-radius: 1em;
 }
 </style>
