@@ -12,21 +12,23 @@ import { FileOrDirectory } from "@/files";
 // └───Folder1
 //     └───Folder2
 //             message.txt
-export interface LevelInterface {
-    id: number,
-    name: string,
-    startingFilesystem: FileOrDirectory[],
-    levelSolution: solutionFileInterface[],
-    difficulty: string,
-    description: string,
-    instructions: string
-}
-export interface solutionFileInterface {
-    id?: number,
-    name?: string,
-    parentDirectoryId?: number | undefined,
-    removed: boolean
-}
+// export interface Level {
+//     id: number,
+//     name: string,
+//     startingFilesystem: FileOrDirectory[],
+//     levelSolution: solutionFileInterface[],
+//     difficulty: string,
+//     description: string,
+//     instructions: string
+// }
+// export interface solutionFileInterface {
+//     id?: number,
+//     name?: string,
+//     parentDirectoryId?: number | undefined,
+//     removed: boolean
+// }
+
+import { Level, solutionFileInterface } from "./levelStore";
 
 export const Level1Filesystem = {
     id: 1,
@@ -67,7 +69,7 @@ export const Level1Filesystem = {
             parentDirectoryId: 2
         }
     ] as FileOrDirectory[]
-} as LevelInterface
+} as Level
 
 
 //LEVEL 2

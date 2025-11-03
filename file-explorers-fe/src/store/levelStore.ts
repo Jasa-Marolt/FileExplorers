@@ -1,10 +1,27 @@
 import { Module, MutationTree } from "vuex";
-
+// import { LevelInterface } from "./levels";
+import { FileOrDirectory } from "@/files";
+// export interface Level {
+//     id: number;
+//     name?: string;
+//     description?: string;
+//     solved?: boolean;
+// }
 export interface Level {
-    id: number;
-    name?: string;
-    description?: string;
-    solved?: boolean;
+    id: number,
+    name: string,
+    startingFilesystem: FileOrDirectory[],
+    levelSolution: solutionFileInterface[],
+    difficulty: string,
+    description: string,
+    instructions: string,
+    solved:boolean;
+}
+export interface solutionFileInterface {
+    id?: number,
+    name?: string,
+    parentDirectoryId?: number | undefined,
+    removed: boolean
 }
 
 export interface LevelState {
