@@ -258,7 +258,7 @@ onMounted(() => {
 
   &.active {
     background: var(--primary);
-    border-color: var(--primary);
+    border-color: var(--border-color);
   }
 }
 
@@ -333,12 +333,10 @@ onMounted(() => {
 
   &:hover {
     transform: translateX(5px);
-    border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
   &.is-current-user {
-    border-color: var(--primary);
     background: linear-gradient(90deg, var(--element-background), var(--primary));
   }
 }

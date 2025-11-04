@@ -3,6 +3,7 @@
         <div class="level-info">
             <h2>{{ currentLevel?.name || 'Level Name' }}</h2>
             <p>{{ currentLevel?.description || 'Level description will appear here.' }}</p>
+            <p>{{ currentLevel?.instructions || 'Level instruction will appear here.' }}</p>
         </div>
     </div>
 </template>

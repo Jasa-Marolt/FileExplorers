@@ -35,6 +35,7 @@ export const textColorMap: Record<string, string> = {
     warm: "#ffe4b5",
     cool: "#b0e0e6",
     neutral: "#e0e0e0",
+    neon_green: "#00ff00",
 };
 
 /**

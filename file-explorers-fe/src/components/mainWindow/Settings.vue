@@ -164,6 +164,7 @@ const textColors = [
   { name: 'Warm Beige', value: 'warm', hex: '#ffe4b5' },
   { name: 'Cool Blue', value: 'cool', hex: '#b0e0e6' },
   { name: 'Gray', value: 'neutral', hex: '#e0e0e0' },
+  { name: 'Neon Green', value: 'neon_green', hex: '#00ff00' },
 ];
 
 const selectFolderColor = (color: string) => {
