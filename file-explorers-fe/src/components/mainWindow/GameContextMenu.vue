@@ -2,6 +2,7 @@
     <div class="game-context-menu" :style="{ left: x + 'px', top: y + 'px' }" ref="menu" @click.stop>
         <ul>
             <li v-for="(item, idx) in items" :key="idx" @click="onSelect(item)">
+                <span v-if="item.icon" :class="['menu-icon', item.icon]"></span>
                 {{ item.label }}
             </li>
         </ul>
@@ -14,7 +15,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const props = defineProps<{
     x: number
     y: number
-    items: { label: string; action: string }[]
+    items: { label: string; action: string; icon?: string }[]
 }>()
 
 const emit = defineEmits<{
@@ -24,7 +25,7 @@ const emit = defineEmits<{
 
 const menu = ref<HTMLElement | null>(null)
 
-function onSelect(item: { label: string; action: string }) {
+function onSelect(item: { label: string; action: string; icon?: string }) {
     emit('select', item.action)
 }
 
@@ -70,7 +71,23 @@ onBeforeUnmount(() => {
     cursor: pointer;
     /* align text to left and make full-width clickable */
     text-align: left;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-context-menu .menu-icon {
+    flex-shrink: 0;
+    /* For PrimeIcons (pi-*) */
+    &.pi {
+        color: var(--text);
+        font-size: 14px;
+    }
+    /* For Papa icons (papa-*) */
+    &.papa {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 .game-context-menu li:hover {

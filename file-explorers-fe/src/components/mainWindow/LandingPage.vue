@@ -99,7 +99,8 @@
     </div>
 
     <div class="cta-section">
-      < <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
+      <h2>Ready to Dominate?</h2>
+      <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
         <button @click="startPlaying" class="btn btn-primary btn-large">
           <i class="pi pi-play"></i>
           Let's Go!

@@ -33,6 +33,8 @@ import { type State } from '@/store'
 import GameContextMenu from './GameContextMenu.vue';
 import NameInputDialog from './FileExplorers/NameInputDialog.vue';
 import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
+import { loadSettings } from '@/composables/useSettings';
+import { playSound, SoundEffect, preloadAllSounds } from '@/composables/useSounds';
 const store = useStore<State>()
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
 const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
@@ -41,6 +43,8 @@ onMounted(() => {
   if (files.value.length === 0) {
     store.dispatch('fileStoreModule/generateRandomFilesystem', { count: 100 })
   }
+  // Preload sound effects
+  preloadAllSounds();
 })
 const filteredFiles = computed(() => {
   if (searchQuery.value) {
@@ -59,6 +63,7 @@ const filteredFiles = computed(() => {
 })
 const router = useRouter()
 function handleFileClick(file: FileOrDirectory, event: MouseEvent) {
+  playSound(SoundEffect.LeftClick);
   const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
   if (event.ctrlKey || event.metaKey) {
     const index = selectedFiles.findIndex((f: FileOrDirectory) => f.id === file.id);
@@ -89,6 +94,7 @@ function handleBackgroundClick(event: MouseEvent) {
 }
 function handleFileDoubleClick(file: FileOrDirectory) {
   if (file.isDirectory) {
+    playSound(SoundEffect.OpenFolder);
     store.dispatch("fileStoreModule/setOpenFolder", file.id);
   } else {
     console.error('File opening is not implemented yet');
@@ -115,7 +121,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   }
   moveFile(draggedItem.id, file.id)
 }
-const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string }[] }>({
+const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string; icon?: string }[] }>({
   visible: false,
   x: 0,
   y: 0,
@@ -171,15 +177,19 @@ function onFileContextMenu(e: MouseEvent, file: FileOrDirectory) {
   onContextMenu(e);
 }
 function onContextMenu(e: MouseEvent) {
+  playSound(SoundEffect.RightClick);
+  const settings = loadSettings();
+  const useFancyIcons = settings.fancyIcons;
+  
   menu.value.items = [
-    { label: 'Open', action: EContextMenuAction.Open },
-    { label: 'Create new folder', action: EContextMenuAction.NewFolder },
-    { label: 'Create new file', action: EContextMenuAction.NewFile },
-    { label: 'Copy', action: EContextMenuAction.Copy },
-    { label: 'Cut', action: EContextMenuAction.Cut },
-    { label: 'Paste', action: EContextMenuAction.Paste },
-    { label: 'Rename', action: EContextMenuAction.Rename },
-    { label: 'Delete', action: EContextMenuAction.Delete },
+    { label: 'Open', action: EContextMenuAction.Open, icon: useFancyIcons ? 'papa papa-folder-open' : 'pi pi-folder-open' },
+    { label: 'Create new folder', action: EContextMenuAction.NewFolder, icon: useFancyIcons ? 'papa papa-new-folder' : 'pi pi-folder-plus' },
+    { label: 'Create new file', action: EContextMenuAction.NewFile, icon: useFancyIcons ? 'papa papa-new-file' : 'pi pi-file-plus' },
+    { label: 'Copy', action: EContextMenuAction.Copy, icon: useFancyIcons ? 'papa papa-copy' : 'pi pi-copy' },
+    { label: 'Cut', action: EContextMenuAction.Cut, icon: useFancyIcons ? 'papa papa-cut' : 'pi pi-times' },
+    { label: 'Paste', action: EContextMenuAction.Paste, icon: useFancyIcons ? 'papa papa-paste' : 'pi pi-clipboard' },
+    { label: 'Rename', action: EContextMenuAction.Rename, icon: useFancyIcons ? 'papa papa-rename' : 'pi pi-pencil' },
+    { label: 'Delete', action: EContextMenuAction.Delete, icon: useFancyIcons ? 'papa papa-delete' : 'pi pi-trash' },
   ]
   const x = e.clientX
   const y = e.clientY
@@ -198,33 +208,41 @@ function onMenuSelect(action: string) {
   const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
   function openItem() {
     if (selectedFiles.length === 1 && selectedFiles[0].isDirectory) {
+      playSound(SoundEffect.OpenFolder);
       store.dispatch('fileStoreModule/setOpenFolder', selectedFiles[0].id);
     }
   }
   function createNewFolder() {
+    playSound(SoundEffect.LeftClick);
     showDialog('createFolder', 'Create New Folder', 'Folder name');
   }
   function createNewFile() {
+    playSound(SoundEffect.LeftClick);
     showDialog('createFile', 'Create New File', 'File name');
   }
   function copyItem() {
+    playSound(SoundEffect.Copy);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/copyFiles', selectedIds);
   }
   function cutItem() {
+    playSound(SoundEffect.Cut);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/copyFiles', selectedIds);
     store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
   function pasteItem() {
+    playSound(SoundEffect.Paste);
     store.dispatch('fileStoreModule/pasteFiles');
   }
   function renameItem() {
     if (selectedFiles.length === 1) {
+      playSound(SoundEffect.LeftClick);
       showDialog('rename', 'Rename', 'New name', selectedFiles[0].name);
     }
   }
   function deleteItem() {
+    playSound(SoundEffect.Delete);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
@@ -275,8 +293,8 @@ function onMenuSelect(action: string) {
 
 .grid-container {
   display: grid;
-  grid-auto-rows: 100px;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-auto-rows: var(--grid-item-size, 110px);
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-item-size, 110px), 1fr));
   gap: 24px;
   justify-content: start;
   padding: 10px;
@@ -337,8 +355,10 @@ function onMenuSelect(action: string) {
 }
 
 .selected {
+  width: 110%;
+  height: 110%;
   background-color: var(--element-background);
-  border: 2px solid var(--p-button-primary-border-color, #007bff);
-  border-radius: 1em;
+  border: 2px solid var(--accent, #007bff);
+  border-radius: 0.5em;
 }
 </style>

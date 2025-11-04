@@ -46,7 +46,7 @@
                 @click="selectTextColor(color.value)"
                 :title="color.name"
               >
-                <i v-if="selectedTextColor === color.value" class="pi pi-check"></i>
+                <i v-if="selectedTextColor === color.value" class="pi pi-check" style="color:#333;"></i>
               </button>
             </div>
           </div>
@@ -63,6 +63,19 @@
               <option value="medium">Medium</option>
               <option value="large">Large</option>
             </select>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-info">
+            <h3>Fancy Icons</h3>
+            <p>Use colorful modern icons instead of simple ones</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="fancyIcons">
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
       </div>
@@ -129,6 +142,7 @@ const iconSize = ref('medium');
 const soundEnabled = ref(true);
 const animationsEnabled = ref(true);
 const showTips = ref(false);
+const fancyIcons = ref(false);
 const saveMessage = ref('');
 const saveSuccess = ref(false);
 
@@ -150,6 +164,7 @@ const textColors = [
   { name: 'Warm Beige', value: 'warm', hex: '#ffe4b5' },
   { name: 'Cool Blue', value: 'cool', hex: '#b0e0e6' },
   { name: 'Gray', value: 'neutral', hex: '#e0e0e0' },
+  { name: 'Neon Green', value: 'neon_green', hex: '#00ff00' },
 ];
 
 const selectFolderColor = (color: string) => {
@@ -170,6 +185,7 @@ const applyColors = () => {
     soundEnabled: soundEnabled.value,
     animationsEnabled: animationsEnabled.value,
     showTips: showTips.value,
+    fancyIcons: fancyIcons.value,
   };
   saveSetting(settings);
 };
@@ -192,6 +208,7 @@ const resetSettings = () => {
   soundEnabled.value = defaultSettings.soundEnabled;
   animationsEnabled.value = defaultSettings.animationsEnabled;
   showTips.value = defaultSettings.showTips;
+  fancyIcons.value = defaultSettings.fancyIcons;
 
   localStorage.removeItem('fileExplorersSettings');
   
@@ -213,6 +230,7 @@ const loadSettingsFromStorage = () => {
   iconSize.value = settings.iconSize;
   soundEnabled.value = settings.soundEnabled;
   animationsEnabled.value = settings.animationsEnabled;
+  fancyIcons.value = settings.fancyIcons;
   showTips.value = settings.showTips;
 
   // Apply colors immediately
