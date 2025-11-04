@@ -33,6 +33,7 @@ import { type State } from '@/store'
 import GameContextMenu from './GameContextMenu.vue';
 import NameInputDialog from './FileExplorers/NameInputDialog.vue';
 import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
+import { loadSettings } from '@/composables/useSettings';
 const store = useStore<State>()
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
 const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
@@ -112,7 +113,7 @@ function handleDrop(event: DragEvent, file: FileOrDirectory) {
   }
   moveFile(draggedItem.id, file.id)
 }
-const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string }[] }>({
+const menu = ref<{ visible: boolean; x: number; y: number; items: { label: string; action: string; icon?: string }[] }>({
   visible: false,
   x: 0,
   y: 0,
@@ -168,15 +169,18 @@ function onFileContextMenu(e: MouseEvent, file: FileOrDirectory) {
   onContextMenu(e);
 }
 function onContextMenu(e: MouseEvent) {
+  const settings = loadSettings();
+  const useFancyIcons = settings.fancyIcons;
+  
   menu.value.items = [
-    { label: 'Open', action: EContextMenuAction.Open },
-    { label: 'Create new folder', action: EContextMenuAction.NewFolder },
-    { label: 'Create new file', action: EContextMenuAction.NewFile },
-    { label: 'Copy', action: EContextMenuAction.Copy },
-    { label: 'Cut', action: EContextMenuAction.Cut },
-    { label: 'Paste', action: EContextMenuAction.Paste },
-    { label: 'Rename', action: EContextMenuAction.Rename },
-    { label: 'Delete', action: EContextMenuAction.Delete },
+    { label: 'Open', action: EContextMenuAction.Open, icon: useFancyIcons ? 'papa papa-folder-open' : 'pi pi-folder-open' },
+    { label: 'Create new folder', action: EContextMenuAction.NewFolder, icon: useFancyIcons ? 'papa papa-new-folder' : 'pi pi-folder-plus' },
+    { label: 'Create new file', action: EContextMenuAction.NewFile, icon: useFancyIcons ? 'papa papa-new-file' : 'pi pi-file-plus' },
+    { label: 'Copy', action: EContextMenuAction.Copy, icon: useFancyIcons ? 'papa papa-copy' : 'pi pi-copy' },
+    { label: 'Cut', action: EContextMenuAction.Cut, icon: useFancyIcons ? 'papa papa-cut' : 'pi pi-times' },
+    { label: 'Paste', action: EContextMenuAction.Paste, icon: useFancyIcons ? 'papa papa-paste' : 'pi pi-clipboard' },
+    { label: 'Rename', action: EContextMenuAction.Rename, icon: useFancyIcons ? 'papa papa-rename' : 'pi pi-pencil' },
+    { label: 'Delete', action: EContextMenuAction.Delete, icon: useFancyIcons ? 'papa papa-delete' : 'pi pi-trash' },
   ]
   const x = e.clientX
   const y = e.clientY
@@ -272,8 +276,8 @@ function onMenuSelect(action: string) {
 
 .grid-container {
   display: grid;
-  grid-auto-rows: 100px;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-auto-rows: var(--grid-item-size, 110px);
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-item-size, 110px), 1fr));
   gap: 24px;
   justify-content: start;
   padding: 10px;
