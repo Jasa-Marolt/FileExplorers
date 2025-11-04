@@ -9,7 +9,7 @@
       <!-- Appearance Settings -->
       <div class="settings-section">
         <h2>Appearance</h2>
-        
+
         <div class="setting-card">
           <div class="setting-info">
             <h3>Theme Color</h3>
@@ -17,14 +17,9 @@
           </div>
           <div class="setting-control">
             <div class="color-options">
-              <button
-                v-for="color in folderColors"
-                :key="color.value"
+              <button v-for="color in folderColors" :key="color.value"
                 :class="['color-btn', { active: selectedFolderColor === color.value }]"
-                :style="{ backgroundColor: color.hex }"
-                @click="selectFolderColor(color.value)"
-                :title="color.name"
-              >
+                :style="{ backgroundColor: color.hex }" @click="selectFolderColor(color.value)" :title="color.name">
                 <i v-if="selectedFolderColor === color.value" class="pi pi-check"></i>
               </button>
             </div>
@@ -38,52 +33,47 @@
           </div>
           <div class="setting-control">
             <div class="color-options">
-              <button
-                v-for="color in textColors"
-                :key="color.value"
+              <button v-for="color in textColors" :key="color.value"
                 :class="['color-btn', { active: selectedTextColor === color.value }]"
-                :style="{ backgroundColor: color.hex }"
-                @click="selectTextColor(color.value)"
-                :title="color.name"
-              >
+                :style="{ backgroundColor: color.hex }" @click="selectTextColor(color.value)" :title="color.name">
                 <i v-if="selectedTextColor === color.value" class="pi pi-check" style="color:#333;"></i>
               </button>
             </div>
           </div>
         </div>
 
-        <div class="setting-card">
-          <div class="setting-info">
-            <h3>File Icon Size</h3>
-            <p>Adjust the size of file and folder icons</p>
+        <!-- Game Settings -->
+        <div class="settings-section">
+          <h2>Game Settings</h2>
+          <div class="setting-card">
+            <div class="setting-info">
+              <h3>File Icon Size</h3>
+              <p>Adjust the size of file and folder icons</p>
+            </div>
+            <div class="setting-control">
+              <select v-model="iconSize" class="select-input">
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
           </div>
-          <div class="setting-control">
-            <select v-model="iconSize" class="select-input">
-              <option value="small">Small</option>
-              <option value="medium">Medium</option>
-              <option value="large">Large</option>
-            </select>
+
+          <div class="setting-card">
+            <div class="setting-info">
+              <h3>Fancy Icons</h3>
+              <p>Use colorful modern icons instead of simple ones</p>
+            </div>
+            <div class="setting-control">
+              <label class="toggle-switch">
+                <input type="checkbox" v-model="fancyIcons">
+                <span class="slider"></span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="setting-card">
-          <div class="setting-info">
-            <h3>Fancy Icons</h3>
-            <p>Use colorful modern icons instead of simple ones</p>
-          </div>
-          <div class="setting-control">
-            <label class="toggle-switch">
-              <input type="checkbox" v-model="fancyIcons">
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
 
-      <!-- Game Settings -->
-      <div class="settings-section">
-        <h2>Game Settings</h2>
-        
         <div class="setting-card">
           <div class="setting-info">
             <h3>Sound Effects</h3>
@@ -111,7 +101,7 @@
         </div>
         -->
       </div>
-    
+
       <!-- Action Buttons -->
       <div class="settings-actions">
         <button @click="saveSettings" class="btn btn-primary">
@@ -192,10 +182,10 @@ const applyColors = () => {
 
 const saveSettings = () => {
   applyColors();
-  
+
   saveMessage.value = 'Settings saved successfully!';
   saveSuccess.value = true;
-  
+
   setTimeout(() => {
     saveMessage.value = '';
   }, 3000);
@@ -211,7 +201,7 @@ const resetSettings = () => {
   fancyIcons.value = defaultSettings.fancyIcons;
 
   localStorage.removeItem('fileExplorersSettings');
-  
+
   // Apply default settings
   saveSetting(defaultSettings);
 
@@ -383,11 +373,11 @@ onMounted(() => {
     width: 0;
     height: 0;
 
-    &:checked + .slider {
+    &:checked+.slider {
       background-color: var(--primary);
     }
 
-    &:checked + .slider:before {
+    &:checked+.slider:before {
       transform: translateX(26px);
     }
   }

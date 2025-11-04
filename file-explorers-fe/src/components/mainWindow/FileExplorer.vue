@@ -47,16 +47,19 @@ onMounted(() => {
   preloadAllSounds();
 })
 const filteredFiles = computed(() => {
-  const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
-    return file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value)
-  });
-  if (!searchQuery.value) {
-    return currentDirectoryFiles
+  if (searchQuery.value) {
+    
+    const lowerSearch = searchQuery.value.toLowerCase()
+    return files.value.filter((file: FileOrDirectory) =>
+      file.name.toLowerCase().includes(lowerSearch)
+    )
   }
-  const lowerSearch = searchQuery.value.toLowerCase()
-  return currentDirectoryFiles.filter((file: FileOrDirectory) =>
-    file.name.toLowerCase().includes(lowerSearch)
-  )
+  const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
+    //console.log("file ", file.parentDirectoryId, "current dir", currentDirectoryId.value, "evals ", file.parentDirectoryId == currentDirectoryId.value)
+    return file.parentDirectoryId == (currentDirectoryId.value) || (!file.parentDirectoryId && !currentDirectoryId.value)
+  }
+  );
+  return currentDirectoryFiles
 })
 const router = useRouter()
 function handleFileClick(file: FileOrDirectory, event: MouseEvent) {

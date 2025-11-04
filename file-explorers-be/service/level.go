@@ -64,7 +64,7 @@ func (s *levelService) SolvedLevel(ctx context.Context, level int) (levels []mod
 	if err != nil {
 		return
 	}
-
+	fmt.Println("[DEBUG] level" , level , " marked as solved " )
 	err = s.repo.MarkLevelSolved(jwt.UserID, level)
 	if err != nil {
 		return
