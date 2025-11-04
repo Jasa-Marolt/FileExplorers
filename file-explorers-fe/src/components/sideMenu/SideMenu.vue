@@ -27,7 +27,6 @@ import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { FileOrDirectory } from '@/files';
-import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
 import { Level } from '@/store/levelStore';
 
 const store = useStore();
