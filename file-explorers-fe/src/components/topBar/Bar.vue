@@ -123,6 +123,7 @@ const search = computed<string>({
 }
 
 .pi {
+  color: var(--text);
   scale: 1.2;
   padding-left: 0.4em;
   padding-right: 0.4em;

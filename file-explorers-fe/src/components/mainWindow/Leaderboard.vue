@@ -285,7 +285,7 @@ onMounted(() => {
 }
 
 .user-rank-card {
-  background: linear-gradient(135deg, var(--primary), #1a5518);
+  background: linear-gradient(135deg, var(--primary), var(--background-secondary));
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
@@ -299,6 +299,7 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.2);
     font-size: 14px;
     padding: 8px 16px;
+    color: var(--text);
   }
 
   .rank-number {
@@ -338,7 +339,7 @@ onMounted(() => {
 
   &.is-current-user {
     border-color: var(--primary);
-    background: linear-gradient(90deg, var(--element-background), rgba(41, 78, 38, 0.2));
+    background: linear-gradient(90deg, var(--element-background), var(--primary));
   }
 }
 
@@ -352,6 +353,7 @@ onMounted(() => {
   font-weight: 900;
   font-size: 20px;
   background: var(--background-secondary);
+  color: var(--text);
   border: 2px solid var(--border-color);
 
   &.gold {
@@ -366,7 +368,7 @@ onMounted(() => {
 
   &.bronze {
     background: linear-gradient(135deg, #CD7F32, #8B4513);
-    color: #fff;
+    color: #ffffff;
   }
 
   .medal {
