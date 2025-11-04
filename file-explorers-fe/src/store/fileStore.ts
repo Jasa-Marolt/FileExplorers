@@ -329,9 +329,11 @@ export const fileStoreModule: Module<FileState, RootState> = {
             console.log("setting search querry", query);
             commit("SET_SEARCH_QUERY", query);
         },
-        setOpenFolder({ commit }, payload: number | null) {
+        setOpenFolder({ commit, dispatch }, payload: number | null) {
             console.log("setting open folder to ", payload);
             commit("SET_OPEN_FOLDER", payload);
+            // Check if opening this folder satisfies the win condition
+            dispatch("checkSolution");
         },
 
         navigateHistoryBack({ commit }) {
@@ -374,7 +376,12 @@ export const fileStoreModule: Module<FileState, RootState> = {
                 return false;
             }
 
-            const isSolved = validateSolution(state.filesystem, currentLevel.solution);
+            // Pass the currently open folder ID to the validator
+            const isSolved = validateSolution(
+                state.filesystem, 
+                currentLevel.solution, 
+                state.openFolder
+            );
 
             if (isSolved) {
                 console.log("🎉 Level solved!");

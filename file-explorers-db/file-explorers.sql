@@ -52,15 +52,14 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
             "id": 3,
             "name": "message.txt",
             "isDirectory": false,
-            "parentDirectoryId": 2
+            "parentDirectoryId": null
         }
     ]','[
         {
-            "id": 3,
-            "parentDirectoryId": 3
+            "id": 2,
+            "isOpened": true
         }
-
-    ]', 'Learning to move', 'Learning how to move files', 1, 'Move the .txt file into Folder 2'),
+    ]', 'Learning to move', 'Learning how to move files', 1, 'Move the message.txt file into Folder2, then open Folder2 to complete the level'),
     ('[
         {
             "id": 0,

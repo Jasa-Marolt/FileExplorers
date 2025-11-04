@@ -1,27 +1,45 @@
 import { FileOrDirectory } from "@/files";
 import { SolutionFile } from "@/store/levelStore";
 
+export interface SolutionRequirement extends SolutionFile {
+    type?: string;
+}
+
 /**
  * Validates if the current filesystem meets all the solution requirements
  * @param filesystem Current filesystem state
  * @param solution Array of requirements that must be met
+ * @param openFolderId Currently open folder ID (for openFolder win condition)
  * @returns true if all requirements are satisfied, false otherwise
  */
 export function validateSolution(
     filesystem: FileOrDirectory[],
-    solution: SolutionFile[]
+    solution: SolutionRequirement[],
+    openFolderId?: number | null
 ): boolean {
     if (!solution || solution.length === 0) {
         return false;
     }
 
-    // Check each requirement
+    // Check all requirements - ALL must be satisfied
     for (const requirement of solution) {
+        // Handle "openFolder" type requirement (supports both type:"openFolder" and isOpened:true)
+        if (requirement.type === "openFolder" || requirement.isOpened === true) {
+            if (openFolderId !== requirement.id) {
+                console.log(`❌ Folder ${requirement.id} must be opened. Currently open: ${openFolderId}`);
+                return false;
+            }
+            console.log(`✅ Folder ${requirement.id} is correctly opened`);
+            continue;
+        }
+
+        // Handle standard file/folder requirements (move, delete, rename)
         if (!checkRequirement(filesystem, requirement)) {
             return false;
         }
     }
 
+    console.log("✅ All solution requirements satisfied!");
     return true;
 }
 
@@ -83,7 +101,8 @@ function checkRequirement(
  */
 export function getSolutionReport(
     filesystem: FileOrDirectory[],
-    solution: SolutionFile[]
+    solution: SolutionRequirement[],
+    openFolderId?: number | null
 ): { satisfied: boolean; details: string[] } {
     const details: string[] = [];
 
@@ -94,6 +113,17 @@ export function getSolutionReport(
     let allSatisfied = true;
 
     for (const requirement of solution) {
+        // Handle openFolder requirement (supports both type:"openFolder" and isOpened:true)
+        if (requirement.type === "openFolder" || requirement.isOpened === true) {
+            if (openFolderId !== requirement.id) {
+                details.push(`❌ Open folder with ID ${requirement.id}`);
+                allSatisfied = false;
+            } else {
+                details.push(`✅ Folder ${requirement.id} is opened`);
+            }
+            continue;
+        }
+
         const file = filesystem.find((f) => f.id === requirement.id);
 
         if (requirement.removed === true) {

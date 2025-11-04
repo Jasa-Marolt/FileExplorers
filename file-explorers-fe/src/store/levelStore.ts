@@ -17,6 +17,7 @@ export interface SolutionFile {
   isDirectory?: boolean,
   parentDirectoryId?: number | null,
   removed?: boolean
+  isOpened?:boolean
 }
 export interface LevelState {
     levels: Level[];
