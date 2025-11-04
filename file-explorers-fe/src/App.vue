@@ -15,8 +15,8 @@ import { RouterView } from 'vue-router'
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-
+  color: var(--text);
+  background: var(--primary);
 }
 
 html,

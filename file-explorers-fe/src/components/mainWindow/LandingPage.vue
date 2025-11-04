@@ -229,8 +229,8 @@ const goToProfile = () => {
   border: 2px solid var(--border-color);
 
   &:hover {
-    background: #356d31;
-    box-shadow: 0 4px 12px rgba(41, 78, 38, 0.4);
+    background: var(--background-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }
 

@@ -17,7 +17,7 @@
 .p-inputtext {
     --p-inputtext-background: var(--element-background);
     --p-inputtext-disabled-background: var(--element-background);
-    --p-inputtext-border-color: #152914;
+    --p-inputtext-border-color: var(--border-color);
 
     --p-inputtext-color: var(--text);
     --p-inputtext-disabled-color: var(--secondary-text);
