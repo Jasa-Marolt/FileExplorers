@@ -16,7 +16,7 @@ type Config struct {
 
 func NewConfig() Config {
 	return Config{
-		DBHost:     getEnv("DB_HOST", "nejc:password@tcp(172.30.0.10:3306)/file_explorers"),
+		DBHost:     getEnv("DB_HOST", "nejc:password@tcp(172.21.0.10:3306)/file_explorers"),
 		DBUser:     getEnv("DB_USER", "nejc"),
 		DBPassword: getEnv("DB_PASSWORD", "password"),
 		DBName:     getEnv("DB_NAME", "file_explorers"),
