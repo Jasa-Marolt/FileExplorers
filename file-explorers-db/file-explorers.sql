@@ -183,11 +183,11 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         }
     ]', '[
         {
-            "id": 1,
-            "removed": true
+            "name": "Civilian",
+            "parentDirectoryId": 4
         }
 
-    ]', 'Cut and paste', 'Cut and paste', 2, 'right click on a civilian, press cut, then go to the last folder and paste them in'),
+    ]', 'Cut and paste', 'Cut and paste', 2, 'Right click on the Civilian, press cut, navigate to the last folder, then paste'),
     ('[
         {
             "id": 0,
@@ -221,7 +221,6 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         }
     ]', '[
         {
-            "id": 1,
             "name": "Bob"
         }
     ]','Renaming', 'Renaming', 2, 'Right click a civilian and rename them to Bob'),

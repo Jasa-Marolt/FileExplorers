@@ -52,27 +52,38 @@ function checkRequirement(
 ): boolean {
     const { id, name, parentDirectoryId, removed } = requirement;
 
-    // Find the file by ID
-    const file = filesystem.find((f) => f.id === id);
+    // Find the file - either by ID or by name (if ID is undefined/null)
+    let file: FileOrDirectory | undefined;
+    
+    if (id !== undefined && id !== null) {
+        // Standard ID-based lookup
+        file = filesystem.find((f) => f.id === id);
+    } else if (name !== undefined) {
+        // Name-based lookup (for cut/paste scenarios where ID changes)
+        file = filesystem.find((f) => f.name === name);
+        if (file) {
+            console.log(`🔍 Found file by name "${name}" with id ${file.id}`);
+        }
+    }
 
     // If the file should be removed (deleted)
     if (removed === true) {
         if (file !== undefined) {
-            console.log(`❌ File ${id} should be removed but still exists`);
+            console.log(`❌ File "${name || id}" should be removed but still exists`);
             return false;
         }
-        console.log(`✅ File ${id} is correctly removed`);
+        console.log(`✅ File "${name || id}" is correctly removed`);
         return true;
     }
 
     // If file should exist but doesn't
     if (!file) {
-        console.log(`❌ File ${id} not found in filesystem`);
+        console.log(`❌ File "${name || id}" not found in filesystem`);
         return false;
     }
 
-    // Check name if specified
-    if (name !== undefined && file.name !== name) {
+    // Check name if specified (and we looked up by ID)
+    if (id !== undefined && id !== null && name !== undefined && file.name !== name) {
         console.log(
             `❌ File ${id} name mismatch: expected "${name}", got "${file.name}"`
         );
@@ -86,13 +97,13 @@ function checkRequirement(
         
         if (expectedParent !== actualParent) {
             console.log(
-                `❌ File ${id} parent mismatch: expected ${expectedParent}, got ${actualParent}`
+                `❌ File "${name || id}" parent mismatch: expected ${expectedParent}, got ${actualParent}`
             );
             return false;
         }
     }
 
-    console.log(`✅ File ${id} meets requirement`);
+    console.log(`✅ File "${name || id}" meets requirement`);
     return true;
 }
 
@@ -124,27 +135,37 @@ export function getSolutionReport(
             continue;
         }
 
-        const file = filesystem.find((f) => f.id === requirement.id);
+        // Find file by ID or name
+        let file: FileOrDirectory | undefined;
+        if (requirement.id !== undefined && requirement.id !== null) {
+            file = filesystem.find((f) => f.id === requirement.id);
+        } else if (requirement.name !== undefined) {
+            file = filesystem.find((f) => f.name === requirement.name);
+        }
+
+        const fileLabel = requirement.name || `ID ${requirement.id}`;
 
         if (requirement.removed === true) {
             if (file !== undefined) {
-                details.push(`❌ File ${requirement.id} should be deleted`);
+                details.push(`❌ File "${fileLabel}" should be deleted`);
                 allSatisfied = false;
             } else {
-                details.push(`✅ File ${requirement.id} is deleted`);
+                details.push(`✅ File "${fileLabel}" is deleted`);
             }
             continue;
         }
 
         if (!file) {
-            details.push(`❌ File ${requirement.id} not found`);
+            details.push(`❌ File "${fileLabel}" not found`);
             allSatisfied = false;
             continue;
         }
 
-        if (requirement.name !== undefined && file.name !== requirement.name) {
+        // Check name if we looked up by ID
+        if (requirement.id !== undefined && requirement.id !== null && 
+            requirement.name !== undefined && file.name !== requirement.name) {
             details.push(
-                `❌ File ${requirement.id}: rename to "${requirement.name}"`
+                `❌ File "${fileLabel}": rename to "${requirement.name}"`
             );
             allSatisfied = false;
         }
@@ -155,7 +176,7 @@ export function getSolutionReport(
             
             if (expectedParent !== actualParent) {
                 details.push(
-                    `❌ File ${requirement.id}: move to folder ${expectedParent}`
+                    `❌ File "${fileLabel}": move to folder ${expectedParent}`
                 );
                 allSatisfied = false;
             }
@@ -167,7 +188,7 @@ export function getSolutionReport(
             (requirement.parentDirectoryId === undefined ||
                 file.parentDirectoryId === requirement.parentDirectoryId)
         ) {
-            details.push(`✅ File ${requirement.id} is correct`);
+            details.push(`✅ File "${fileLabel}" is correct`);
         }
     }
 

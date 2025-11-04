@@ -194,7 +194,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
         },
         SET_SELECTED_FILES(state, payload: FileOrDirectory[]) {
             state.selectedFiles = payload;
-            console.log("set selected files to ", state.selectedFiles);
+            // console.log("set selected files to ", state.selectedFiles);
         },
         CREATE_FILE(state, payload: { name: string }) {
             const newFile: FileOrDirectory = {

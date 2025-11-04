@@ -141,7 +141,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
                         process.env.VUE_APP_API_URL || "http://localhost:8080"
                     }/level/${levelId}`,
                     {
-                        method: "POST",
+                        method: "PUT",
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
