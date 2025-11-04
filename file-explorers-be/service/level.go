@@ -4,6 +4,7 @@ import (
 	"context"
 	"file-explorers-be/models"
 	"file-explorers-be/repository"
+	"fmt"
 )
 
 type LevelService interface {
@@ -34,10 +35,13 @@ func (s *levelService) GetLevels(ctx context.Context) (levels []models.LevelStat
 }
 
 func (s *levelService) GetLevelData(ctx context.Context, level int) (data models.LevelData, err error) {
+	fmt.Println("[DEBUG levelService.GetLevelData] Decoding JWT token from context")
 	_, err = s.jwtService.DecodeTokenFromCtx(ctx)
 	if err != nil {
+		fmt.Println("[DEBUG levelService.GetLevelData] JWT decode error:", err)
 		return
 	}
+	fmt.Println("[DEBUG levelService.GetLevelData] JWT decoded successfully, fetching level", level, "from repository")
 	return s.repo.GetLevelData(level)
 
 }

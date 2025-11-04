@@ -112,11 +112,18 @@ export const fileStoreModule: Module<FileState, RootState> = {
     },
     mutations: {
         SET_FILESYSTEM(state, payload: FileOrDirectory[]) {
-            state.filesystem = JSON.parse(JSON.stringify(payload));
-            state.initialFilesystem = JSON.parse(JSON.stringify(payload));
+            console.log("payload ", payload, " typeof ", typeof payload);
+            // normalize payload to an array to avoid calling .map on undefined
+            const files = payload ?? [];
+
+            // Deep copy into state so callers can't mutate the input later
+            state.filesystem = JSON.parse(JSON.stringify(files));
+            state.initialFilesystem = JSON.parse(JSON.stringify(files));
+
             console.log("set filesystem ", state.filesystem);
 
-            state.nextId = Math.max(...payload.map((f) => f.id), 0) + 1;
+            // Compute nextId safely. If files is empty, Math.max(...[], 0) === 0
+            state.nextId = Math.max(...files.map((f) => f.id), 0) + 1;
             state.history.index = -1;
             state.history.recentFoldersId = [];
             state.openFolder = null;

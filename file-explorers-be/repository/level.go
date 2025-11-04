@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"file-explorers-be/models"
 	"fmt"
+	"log"
 )
 
 type LevelRepository interface {
@@ -56,9 +57,14 @@ func (repo *levelRepo) GetLevelsWithSolved(userId int) (levels []models.LevelSta
 }
 
 func (repo *levelRepo) GetLevelData(level int) (data models.LevelData, err error) {
-	sql := "SELECT level_id, starting_file_system, solution, name, description, difficulty, instructions  FROM levels WHERE level_id=?"
+	log.Println("[DEBUG levelRepo.GetLevelData] Querying database for level:", level)
+	
+	// NOTE: database schema defines the solution column as `level_solution`.
+	// Use that column name to avoid "Unknown column 'solution'" errors.
+	sql := "SELECT level_id, starting_file_system, level_solution, name, description, difficulty, instructions  FROM levels WHERE level_id=?"
 	rows, err := repo.db.Query(sql, level)
 	if err != nil {
+		log.Println("[DEBUG levelRepo.GetLevelData] Database query error:", err)
 		return
 	}
 	defer rows.Close()
@@ -76,20 +82,30 @@ func (repo *levelRepo) GetLevelData(level int) (data models.LevelData, err error
 			&data.Difficulty,
 			&data.Instructions,
 		)
+		log.Println("[DEBUG levelRepo.GetLevelData] Row scanned successfully, level:", data.LevelID)
 	} else {
 		err = fmt.Errorf("level not found")
+		log.Println("[DEBUG levelRepo.GetLevelData] Level not found in database")
 	}
 
 	if err != nil {
+		log.Println("[DEBUG levelRepo.GetLevelData] Error during row scan:", err)
 		return
 	}
 
+	fmt.Println("[DEBUG levelRepo.GetLevelData] Unmarshaling starting_file_system JSON")
 	err = json.Unmarshal(startingFileSystem, &data.StartingFileSystem)
 	if err != nil {
+		log.Println("[DEBUG levelRepo.GetLevelData] Error unmarshaling starting_file_system:", err)
 		return
 	}
 
+	fmt.Println("[DEBUG levelRepo.GetLevelData] Unmarshaling solution JSON")
 	err = json.Unmarshal(solution, &data.Solution)
+	if err != nil {
+		log.Println("[DEBUG levelRepo.GetLevelData] Error unmarshaling solution:", err)
+	}
+	log.Println("[DEBUG levelRepo.GetLevelData] Successfully retrieved level data")
 	return
 }
 
