@@ -29,17 +29,19 @@ const currentLevel = computed(() => store.getters['levelStoreModule/currentLevel
 }
 
 .level-info {
-    color: white;
+    color: var(--text);
     text-align: left;
 }
 
 .level-info h2 {
     margin: 0;
     font-size: 1.5rem;
+    color: var(--text);
 }
 
 .level-info p {
     margin: 0.5rem 0 0;
     font-size: 1rem;
+    color: var(--secondary-text);
 }
 </style>

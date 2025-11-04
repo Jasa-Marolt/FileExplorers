@@ -42,7 +42,8 @@ const currentFileId = computed(() => {
 
 <style lang="scss" scoped>
 .main_window {
-  background: rgb(38, 64, 38);
+  background: var(--primary);
+  color: var(--text);
   width: 100%;
   height: 100%;
   position: relative;

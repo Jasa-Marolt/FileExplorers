@@ -12,8 +12,8 @@
         
         <div class="setting-card">
           <div class="setting-info">
-            <h3>Folder Color</h3>
-            <p>Choose your favorite color for folders</p>
+            <h3>Theme Color</h3>
+            <p>Choose your theme color - backgrounds will be automatically adjusted</p>
           </div>
           <div class="setting-control">
             <div class="color-options">
@@ -26,6 +26,27 @@
                 :title="color.name"
               >
                 <i v-if="selectedFolderColor === color.value" class="pi pi-check"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-info">
+            <h3>Text Color</h3>
+            <p>Choose your preferred text color scheme</p>
+          </div>
+          <div class="setting-control">
+            <div class="color-options">
+              <button
+                v-for="color in textColors"
+                :key="color.value"
+                :class="['color-btn', { active: selectedTextColor === color.value }]"
+                :style="{ backgroundColor: color.hex }"
+                @click="selectTextColor(color.value)"
+                :title="color.name"
+              >
+                <i v-if="selectedTextColor === color.value" class="pi pi-check"></i>
               </button>
             </div>
           </div>
@@ -62,20 +83,7 @@
             </label>
           </div>
         </div>
-
-        <div class="setting-card">
-          <div class="setting-info">
-            <h3>Animations</h3>
-            <p>Enable or disable animations for better performance</p>
-          </div>
-          <div class="setting-control">
-            <label class="toggle-switch">
-              <input type="checkbox" v-model="animationsEnabled">
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-
+        <!--
         <div class="setting-card">
           <div class="setting-info">
             <h3>Show Tips</h3>
@@ -88,8 +96,9 @@
             </label>
           </div>
         </div>
+        -->
       </div>
-
+    
       <!-- Action Buttons -->
       <div class="settings-actions">
         <button @click="saveSettings" class="btn btn-primary">
@@ -115,6 +124,7 @@ import { loadSettings, saveSettings as saveSetting, defaultSettings, folderColor
 
 // Settings state
 const selectedFolderColor = ref('default');
+const selectedTextColor = ref('light');
 const iconSize = ref('medium');
 const soundEnabled = ref(true);
 const animationsEnabled = ref(true);
@@ -125,6 +135,7 @@ const saveSuccess = ref(false);
 // Color options
 const folderColors = [
   { name: 'Default Green', value: 'default', hex: '#294e26' },
+  { name: 'Black', value: 'black', hex: '#333333' },
   { name: 'Blue', value: 'blue', hex: '#2563eb' },
   { name: 'Purple', value: 'purple', hex: '#7c3aed' },
   { name: 'Orange', value: 'orange', hex: '#ea580c' },
@@ -134,22 +145,37 @@ const folderColors = [
   { name: 'Red', value: 'red', hex: '#dc2626' },
 ];
 
+const textColors = [
+  { name: 'White', value: 'light', hex: '#ffffff' },
+  { name: 'Warm Beige', value: 'warm', hex: '#ffe4b5' },
+  { name: 'Cool Blue', value: 'cool', hex: '#b0e0e6' },
+  { name: 'Gray', value: 'neutral', hex: '#e0e0e0' },
+];
+
 const selectFolderColor = (color: string) => {
   selectedFolderColor.value = color;
-  const colorHex = folderColorMap[color] || folderColorMap.default;
-  document.documentElement.style.setProperty('--primary', colorHex);
+  applyColors();
 };
 
-const saveSettings = () => {
+const selectTextColor = (color: string) => {
+  selectedTextColor.value = color;
+  applyColors();
+};
+
+const applyColors = () => {
   const settings = {
     folderColor: selectedFolderColor.value,
+    textColor: selectedTextColor.value,
     iconSize: iconSize.value,
     soundEnabled: soundEnabled.value,
     animationsEnabled: animationsEnabled.value,
     showTips: showTips.value,
   };
-
   saveSetting(settings);
+};
+
+const saveSettings = () => {
+  applyColors();
   
   saveMessage.value = 'Settings saved successfully!';
   saveSuccess.value = true;
@@ -161,6 +187,7 @@ const saveSettings = () => {
 
 const resetSettings = () => {
   selectedFolderColor.value = defaultSettings.folderColor;
+  selectedTextColor.value = defaultSettings.textColor;
   iconSize.value = defaultSettings.iconSize;
   soundEnabled.value = defaultSettings.soundEnabled;
   animationsEnabled.value = defaultSettings.animationsEnabled;
@@ -182,13 +209,14 @@ const resetSettings = () => {
 const loadSettingsFromStorage = () => {
   const settings = loadSettings();
   selectedFolderColor.value = settings.folderColor;
+  selectedTextColor.value = settings.textColor;
   iconSize.value = settings.iconSize;
   soundEnabled.value = settings.soundEnabled;
   animationsEnabled.value = settings.animationsEnabled;
   showTips.value = settings.showTips;
 
-  // Apply folder color to ensure it's visible
-  selectFolderColor(selectedFolderColor.value);
+  // Apply colors immediately
+  applyColors();
 };
 
 onMounted(() => {
@@ -303,7 +331,7 @@ onMounted(() => {
     border-width: 4px;
 
     i {
-      color: white;
+      color: var(--text);
       font-size: 24px;
       text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
     }

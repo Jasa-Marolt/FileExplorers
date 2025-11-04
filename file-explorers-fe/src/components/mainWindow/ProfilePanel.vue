@@ -366,18 +366,18 @@ const handleLogout = () => {
   border: 1px solid var(--border-color);
 
   &:hover:not(:disabled) {
-    background: #356d31;
+    background: var(--background-secondary);
     transform: translateY(-2px);
   }
 }
 
 .btn-logout {
-  background: rgba(220, 53, 69, 0.3);
-  color: #ff6b6b;
-  border: 1px solid rgba(220, 53, 69, 0.4);
+  background: rgba(220, 53, 69, 0.2);
+  color: var(--text);
+  border: 1px solid rgba(220, 53, 69, 0.5);
 
   &:hover {
-    background: rgba(220, 53, 69, 0.5);
+    background: rgba(220, 53, 69, 0.4);
     transform: translateY(-2px);
   }
 }

@@ -299,14 +299,14 @@ function onMenuSelect(action: string) {
   gap: 4px;
   width: 70vw;
   font-size: 16px;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--secondary-text);
   margin-top: 24px;
   margin-bottom: 4px;
   align-self: start;
 }
 
 .breadcrumb a {
-  color: white;
+  color: var(--text);
   text-decoration: none;
 }
 
@@ -328,8 +328,8 @@ function onMenuSelect(action: string) {
   border: none;
   outline: none;
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.6);
-  color: rgba(0, 0, 0, 0.7);
+  background-color: var(--element-background);
+  color: var(--text);
   border-radius: 4px;
 }
 
