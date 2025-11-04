@@ -5,6 +5,7 @@ export interface AppSettings {
     soundEnabled: boolean;
     animationsEnabled: boolean;
     showTips: boolean;
+    fancyIcons: boolean;
 }
 
 export const defaultSettings: AppSettings = {
@@ -14,6 +15,7 @@ export const defaultSettings: AppSettings = {
     soundEnabled: true,
     animationsEnabled: true,
     showTips: false,
+    fancyIcons: false,
 };
 
 export const folderColorMap: Record<string, string> = {
@@ -106,6 +108,10 @@ export function loadSettings(): AppSettings {
                     settings.showTips !== undefined
                         ? settings.showTips
                         : defaultSettings.showTips,
+                fancyIcons:
+                    settings.fancyIcons !== undefined
+                        ? settings.fancyIcons
+                        : defaultSettings.fancyIcons,
             };
         } catch (error) {
             console.error("Failed to load settings:", error);
@@ -165,6 +171,15 @@ export function applySettings(settings: AppSettings): void {
 
     // Apply icon size
     document.documentElement.setAttribute("data-icon-size", settings.iconSize);
+    
+    // Apply grid sizing based on icon size
+    const gridSizeMap: Record<string, string> = {
+        small: '80px',
+        medium: '110px',
+        large: '140px'
+    };
+    const gridSize = gridSizeMap[settings.iconSize] || gridSizeMap.medium;
+    document.documentElement.style.setProperty("--grid-item-size", gridSize);
 
     // Apply animations
     if (!settings.animationsEnabled) {

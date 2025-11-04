@@ -16,8 +16,8 @@
 .papa-search        { background-image: url('./icons/search.png'); }
 
 /* Context menu */
-.papa-new-folder    { background-image: url('./icons/new_folder.png'); }
-.papa-new-file      { background-image: url('./icons/new_file.png'); }
+.papa-new-folder    { background-image: url('./icons/new-folder.png'); }
+.papa-new-file      { background-image: url('./icons/new-file.png'); }
 .papa-cut           { background-image: url('./icons/cut.png'); }
 .papa-copy          { background-image: url('./icons/copy.png'); }
 .papa-paste         { background-image: url('./icons/paste.png'); }

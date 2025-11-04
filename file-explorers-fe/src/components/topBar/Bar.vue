@@ -33,6 +33,7 @@ import { useStore } from 'vuex';
 import { type State } from '@/store';
 import { buildPathToRoot } from '@/composables/fileOrDirectory';
 import { FileOrDirectory } from '@/files';
+import { playSound, SoundEffect } from '@/composables/useSounds';
 
 const route = useRoute();
 
@@ -91,9 +92,11 @@ const breadcrumbsPath = computed(() => {
 })
 
 function historyGoBack() {
+  playSound(SoundEffect.Backward);
   store.dispatch("fileStoreModule/navigateHistoryBack");
 }
 function historyGoForward() {
+  playSound(SoundEffect.Forward);
   store.dispatch("fileStoreModule/navigateHistoryForward");
 }
 
