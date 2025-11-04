@@ -5,12 +5,13 @@ type LevelRequest struct {
 }
 
 type LevelData struct {
-	LevelID      int         `json:"level_id,omitempty"`
-	Data         interface{} `json:"data,omitempty"`
-	Name         string      `json:"name,omitempty"`
-	Description  string      `json:"description,omitempty"`
-	Difficulty   int         `json:"difficulty,omitempty"`
-	Instructions string      `json:"instructions,omitempty"`
+	LevelID            int         `json:"level_id,omitempty"`
+	StartingFileSystem interface{} `json:"startingFileSystem,omitempty"`
+	Solution           interface{} `json:"solution,omitempty"`
+	Name               string      `json:"name,omitempty"`
+	Description        string      `json:"description,omitempty"`
+	Difficulty         int         `json:"difficulty,omitempty"`
+	Instructions       string      `json:"instructions,omitempty"`
 }
 
 type LevelStatus struct {

@@ -1,5 +1,4 @@
 name: "fileExplorers"
-
 services:
   fe-mysql:
     container_name: fe-mysql

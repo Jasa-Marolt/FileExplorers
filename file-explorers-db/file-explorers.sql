@@ -20,14 +20,15 @@ VALUES (
 
 CREATE TABLE IF NOT EXISTS levels (
     level_Id INT AUTO_INCREMENT PRIMARY KEY,
-    level_data JSON NOT NULL,
+    starting_file_system JSON NOT NULL,
+    level_solution JSON NOT NULL,
     name VARCHAR(100) DEFAULT "",
     description TEXT,
     difficulty INT DEFAULT 1,
     instructions TEXT
 );
 
-INSERT INTO levels (level_data, name, description, difficulty, instructions) VALUES 
+INSERT INTO levels (starting_file_system, level_solution, name, description, difficulty, instructions) VALUES 
     ('[
         {
             "id": 0,
@@ -53,7 +54,13 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": false,
             "parentDirectoryId": 2
         }
-    ]', 'Level 1', 'A simple level with nested folders.', 1, 'Find the message.txt file inside Folder2.'),
+    ]','[
+        {
+            "id": 3,
+            "parentDirectoryId": 3
+        }
+
+    ]', 'Learning to move', 'Learning how to move files', 1, 'Move the .txt file into Folder 2'),
     ('[
         {
             "id": 0,
@@ -85,7 +92,20 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": true,
             "parentDirectoryId": null
         }
-    ]', 'Level 2', 'Multiple files with the same name.', 2, 'Identify the correct Civilian file.'),
+    ]', '[
+        {
+            "id": 1,
+            "parentDirectoryId": 4
+        },
+        {
+            "id": 2,
+            "parentDirectoryId": 4
+        },
+        {
+            "id": 3,
+            "parentDirectoryId": 4
+        }
+    ]', 'Group move', 'Saving civvies', 1, 'Move all the civilians into the folder, try using control or shift clicking'),
     ('[
         {
             "id": 0,
@@ -117,8 +137,15 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": false,
             "parentDirectoryId": null
         }
-    ]', 'Level 3', 'Distinguishing between similar files.', 2, 'Find the Zombie file among Civilians.'),
+    ]', '[
+        {
+            "id": 1,
+            "removed": true
+        }
+
+    ]', 'Deleting', 'Killing zombies', 2, 'Remove the zombie by right clicking it and pressing remove'),
     ('[
+
         {
             "id": 0,
             "name": "Civilian",
@@ -155,7 +182,13 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": false,
             "parentDirectoryId": 4
         }
-    ]', 'Level 4', 'Deeply nested folders.', 3, 'Locate the end.txt file at the deepest level.'),
+    ]', '[
+        {
+            "id": 1,
+            "removed": true
+        }
+
+    ]', 'Cut and paste', 'Cut and paste', 2, 'right click on a civilian, press cut, then go to the last folder and paste them in'),
     ('[
         {
             "id": 0,
@@ -187,7 +220,12 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": false,
             "parentDirectoryId": null
         }
-    ]', 'Level 5', 'All files look the same.', 1, 'Find the unique Civilian file.'),
+    ]', '[
+        {
+            "id": 1,
+            "name": "Bob"
+        }
+    ]','Renaming', 'Renaming', 2, 'Right click a civilian and rename them to Bob'),
     ('[
         {
             "id": 0,
@@ -334,7 +372,12 @@ INSERT INTO levels (level_data, name, description, difficulty, instructions) VAL
             "isDirectory": false,
             "parentDirectoryId": 22
         }
-    ]', 'Level 6', 'Extremely deep nesting.', 4, 'Find the Civilian file at the deepest level.');
+    ]','[
+        {
+            "id": 23,
+            "name": "Bob"
+        }
+    ]', 'Search', 'Finding files', 3, 'Find the civilian by searching for them in the search bar, then rename them to Bob');
 
 CREATE TABLE IF NOT EXISTS user_levels (
     id INT AUTO_INCREMENT PRIMARY KEY,
