@@ -34,6 +34,7 @@ import GameContextMenu from './GameContextMenu.vue';
 import NameInputDialog from './FileExplorers/NameInputDialog.vue';
 import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
 import { loadSettings } from '@/composables/useSettings';
+import { playSound, SoundEffect, preloadAllSounds } from '@/composables/useSounds';
 const store = useStore<State>()
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
 const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
@@ -42,6 +43,8 @@ onMounted(() => {
   if (files.value.length === 0) {
     store.dispatch('fileStoreModule/generateRandomFilesystem', { count: 100 })
   }
+  // Preload sound effects
+  preloadAllSounds();
 })
 const filteredFiles = computed(() => {
   const currentDirectoryFiles = files.value.filter((file: FileOrDirectory) => {
@@ -57,6 +60,7 @@ const filteredFiles = computed(() => {
 })
 const router = useRouter()
 function handleFileClick(file: FileOrDirectory, event: MouseEvent) {
+  playSound(SoundEffect.LeftClick);
   const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
   if (event.ctrlKey || event.metaKey) {
     const index = selectedFiles.findIndex((f: FileOrDirectory) => f.id === file.id);
@@ -87,6 +91,7 @@ function handleBackgroundClick(event: MouseEvent) {
 }
 function handleFileDoubleClick(file: FileOrDirectory) {
   if (file.isDirectory) {
+    playSound(SoundEffect.OpenFolder);
     store.dispatch("fileStoreModule/setOpenFolder", file.id);
   } else {
     console.error('File opening is not implemented yet');
@@ -169,6 +174,7 @@ function onFileContextMenu(e: MouseEvent, file: FileOrDirectory) {
   onContextMenu(e);
 }
 function onContextMenu(e: MouseEvent) {
+  playSound(SoundEffect.RightClick);
   const settings = loadSettings();
   const useFancyIcons = settings.fancyIcons;
   
@@ -199,33 +205,41 @@ function onMenuSelect(action: string) {
   const selectedFiles = store.getters['fileStoreModule/getSelectedFiles'] as FileOrDirectory[];
   function openItem() {
     if (selectedFiles.length === 1 && selectedFiles[0].isDirectory) {
+      playSound(SoundEffect.OpenFolder);
       store.dispatch('fileStoreModule/setOpenFolder', selectedFiles[0].id);
     }
   }
   function createNewFolder() {
+    playSound(SoundEffect.LeftClick);
     showDialog('createFolder', 'Create New Folder', 'Folder name');
   }
   function createNewFile() {
+    playSound(SoundEffect.LeftClick);
     showDialog('createFile', 'Create New File', 'File name');
   }
   function copyItem() {
+    playSound(SoundEffect.Copy);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/copyFiles', selectedIds);
   }
   function cutItem() {
+    playSound(SoundEffect.Cut);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/copyFiles', selectedIds);
     store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
   function pasteItem() {
+    playSound(SoundEffect.Paste);
     store.dispatch('fileStoreModule/pasteFiles');
   }
   function renameItem() {
     if (selectedFiles.length === 1) {
+      playSound(SoundEffect.LeftClick);
       showDialog('rename', 'Rename', 'New name', selectedFiles[0].name);
     }
   }
   function deleteItem() {
+    playSound(SoundEffect.Delete);
     const selectedIds = selectedFiles.map(f => f.id);
     store.dispatch('fileStoreModule/deleteFiles', selectedIds);
   }
@@ -338,8 +352,10 @@ function onMenuSelect(action: string) {
 }
 
 .selected {
+  width: 110%;
+  height: 110%;
   background-color: var(--element-background);
-  border: 2px solid var(--p-button-primary-border-color, #007bff);
-  border-radius: 1em;
+  border: 2px solid var(--accent, #007bff);
+  border-radius: 0.5em;
 }
 </style>

@@ -75,7 +75,7 @@ onUnmounted(() => {
 
   &:hover {
     background-color: var(--primary);
-    border-radius: 1em;
+    border-radius: 0.5em;
     color: var(--text);
   }
 
