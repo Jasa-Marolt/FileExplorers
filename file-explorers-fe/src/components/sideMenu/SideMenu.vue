@@ -13,7 +13,7 @@
         <div class="menu-group">
             <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
                 :label="level.name ?? `Level ${idx + 1}`"
-                :icon="currentLevel?.level_id === (level.level_id ?? idx + 1) ? 'pi pi-folder-open' : 'pi pi-folder'"
+                :icon="currentLevel?.level_id === (level.level_id ?? idx + 1) && isGame ? 'pi pi-folder-open' : 'pi pi-folder'"
                 @click="openLevel(level.level_id ?? idx + 1)" />
         </div>
     </div>
@@ -25,18 +25,24 @@ import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { FileOrDirectory } from '@/files';
 import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
 import { Level } from '@/store/levelStore';
 
 const store = useStore();
 const router = useRouter();
+const route = useRoute();
 const loading = ref(true);
 const error = ref('');
 
 const isAuthenticated = computed(() => store.getters['userStoreModule/isAuthenticated']);
 const user = computed(() => store.getters['userStoreModule/getUser']);
+
+const isGame = computed(() => {
+    const routeName = route.name as string;
+    return routeName == "game";
+})
 
 const goToHome = () => {
     router.push({ name: 'landing' });

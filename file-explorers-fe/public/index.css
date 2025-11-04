@@ -6,7 +6,9 @@
     --primary: #294e26;
     --border-color: #152914;
     --element-background: #142713;
-
+    --accent: #1f7b17;
+    --focusAccent: #21b913;
+    --activeAccent: #0f1fd5;
 }
 
 .pi {
@@ -18,7 +20,7 @@
     --p-inputtext-background: var(--element-background);
     --p-inputtext-disabled-background: var(--element-background);
     --p-inputtext-border-color: var(--border-color);
-
+    --p-inputtext-focus-border-color: var(--focusAccent);
     --p-inputtext-color: var(--text);
     --p-inputtext-disabled-color: var(--secondary-text);
     --p-inputtext-placeholder-color: var(--secondary-text)
@@ -31,6 +33,9 @@
     --p-button-primary-color: var(--text);
     --p-button-primary-hover-color: var(--text);
     --p-button-primary-active-color: var(--text);
+    --p-button-primary-border-color: var(--accent);
+    --p-button-primary-hover-border-color: var(--focusAccent);
+    --p-button-primary-active-border-color: var(--activeAccent);
     justify-content: flex-start !important;
 
 }
