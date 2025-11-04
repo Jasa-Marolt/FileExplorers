@@ -56,19 +56,21 @@ func (repo *levelRepo) GetLevelsWithSolved(userId int) (levels []models.LevelSta
 }
 
 func (repo *levelRepo) GetLevelData(level int) (data models.LevelData, err error) {
-	sql := "SELECT level_id, level_data, name, description, difficulty, instructions  FROM levels WHERE level_id=?"
+	sql := "SELECT level_id, starting_file_system, solution, name, description, difficulty, instructions  FROM levels WHERE level_id=?"
 	rows, err := repo.db.Query(sql, level)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	var tmp []byte
+	var startingFileSystem []byte
+	var solution []byte
 
 	if rows.Next() {
 		err = rows.Scan(
 			&data.LevelID,
-			&tmp,
+			&startingFileSystem,
+			&solution,
 			&data.Name,
 			&data.Description,
 			&data.Difficulty,
@@ -82,7 +84,12 @@ func (repo *levelRepo) GetLevelData(level int) (data models.LevelData, err error
 		return
 	}
 
-	err = json.Unmarshal(tmp, &data.Data)
+	err = json.Unmarshal(startingFileSystem, &data.StartingFileSystem)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(solution, &data.Solution)
 	return
 }
 
