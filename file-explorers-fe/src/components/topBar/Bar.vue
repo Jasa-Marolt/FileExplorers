@@ -45,7 +45,7 @@ const isNotGame = computed(() => {
 
 const resetLevel = async () => {
   const level = store.getters["levelStoreModule/currentLevel"];
-  store.dispatch("fileStoreModule/setFilesystem", level.data);
+  store.dispatch("fileStoreModule/setFilesystem", level.startingFileSystem);
 }
 const pathValue = computed(() => {
   const routeName = route.name as string;
@@ -84,7 +84,7 @@ const breadcrumbsPath = computed(() => {
     return "" // Return an empty string if there are no breadcrumbs
   }
   const level = store.getters["levelStoreModule/currentLevel"];
-  const prefix = "C: " + level.name + " / "
+  const prefix = "C:/ " + level.name + " / "
 
   return prefix + breadcrumbs.value.reverse()
     .map((file: FileOrDirectory) => file.name)
