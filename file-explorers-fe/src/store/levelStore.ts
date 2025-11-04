@@ -5,7 +5,7 @@ export interface Level {
     name?: string;
     description?: string;
     solved?: boolean;
-    data?: FileOrDirectory[];
+    startingFileSystem?: FileOrDirectory[];
     difficulty?: number;
     instructions?: string;
 }
@@ -36,7 +36,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             return state.levels;
         },
         currentLevel(state) {
-            console.log("Getting current level:", state.currentLevel);
+            console.log("level store: getting current level:", state.currentLevel);
             return state.currentLevel;
         },
     },
@@ -45,7 +45,11 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             state.levels = payload;
         },
         SET_CURRENT_LEVEL(state, payload) {
+            console.log("level store: setting current level ", payload)
             state.currentLevel = payload;
+
+            
+
         },
         CLEAR_LEVELS(state) {
             state.levels = [];
@@ -100,7 +104,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
                             : {},
                     }
                 );
-
+                console.log("got getLevel response ", res)
                 if (!res.ok) {
                     console.error("Failed to fetch level, status:", res);
                     throw new Error("Failed to fetch level");

@@ -120,17 +120,21 @@ const router = useRouter();
 const isAuthenticated = computed(() => store.getters['userStoreModule/isAuthenticated']);
 
 const startPlaying = async () => {
+  console.log("start playing")
   if (isAuthenticated.value) {
     let level: Level = store.getters["levelStoreModule/currentLevel"];
-    if (level == null || level == undefined) {
-      level = (await store.dispatch("levelStoreModule/fetchLevel", 1));
-      console.log("opening new level")
 
-      router.push({ name: 'game' });
-      store.dispatch("fileStoreModule/setFilesystem", level.data);
+    let levelId = 1;
+    if(level){
+      levelId = level.level_id
     }
-    router.push({ name: 'game', });
-    store.dispatch("fileStoreModule/setFilesystem", level.data);
+
+    level = (await store.dispatch("levelStoreModule/fetchLevel", 1));
+    console.log("opening new level" , level, typeof(level))
+
+    router.push({ name: 'game' });
+    store.dispatch("fileStoreModule/setFilesystem", level.startingFileSystem);
+
 
   } else {
     router.push({ name: 'profile' });
