@@ -8,8 +8,15 @@ export interface Level {
     startingFileSystem?: FileOrDirectory[];
     difficulty?: number;
     instructions?: string;
+    solution?: SolutionFile[];
 }
-
+export interface SolutionFile {
+  id?: number,
+  name?: string,
+  isDirectory?: boolean,
+  parentDirectoryId?: number | null,
+  removed?: boolean
+}
 export interface LevelState {
     levels: Level[];
     currentLevel: Level | null;
