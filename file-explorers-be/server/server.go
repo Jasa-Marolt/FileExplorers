@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"file-explorers-be/models"
 	"file-explorers-be/service"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -83,16 +84,20 @@ func (c Server) GetLevelData(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), service.ContextKeyHttpRequest, r)
 	levelId, err := strconv.Atoi(chi.URLParam(r, "levelId"))
 	if err != nil {
+		fmt.Println("[DEBUG GetLevelData] Invalid levelId:", err)
 		WriteError(w, http.StatusBadRequest, err, "Invalid levelId")
 		return
 	}
+	fmt.Println("[DEBUG GetLevelData] Fetching level data for levelId:", levelId)
 
 	data, err := c.levelService.GetLevelData(ctx, levelId)
 	if err != nil {
+		fmt.Println("[DEBUG GetLevelData] Error from service:", err)
 		WriteError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
+	fmt.Println("[DEBUG GetLevelData] Successfully retrieved level data")
 	WriteSuccess(w, data, "Level data retrieved successfully")
 }
 
