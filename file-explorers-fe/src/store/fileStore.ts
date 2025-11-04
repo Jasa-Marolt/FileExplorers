@@ -6,6 +6,7 @@ import {
     buildFileStructure,
 } from "@/composables/fileOrDirectory";
 import { Module, MutationTree } from "vuex";
+import { validateSolution } from "@/service/solutionValidator";
 export interface FileState {
     filesystem: FileOrDirectory[];
     initialFilesystem: FileOrDirectory[];
@@ -320,8 +321,9 @@ export const fileStoreModule: Module<FileState, RootState> = {
         addFile({ commit }, file: FileOrDirectory) {
             console.log("todo add file");
         },
-        moveFile({ commit }, payload: MoveFilePayload) {
+        moveFile({ commit, dispatch }, payload: MoveFilePayload) {
             commit("MOVE_FILE", payload);
+            dispatch("checkSolution");
         },
         setSearchQuery({ commit }, query: string) {
             console.log("setting search querry", query);
@@ -350,17 +352,36 @@ export const fileStoreModule: Module<FileState, RootState> = {
         createFolder({ commit }, payload: { name: string }) {
             commit("CREATE_FOLDER", payload);
         },
-        deleteFiles({ commit }, payload: number[]) {
+        deleteFiles({ commit, dispatch }, payload: number[]) {
             commit("DELETE_FILES", payload);
+            dispatch("checkSolution");
         },
         copyFiles({ commit }, payload: number[]) {
             commit("COPY_FILES", payload);
         },
-        pasteFiles({ commit }) {
+        pasteFiles({ commit, dispatch }) {
             commit("PASTE_FILES");
+            dispatch("checkSolution");
         },
-        renameFile({ commit }, payload: { id: number; newName: string }) {
+        renameFile({ commit, dispatch }, payload: { id: number; newName: string }) {
             commit("RENAME_FILE", payload);
+            dispatch("checkSolution");
+        },
+        checkSolution({ state, rootGetters, dispatch }) {
+            const currentLevel = rootGetters["levelStoreModule/currentLevel"];
+            
+            if (!currentLevel || !currentLevel.solution || currentLevel.solved) {
+                return false;
+            }
+
+            const isSolved = validateSolution(state.filesystem, currentLevel.solution);
+
+            if (isSolved) {
+                console.log("🎉 Level solved!");
+                dispatch("levelStoreModule/solveLevel", currentLevel.level_id, { root: true });
+            }
+
+            return isSolved;
         },
     },
 };

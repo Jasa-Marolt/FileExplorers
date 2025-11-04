@@ -27,7 +27,6 @@ import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { FileOrDirectory } from '@/files';
-import { Level1Filesystem, Level2Filesystem, Level3Filesystem, Level4Filesystem, Level5Filesystem } from '@/store/levels';
 import { Level } from '@/store/levelStore';
 
 const store = useStore();
@@ -73,9 +72,13 @@ watch(
 );
 
 async function openLevel(num: number) {
-    let newLevel = [] as FileOrDirectory[];
-    newLevel = (await store.dispatch("levelStoreModule/fetchLevel", num)).data;
-    console.log("opening new level ", newLevel)
+    // fetchLevel returns the level object directly (not wrapped in .data)
+    const level = await store.dispatch("levelStoreModule/fetchLevel", num) as Level;
+    console.log("opening new level ", level);
+    
+    // Extract the filesystem from the level's startingFileSystem property
+    const newLevel = level?.startingFileSystem ?? [];
+    console.log("filesystem to set:", newLevel);
 
     router.push({ name: 'game' });
     store.dispatch("fileStoreModule/setFilesystem", newLevel);

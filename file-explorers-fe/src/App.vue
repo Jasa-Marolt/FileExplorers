@@ -1,9 +1,20 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
+import { setToastService } from './service/toastService'
+import { onMounted } from 'vue'
+
+const toast = useToast()
+
+onMounted(() => {
+  setToastService(toast)
+})
 
 </script>
 
 <template>
+  <Toast />
   <RouterView />
 </template>
 

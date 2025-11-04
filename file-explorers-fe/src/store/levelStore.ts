@@ -1,15 +1,23 @@
 import { Module, MutationTree } from "vuex";
 import { FileOrDirectory } from "@/files";
+import { showLevelCompleteToast } from "@/service/toastService";
 export interface Level {
     level_id: number;
     name?: string;
     description?: string;
     solved?: boolean;
-    data?: FileOrDirectory[];
+    startingFileSystem?: FileOrDirectory[];
     difficulty?: number;
     instructions?: string;
+    solution?: SolutionFile[];
 }
-
+export interface SolutionFile {
+  id?: number,
+  name?: string,
+  isDirectory?: boolean,
+  parentDirectoryId?: number | null,
+  removed?: boolean
+}
 export interface LevelState {
     levels: Level[];
     currentLevel: Level | null;
@@ -36,7 +44,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             return state.levels;
         },
         currentLevel(state) {
-            console.log("Getting current level:", state.currentLevel);
+            console.log("level store: getting current level:", state.currentLevel);
             return state.currentLevel;
         },
     },
@@ -45,7 +53,11 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             state.levels = payload;
         },
         SET_CURRENT_LEVEL(state, payload) {
+            console.log("level store: setting current level ", payload)
             state.currentLevel = payload;
+
+            
+
         },
         CLEAR_LEVELS(state) {
             state.levels = [];
@@ -100,7 +112,7 @@ export const levelStoreModule: Module<LevelState, RootState> = {
                             : {},
                     }
                 );
-
+                console.log("got getLevel response ", res)
                 if (!res.ok) {
                     console.error("Failed to fetch level, status:", res);
                     throw new Error("Failed to fetch level");
@@ -115,25 +127,40 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             }
         },
 
-        async solveLevel({ commit, rootGetters }, levelId: number) {
+        async solveLevel({ commit, rootGetters, state }, levelId: number) {
             const token = rootGetters["userStoreModule/getToken"];
             if (!token) {
+                console.warn("Cannot solve level: user not authenticated");
                 return;
             }
 
-            const res = await fetch(
-                `${
-                    process.env.VUE_APP_API_URL || "http://localhost:8080"
-                }/level/${levelId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            try {
+                const res = await fetch(
+                    `${
+                        process.env.VUE_APP_API_URL || "http://localhost:8080"
+                    }/level/${levelId}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
 
-            if (res.ok) commit("MARK_LEVEL_SOLVED", levelId);
+                if (res.ok) {
+                    commit("MARK_LEVEL_SOLVED", levelId);
+                    
+                    // Show success message
+                    const levelName = state.currentLevel?.name || `Level ${levelId}`;
+                    showLevelCompleteToast(levelName);
+                    
+                    console.log(`✅ Level ${levelId} marked as solved on backend`);
+                } else {
+                    console.error("Failed to mark level as solved:", res.status);
+                }
+            } catch (error) {
+                console.error("Error marking level as solved:", error);
+            }
         },
     },
 };
