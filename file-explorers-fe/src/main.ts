@@ -6,6 +6,7 @@ import store from "./store";
 
 import PrimeVue from "primevue/config";
 import Aura from "@primevue/themes/aura";
+import ToastService from "primevue/toastservice";
 
 // Initialize settings before mounting the app
 import { initializeSettings } from "./composables/useSettings";
@@ -17,4 +18,5 @@ app.use(PrimeVue, {
         preset: Aura,
     },
 });
+app.use(ToastService);
 app.mount("#app");

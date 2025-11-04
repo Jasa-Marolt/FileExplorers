@@ -1,5 +1,6 @@
 import { Module, MutationTree } from "vuex";
 import { FileOrDirectory } from "@/files";
+import { showLevelCompleteToast } from "@/service/toastService";
 export interface Level {
     level_id: number;
     name?: string;
@@ -126,25 +127,40 @@ export const levelStoreModule: Module<LevelState, RootState> = {
             }
         },
 
-        async solveLevel({ commit, rootGetters }, levelId: number) {
+        async solveLevel({ commit, rootGetters, state }, levelId: number) {
             const token = rootGetters["userStoreModule/getToken"];
             if (!token) {
+                console.warn("Cannot solve level: user not authenticated");
                 return;
             }
 
-            const res = await fetch(
-                `${
-                    process.env.VUE_APP_API_URL || "http://localhost:8080"
-                }/level/${levelId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            try {
+                const res = await fetch(
+                    `${
+                        process.env.VUE_APP_API_URL || "http://localhost:8080"
+                    }/level/${levelId}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
 
-            if (res.ok) commit("MARK_LEVEL_SOLVED", levelId);
+                if (res.ok) {
+                    commit("MARK_LEVEL_SOLVED", levelId);
+                    
+                    // Show success message
+                    const levelName = state.currentLevel?.name || `Level ${levelId}`;
+                    showLevelCompleteToast(levelName);
+                    
+                    console.log(`✅ Level ${levelId} marked as solved on backend`);
+                } else {
+                    console.error("Failed to mark level as solved:", res.status);
+                }
+            } catch (error) {
+                console.error("Error marking level as solved:", error);
+            }
         },
     },
 };
