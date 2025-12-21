@@ -15,6 +15,16 @@ import {
 import { CircuitSim } from "./logic/circuit_sim.js";
 import router from '@/router';
 
+// Asset imports (bundler will replace these with URLs)
+import baterijaImg from './phaserComponents/battery.svg';
+import resistorImg from './phaserComponents/resistor1.svg';
+import diodeImg from './phaserComponents/diode.svg';
+import switchOnImg from './phaserComponents/switch-on.svg';
+import switchOffImg from './phaserComponents/switch-off.svg';
+import wireImg from './phaserComponents/wire.png';
+import ampermeterImg from './phaserComponents/ampermeter.svg';
+import voltmeterImg from './phaserComponents/voltmeter.svg';
+
 export default class WorkspaceScene extends Phaser.Scene {
     constructor() {
         super("WorkspaceScene");
@@ -29,14 +39,15 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     preload() {
         this.graph = new CircuitGraph();
-        this.load.image("baterija", "src/components/battery.svg");
-        this.load.image("upor", "src/components/resistor1.svg");
-        this.load.image("svetilka", "src/components/diode.svg");
-        this.load.image("stikalo-on", "src/components/switch-on.svg");
-        this.load.image("stikalo-off", "src/components/switch-off.svg");
-        this.load.image("žica", "src/components/wire.png");
-        this.load.image("ampermeter", "src/components/ampermeter.svg");
-        this.load.image("voltmeter", "src/components/voltmeter.svg");
+        // Use imported URLs so bundler resolves correct paths
+        this.load.image("baterija", baterijaImg);
+        this.load.image("upor", resistorImg);
+        this.load.image("svetilka", diodeImg);
+        this.load.image("stikalo-on", switchOnImg);
+        this.load.image("stikalo-off", switchOffImg);
+        this.load.image("žica", wireImg);
+        this.load.image("ampermeter", ampermeterImg);
+        this.load.image("voltmeter", voltmeterImg);
     }
 
     create() {
@@ -195,19 +206,19 @@ export default class WorkspaceScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // Action buttons
-        new UIButton(this, {
-            x: width - 140,
-            y: 75,
-            text: "Lestvica",
-            onClick: () =>
-                this.scene.start("ScoreboardScene", {
-                    cameFromScene: "WorkspaceScene",
-                }),
-            background: {
-                width: 180,
-                height: 45,
-            },
-        });
+        // new UIButton(this, {
+        //     x: width - 140,
+        //     y: 75,
+        //     text: "Lestvica",
+        //     onClick: () =>
+        //         this.scene.start("ScoreboardScene", {
+        //             cameFromScene: "WorkspaceScene",
+        //         }),
+        //     background: {
+        //         width: 180,
+        //         height: 45,
+        //     },
+        // });
 
         // new UIButton(this, {
         //     x: width - 140,

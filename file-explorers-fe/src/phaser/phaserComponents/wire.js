@@ -20,20 +20,25 @@ class Wire {
     }
 
     addNode(node) {
-        let oldWire = node.wire;
-        if (oldWire) {
-            for (const childNode of oldWire.nodes) {
-                this.nodes.push(childNode);
-                childNode.wire = this;
+        try {
+
+            let oldWire = node.wire;
+            if (oldWire) {
+                for (const childNode of oldWire.nodes) {
+                    this.nodes.push(childNode);
+                    childNode.wire = this;
+                }
+                oldWire.nodes = [];
+                oldWire.deleteWire();
+            } else {
+                this.nodes.push(node);
+                node.wire = this;
             }
-            oldWire.nodes = [];
-            oldWire.deleteWire();
-        } else {
-            this.nodes.push(node);
-            node.wire = this;
-        }
-        if (this.nodes.length >= 2) {
-            this.draw();
+            if (this.nodes.length >= 2) {
+                this.draw();
+            }
+        }catch(err){
+            console.error("error ", err)
         }
     }
     removeNode(node) {
