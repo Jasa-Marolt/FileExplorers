@@ -12,7 +12,7 @@ class Voltmeter extends Component {
             "voltmeter",
             start,
             end,
-            "src/components/voltmeter.png",
+            "src/components/voltmeter.svg",
             componentObject,
             ComponentDirection.HORIZONTAL,
             false
