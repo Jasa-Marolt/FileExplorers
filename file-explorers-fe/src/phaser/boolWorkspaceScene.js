@@ -11,6 +11,9 @@ import nxorGateImg from './phaserComponents/boolean/nxor_gate.svg';
 import notGateImg from './phaserComponents/boolean/not_gate.svg';
 import switchOnImg from './phaserComponents/boolean/switch-on.svg';
 import switchOffImg from './phaserComponents/boolean/switch-off.svg';
+import BooleanGate from './phaserComponents/boolean/BooleanGate.js';
+import { Wire } from './phaserComponents/wire.js';
+import UIButton from './UI/UIButton.js';
 
 export default class BoolWorkspaceScene extends Phaser.Scene {
     constructor() {
@@ -42,7 +45,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         this.events.once('destroy', () => this.cleanup());
 
         // Back button
-        new (require('./UI/UIButton').default)(this, {
+        new UIButton(this, {
             x: 12,
             y: 10,
             text: '↩ Nazaj',
@@ -165,15 +168,120 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         container.setInteractive({ draggable: true, useHandCursor: true });
         this.input.setDraggable(container);
 
+        // Create logic component and nodes
+        const id = `${key}_${Math.floor(Math.random() * 100000)}`;
+        const gate = new BooleanGate(key, id);
+
+        // helper to create a circle UI for a node
+        const createNodeCircle = (node, offsetX, offsetY, isOutput = false) => {
+            const circle = this.add.circle(offsetX, offsetY, 6, isOutput ? 0x0000ff : 0xff0000).setOrigin(0.5);
+            circle.setInteractive({ useHandCursor: true });
+            circle.setData('logicNode', node);
+            circle.setData('component', container);
+            circle.setData('isOutput', isOutput);
+            container.add(circle);
+
+            // store reference for updates
+            node.componentObject = container;
+            node._circle = circle;
+            // Initialize world coords for node
+            node.x = container.x + circle.x;
+            node.y = container.y + circle.y;
+            node.initX = circle.x;
+            node.initY = circle.y;
+
+            // pointerdown to start wiring
+            circle.on('pointerdown', (pointer) => {
+                circle.setFillStyle(0x999999);
+                let startNode = circle.getData('logicNode');
+                // on pointerup try to connect to target node
+                this.input.once('pointerup', (pointer) => {
+                    const objects = this.input.hitTestPointer(pointer);
+                    const target = objects.find((o) => o && o.getData && o.getData('logicNode'));
+                    if (target) {
+                        const targetNode = target.getData('logicNode');
+                        if (targetNode && targetNode !== startNode) {
+                            const startIsOut = circle.getData('isOutput');
+                            const targetIsOut = target.getData('isOutput');
+                            // Only allow connecting output to input (or vice-versa)
+                            if (startIsOut === targetIsOut) {
+                                // same direction, ignore
+                            } else {
+                                const wire = new Wire(startNode, targetNode, this);
+
+                                // propagate current values across new wire
+                                if (startNode.bit_value) targetNode.setBit(startNode.bit_value);
+                                if (targetNode.bit_value) startNode.setBit(targetNode.bit_value);
+                            }
+                        }
+                    }
+                    circle.setFillStyle(isOutput ? 0x0000ff : 0xff0000);
+                });
+            });
+
+            return circle;
+        };
+
+        // Position nodes: inputs on left, output on right
+        const bboxW = img.displayWidth;
+        const bboxH = img.displayHeight;
+        const inOffsets = [];
+        const inputsCount = gate.inputs.length;
+        if (inputsCount === 1) {
+            inOffsets.push({ x: -bboxW / 2 - 10, y: 0 });
+        } else {
+            inOffsets.push({ x: -bboxW / 2 - 10, y: -12 });
+            inOffsets.push({ x: -bboxW / 2 - 10, y: 12 });
+        }
+
+        gate.inputs.forEach((node, idx) => {
+            const off = inOffsets[idx] || { x: -bboxW / 2 - 10, y: idx * 12 };
+            const circle = createNodeCircle(node, off.x, off.y, false);
+        });
+
+        // output circle
+        const outOff = { x: bboxW / 2 + 10, y: 0 };
+        const outCircle = createNodeCircle(gate.output, outOff.x, outOff.y, true);
+
+        // store gate reference on container for cleanup
+        container.setData('logicGate', gate);
+
+        // clicking switch toggles its output
+        if (key === 'switch-on' || key === 'switch-off') {
+            img.setInteractive({ useHandCursor: true });
+            img.on('pointerdown', () => {
+                // toggle output bit
+                const newVal = gate.output.bit_value ? 0 : 1;
+                gate.output.setBit(newVal);
+                // visually indicate state
+                img.setTint(newVal ? 0xffffaa : 0xffffff);
+            });
+        }
+
         container.on('drag', (pointer, dragX, dragY) => {
             container.x = dragX;
             container.y = dragY;
+            // update node world positions
+            gate.inputs.forEach((n) => {
+                if (n._circle) {
+                    const worldPoint = n._circle.getWorldTransformMatrix();
+                    n.x = worldPoint.tx;
+                    n.y = worldPoint.ty;
+                    if (n.wire) n.wire.draw();
+                }
+            });
+            if (gate.output._circle) {
+                const worldPoint = gate.output._circle.getWorldTransformMatrix();
+                gate.output.x = worldPoint.tx;
+                gate.output.y = worldPoint.ty;
+                if (gate.output.wire) gate.output.wire.draw();
+            }
         });
 
         container.on('dragend', () => {
             const isInPanel = container.x < 150;
             if (isInPanel) {
-                // drop back: destroy temporary container
+                // drop back: destroy temporary container and its nodes
                 container.destroy();
                 return;
             }
@@ -181,6 +289,22 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
             const snapped = this.snapToGrid(container.x, container.y);
             container.x = snapped.x;
             container.y = snapped.y;
+
+            // update node positions after snapping
+            gate.inputs.forEach((n) => {
+                if (n._circle) {
+                    const worldPoint = n._circle.getWorldTransformMatrix();
+                    n.x = worldPoint.tx;
+                    n.y = worldPoint.ty;
+                    if (n.wire) n.wire.draw();
+                }
+            });
+            if (gate.output._circle) {
+                const worldPoint = gate.output._circle.getWorldTransformMatrix();
+                gate.output.x = worldPoint.tx;
+                gate.output.y = worldPoint.ty;
+                if (gate.output.wire) gate.output.wire.draw();
+            }
 
             // mark as placed and keep for cleanup
             this.placedComponents.push(container);
@@ -194,6 +318,14 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         if (this.placedComponents && this.placedComponents.length) {
             this.placedComponents.forEach((c) => {
                 try {
+                    // If it has a logic gate, clear node wires
+                    const gate = c.getData && c.getData('logicGate');
+                    if (gate) {
+                        gate.inputs.forEach((n) => {
+                            if (n && n.wire) n.wire.deleteWire();
+                        });
+                        if (gate.output && gate.output.wire) gate.output.wire.deleteWire();
+                    }
                     if (c.destroy) c.destroy();
                 } catch (e) {}
             });
