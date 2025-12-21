@@ -13,6 +13,18 @@ const router = createRouter({
           component: () => import('../views/HomeView.vue')
         },
         {
+          path: 'gameElektro',
+          name: 'gameElektro',
+          props: true,
+          component: () => import('../views/HomeView.vue')
+        },
+        {
+          path: 'gameBool',
+          name: 'gameBool',
+          props: true,
+          component: () => import('../views/HomeView.vue')
+        },
+        {
           path: 'game/:id?',
           name: 'game',
           props: true,

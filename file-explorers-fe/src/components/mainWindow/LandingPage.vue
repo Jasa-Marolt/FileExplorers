@@ -18,7 +18,10 @@
           <i class="pi pi-play"></i>
           Start Playing Now
         </button>
-
+        <button @click="startPlayingElektro" class="btn btn-primary">
+          <i class="pi pi-play"></i>
+          Start Playing Elektro
+        </button>
       </div>
     </div>
 
@@ -101,10 +104,10 @@
     <div class="cta-section">
       <h2>Ready to Dominate?</h2>
       <p>Start now and become a tech legend. Your friends won't know what hit 'em!</p>
-        <button @click="startPlaying" class="btn btn-primary btn-large">
-          <i class="pi pi-play"></i>
-          Let's Go!
-        </button>
+      <button @click="startPlaying" class="btn btn-primary btn-large">
+        <i class="pi pi-play"></i>
+        Let's Go!
+      </button>
     </div>
   </div>
 </template>
@@ -126,12 +129,12 @@ const startPlaying = async () => {
     let level: Level = store.getters["levelStoreModule/currentLevel"];
 
     let levelId = 1;
-    if(level){
+    if (level) {
       levelId = level.level_id
     }
 
     level = (await store.dispatch("levelStoreModule/fetchLevel", 1));
-    console.log("opening new level" , level, typeof(level))
+    console.log("opening new level", level, typeof (level))
 
     router.push({ name: 'game' });
     store.dispatch("fileStoreModule/setFilesystem", level.startingFileSystem);
@@ -142,6 +145,14 @@ const startPlaying = async () => {
   }
 };
 
+const startPlayingElektro = async () => {
+  console.log("start playing elektro")
+  if (isAuthenticated.value) {
+    router.push({ name: 'gameElektro' });
+  } else {
+    router.push({ name: 'profile' });
+  }
+};
 const goToProfile = () => {
   router.push({ name: 'profile' });
 };
