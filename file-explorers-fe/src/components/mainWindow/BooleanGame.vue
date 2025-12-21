@@ -28,6 +28,10 @@ onMounted(() => {
         },
       },
       backgroundColor: '#e0c9a6',
+      // Render at device pixel ratio for crisp SVG scaling
+      render: {
+        pixelArt: false,
+      },
     };
 
     game = new Phaser.Game(config);

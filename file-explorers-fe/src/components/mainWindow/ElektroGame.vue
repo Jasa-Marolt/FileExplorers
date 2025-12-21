@@ -27,9 +27,11 @@ onMounted(() => {
           debug: false
         }
       },
-      backgroundColor: '#e0c9a6'
+      backgroundColor: '#e0c9a6',
+      render: {
+        pixelArt: false,
+      }
     };
-
     game = new Phaser.Game(config);
   }
 });

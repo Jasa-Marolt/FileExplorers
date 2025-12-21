@@ -92,7 +92,21 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
 
         components.forEach((c, idx) => {
             const y = startY + idx * gap;
-            const icon = this.add.image(panelWidth / 2, y, c.key).setDisplaySize(48, 48).setOrigin(0.5);
+            const icon = this.add.image(panelWidth / 2, y, c.key).setOrigin(0.5);
+            // Preserve aspect ratio and set desired width
+            const desiredWidth = 48;
+            try {
+                const tex = this.textures.get(c.key);
+                const src = tex && tex.getSourceImage ? tex.getSourceImage() : null;
+                const naturalW = src ? src.width : icon.width;
+                const naturalH = src ? src.height : icon.height;
+                const desiredHeight = Math.max(1, Math.round(desiredWidth * (naturalH / naturalW)));
+                icon.setDisplaySize(desiredWidth, desiredHeight);
+            } catch (e) {
+                // fallback to square size
+                icon.setDisplaySize(48, 48);
+            }
+
             // Make icon interactive: click to add copy to workspace
             icon.setInteractive({ useHandCursor: true });
             icon.on('pointerdown', () => {
@@ -129,7 +143,19 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
     createNewBooleanComponent(x, y, key) {
         // Create a container that can be dragged
         const container = this.add.container(x, y);
-        const img = this.add.image(0, 0, key).setDisplaySize(80, 80).setOrigin(0.5);
+        const img = this.add.image(0, 0, key).setOrigin(0.5);
+        // Preserve aspect ratio for placed components
+        const desiredWidth = 80;
+        try {
+            const tex = this.textures.get(key);
+            const src = tex && tex.getSourceImage ? tex.getSourceImage() : null;
+            const naturalW = src ? src.width : img.width;
+            const naturalH = src ? src.height : img.height;
+            const desiredHeight = Math.max(1, Math.round(desiredWidth * (naturalH / naturalW)));
+            img.setDisplaySize(desiredWidth, desiredHeight);
+        } catch (e) {
+            img.setDisplaySize(80, 80);
+        }
         container.add(img);
 
         const label = this.add.text(0, 40, key.toUpperCase(), { fontSize: '12px', color: '#fff', backgroundColor: '#00000088', padding: { x: 4, y: 2 } }).setOrigin(0.5);
@@ -174,4 +200,5 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
             this.placedComponents = [];
         }
     }
+
 }
