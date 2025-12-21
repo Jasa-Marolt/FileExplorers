@@ -20,7 +20,11 @@
         </button>
         <button @click="startPlayingElektro" class="btn btn-primary">
           <i class="pi pi-play"></i>
-          Start Playing Elektro
+          Play Elektro
+        </button>
+        <button @click="startPlayingBool" class="btn btn-primary">
+          <i class="pi pi-play"></i>
+          Play Boolean
         </button>
       </div>
     </div>
@@ -153,6 +157,15 @@ const startPlayingElektro = async () => {
     router.push({ name: 'profile' });
   }
 };
+
+function startPlayingBool() {
+  console.log("start playing boolean");
+  if (isAuthenticated.value) {
+    router.push({ name: 'gameBool' });
+  } else {
+    router.push({ name: 'profile' });
+  }
+}
 const goToProfile = () => {
   router.push({ name: 'profile' });
 };
