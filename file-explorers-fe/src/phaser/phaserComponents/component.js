@@ -104,6 +104,11 @@ class Component {
     }
     destroy() {
         console.log(`Destroying component ${this.id}`);
+        // Stop any running measurement interval before destroying UI
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
         if (this.start) this.start.destroyNode();
         if (this.end) this.end.destroyNode();
         if (this.voltmeter) this.voltmeter.destroy();

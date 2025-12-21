@@ -193,6 +193,8 @@ export default class Oscilloscope {
      * @param {number} voltage - The voltage to measure
      */
     measure(voltage) {
+        // If destroyed, ignore measurements
+        if (this._destroyed) return;
         // console.log("measuring voltage ", voltage)
         // Add new measurement
         this.measurements.push(voltage);
@@ -208,6 +210,7 @@ export default class Oscilloscope {
     }
 
     updateDisplay() {
+        if(!this.displayText)return
         if (this.measurements.length === 0) {
             const label = this.getDisplayLabel();
             const unit = this.getDisplayUnit();
@@ -219,9 +222,10 @@ export default class Oscilloscope {
         const label = this.getDisplayLabel();
 
         const unit = this.getDisplayUnit();
-        this.displayText.setText(
-            `${label}: ${currentValue.toFixed(2)} ${unit}`
-        );
+
+            this.displayText.setText(
+                `${label}: ${currentValue.toFixed(2)} ${unit}`
+            );
     }
 
     getDisplayLabel() {
@@ -413,8 +417,15 @@ export default class Oscilloscope {
      * Destroy the oscilloscope
      */
     destroy() {
+        // Mark destroyed and remove display objects
+        this._destroyed = true;
         if (this.container) {
             this.container.destroy();
+            this.container = null;
+            this.gridGraphics = null;
+            this.waveformGraphics = null;
+            this.nameText = null;
+            this.displayText = null;
         }
     }
 }

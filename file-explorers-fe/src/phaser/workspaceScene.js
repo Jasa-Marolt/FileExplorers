@@ -361,6 +361,9 @@ export default class WorkspaceScene extends Phaser.Scene {
             y: 10,
             text: "↩ Nazaj",
             onClick: () => {
+
+                this.placedComponents.forEach((comp) => comp.destroy());
+
                 this.cameras.main.fade(300, 0, 0, 0);
                 this.time.delayedCall(300, () => {
                     // Navigate back to main window (File Explorer)
@@ -440,7 +443,7 @@ export default class WorkspaceScene extends Phaser.Scene {
                         typeof pointer.event.preventDefault === "function"
                     )
                         pointer.event.preventDefault();
-                } catch (e) {}
+                } catch (e) { }
             }
         });
 
@@ -1211,10 +1214,10 @@ export default class WorkspaceScene extends Phaser.Scene {
                                 ) {
                                     if (
                                         typeof batteryLogicComponent.values[
-                                            key
+                                        key
                                         ] === "object" &&
                                         batteryLogicComponent.values[key] !==
-                                            null
+                                        null
                                     ) {
                                         batteryLogicComponent.values[
                                             key
@@ -1236,12 +1239,12 @@ export default class WorkspaceScene extends Phaser.Scene {
                                     // Direct value
                                     if (
                                         typeof batteryLogicComponent.values[
-                                            key
+                                        key
                                         ] === "object" &&
                                         batteryLogicComponent.values[key] !==
-                                            null &&
+                                        null &&
                                         "value" in
-                                            batteryLogicComponent.values[key]
+                                        batteryLogicComponent.values[key]
                                     ) {
                                         batteryLogicComponent.values[
                                             key
@@ -1360,7 +1363,7 @@ export default class WorkspaceScene extends Phaser.Scene {
                                 ) {
                                     if (
                                         typeof logicComponent.values[key] ===
-                                            "object" &&
+                                        "object" &&
                                         logicComponent.values[key] !== null
                                     ) {
                                         logicComponent.values[key].value =
@@ -1382,7 +1385,7 @@ export default class WorkspaceScene extends Phaser.Scene {
                                     // Direct value
                                     if (
                                         typeof logicComponent.values[key] ===
-                                            "object" &&
+                                        "object" &&
                                         logicComponent.values[key] !== null &&
                                         "value" in logicComponent.values[key]
                                     ) {
