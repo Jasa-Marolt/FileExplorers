@@ -94,106 +94,6 @@ export default class WorkspaceScene extends Phaser.Scene {
         this.infoWindow.add([infoBox, infoText]);
         this.infoText = infoText;
 
-        this.challenges = [
-            {
-                prompt: "Sestavi preprosti električni krog z baterijo in svetilko.",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "žica",
-                    "žica",
-                    "žica",
-                    "žica",
-                    "žica",
-                    "žica",
-                ],
-                theory: [
-                    "Osnovni električni krog potrebuje vir, to je v našem primeru baterija. Potrebuje tudi porabnike, to je svetilka. Električni krog je v našem primeru sklenjen, kar je nujno potrebno, da električni tok teče preko prevodnikov oziroma žic.",
-                ],
-            },
-            {
-                prompt: "Sestavi preprosti nesklenjeni električni krog z baterijo, svetilko in stikalom.",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "žica",
-                    "stikalo-off",
-                ],
-                theory: [
-                    "V nesklenjenem krogu je stikalo odprto, kar pomeni, da je električni tok prekinjen. Svetilka posledično zato ne sveti.",
-                ],
-            },
-            {
-                prompt: "Sestavi preprosti sklenjeni električni krog z baterijo, svetilko in stikalom.",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "žica",
-                    "stikalo-on",
-                ],
-                theory: [
-                    "V sklenjenem krogu je stikalo zaprto, kar pomeni, da lahko električni tok teče neovirano. Torej v tem primeru so vrata zaprta.",
-                ],
-            },
-            {
-                prompt: "Sestavi električni krog z baterijo, svetilko in stikalom, ki ga lahko ugašaš in prižigaš.",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "žica",
-                    "stikalo-on",
-                    "stikalo-off",
-                ],
-                theory: [
-                    "Stikalo nam omogoča nadzor nad pretokom električnega toka. Ko je stikalo zaprto, tok teče in posledično svetilka sveti. Kadar pa je stikalo odprto, tok ne teče in se svetilka ugasne. To lahko primerjamo z vklapljanjem in izklapljanjem električnih naprav v naših domovih.",
-                ],
-            },
-            {
-                prompt: "Sestavi krog z dvema baterijama in svetilko. ",
-                requiredComponents: [
-                    "baterija",
-                    "baterija",
-                    "svetilka",
-                    "žica",
-                ],
-                theory: [
-                    "Kadar vežemo dve ali več baterij zaporedno, se napetosti seštevajo. Večja je napetost, večji je električni tok. V našem primeru zato svetilka sveti močneje.",
-                ],
-            },
-            {
-                prompt: "V električni krog zaporedno poveži dve svetilki, ki ju priključiš na baterijo. ",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "svetilka",
-                    "žica",
-                ],
-                theory: [
-                    "V zaporedni vezavi teče isti električni tok skozi vse svetilke. Napetost baterije se porazdeli. Če imamo primer, da ena svetilka preneha delovati, bo ta prekinila tok skozi drugo svetilko.",
-                ],
-            },
-
-            {
-                prompt: "V električni krog vzporedno poveži dve svetilki, ki ju priključiš na baterijo. ",
-                requiredComponents: [
-                    "baterija",
-                    "svetilka",
-                    "svetilka",
-                    "žica",
-                ],
-                theory: [
-                    "V vzporedni vezavi ima vsaka svetilka enako napetost kot baterija. Eletrični tok se porazdeli med svetilkami. Če ena svetilka preneha delovati, bo druga še vedno delovala.",
-                ],
-            },
-            {
-                prompt: "Sestavi električni krog s svetilko in uporom. ",
-                requiredComponents: ["baterija", "svetilka", "žica", "upor"],
-                theory: [
-                    "Upor omejuje tok v krogu. Večji kot je upor, manjši je tok. Spoznajmo Ohmov zakon: tok (I) = napetost (U) / upornost (R). Svetilka bo svetila manj intenzivno, saj skozi njo teče manjši tok.",
-                ],
-            },
-        ];
-
         // this.currentChallengeIndex = 0;
 
         this.checkText = this.add
@@ -205,59 +105,6 @@ export default class WorkspaceScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        // Action buttons
-        // new UIButton(this, {
-        //     x: width - 140,
-        //     y: 75,
-        //     text: "Lestvica",
-        //     onClick: () =>
-        //         this.scene.start("ScoreboardScene", {
-        //             cameFromScene: "WorkspaceScene",
-        //         }),
-        //     background: {
-        //         width: 180,
-        //         height: 45,
-        //     },
-        // });
-
-        // new UIButton(this, {
-        //     x: width - 140,
-        //     y: 125,
-        //     text: "Preveri krog",
-        //     onClick: () => this.checkCircuit(),
-        //     background: {
-        //         width: 180,
-        //         height: 45,
-        //     },
-        // });
-
-        // new UIButton(this, {
-        //     x: width - 140,
-        //     y: 175,
-        //     text: "Simulacija",
-        //     onClick: () => {
-        //         this.connected = this.graph.simulate();
-        //         if (this.connected == 1) {
-        //             this.checkText.setStyle({ color: "#00aa00" });
-        //             this.checkText.setText("Električni tok je sklenjen");
-        //             this.sim = true;
-        //             return;
-        //         }
-        //         this.checkText.setStyle({ color: "#cc0000" });
-        //         if (this.connected == -1) {
-        //             this.checkText.setText("Manjka ti baterija");
-        //         } else if (this.connected == -2) {
-        //             this.checkText.setText("Stikalo je izklopljeno");
-        //         } else if (this.connected == 0) {
-        //             this.checkText.setText("Električni tok ni sklenjen");
-        //         }
-        //         this.sim = false;
-        //     },
-        //     background: {
-        //         width: 180,
-        //         height: 45,
-        //     },
-        // });
 
         new UIButton(this, {
             x: width - 140,
@@ -386,15 +233,6 @@ export default class WorkspaceScene extends Phaser.Scene {
             },
         });
 
-        // this.oscilloscope = new Oscilloscope(this, {
-        //     x: 400,
-        //     y: 300,
-        //     width: 300,
-        //     height: 200,
-        //     maxMeasurements: 10,
-        //     minVoltage: -5,
-        //     maxVoltage: 5,
-        // });
 
         this.add
             .text(
@@ -447,36 +285,7 @@ export default class WorkspaceScene extends Phaser.Scene {
             }
         });
 
-        // const scoreButton = this.add.text(this.scale.width / 1.1, 25, 'Lestvica', {
-        //   fontFamily: 'Arial',
-        //   fontSize: '18px',
-        //   color: '#0066ff',
-        //   backgroundColor: '#e1e9ff',
-        //   padding: { x: 20, y: 10 }
-        // })
-        //   .setOrigin(0.5)
-        //   .setInteractive({ useHandCursor: true })
-        //   .on('pointerover', () => scoreButton.setStyle({ color: '#0044cc' }))
-        //   .on('pointerout', () => scoreButton.setStyle({ color: '#0066ff' }))
-        //   .on('pointerdown', () => {
-        //     this.scene.start('ScoreboardScene');
-        //   });
-
-        // const simulate = this.add.text(this.scale.width / 1.1, 25, 'Simulacija', {
-        //   fontFamily: 'Arial',
-        //   fontSize: '18px',
-        //   color: '#0066ff',
-        //   backgroundColor: '#e1e9ff',
-        //   padding: { x: 20, y: 10 }
-        // })
-        //   .setOrigin(0.5, -1)
-        //   .setInteractive({ useHandCursor: true })
-        //   .on('pointerover', () => simulate.setStyle({ color: '#0044cc' }))
-        //   .on('pointerout', () => simulate.setStyle({ color: '#0066ff' }))
-        //   .on('pointerdown', () => {
-        //     console.log(this.graph);
-        //     this.graph.simulate();
-        //   });
+   
 
         console.log(JSON.parse(localStorage.getItem("users")));
     }
@@ -900,26 +709,6 @@ export default class WorkspaceScene extends Phaser.Scene {
         ]);
     }
 
-    nextChallenge() {
-        this.currentChallengeIndex++;
-        localStorage.setItem(
-            "currentChallengeIndex",
-            this.currentChallengeIndex.toString()
-        );
-        this.checkText.setText("");
-
-        if (this.currentChallengeIndex < this.challenges.length) {
-            this.promptText.setText(
-                this.challenges[this.currentChallengeIndex].prompt
-            );
-        } else {
-            this.promptText.setText(
-                "Vse naloge so uspešno opravljene! Čestitke!"
-            );
-            localStorage.removeItem("currentChallengeIndex");
-        }
-    }
-
     addPoints(points) {
         const user = localStorage.getItem("username");
         const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -929,63 +718,8 @@ export default class WorkspaceScene extends Phaser.Scene {
         }
         localStorage.setItem("users", JSON.stringify(users));
     }
+ 
 
-    showTheory(theoryText) {
-        const { width, height } = this.cameras.main;
-
-        this.theoryBack = this.add
-            .rectangle(width / 2, height / 2, width - 100, 150, 0x000000, 0.8)
-            .setOrigin(0.5)
-            .setDepth(10);
-
-        this.theoryText = this.add
-            .text(width / 2, height / 2, theoryText, {
-                fontSize: "16px",
-                color: "#ffffff",
-                fontStyle: "bold",
-                align: "center",
-                wordWrap: { width: width - 150 },
-            })
-            .setOrigin(0.5)
-            .setDepth(11);
-
-        this.continueButton = new UIButton(this, {
-            x: width / 2,
-            y: height / 2 + 70,
-            text: "Nadaljuj",
-            onClick: () => {
-                this.hideTheory();
-                this.placedComponents.forEach((comp) => comp.destroy());
-                this.placedComponents = [];
-                this.nextChallenge();
-            },
-            style: {
-                fontSize: "18px",
-                color: "#0066ff",
-                backgroundColor: "#ffffff",
-                padding: { x: 20, y: 10 },
-            },
-            hover: {
-                color: "#0044cc",
-            },
-            depth: 11,
-        });
-    }
-
-    hideTheory() {
-        if (this.theoryBack) {
-            this.theoryBack.destroy();
-            this.theoryBack = null;
-        }
-        if (this.theoryText) {
-            this.theoryText.destroy();
-            this.theoryText = null;
-        }
-        if (this.continueButton) {
-            this.continueButton.destroy();
-            this.continueButton = null;
-        }
-    }
 
     /**
      * Test function to demonstrate oscilloscope with a sine wave
