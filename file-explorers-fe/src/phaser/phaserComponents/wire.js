@@ -21,24 +21,30 @@ class Wire {
 
     addNode(node) {
         try {
-
             let oldWire = node.wire;
-            if (oldWire) {
+            // If the node belongs to a different wire, merge that wire into this one.
+            if (oldWire && oldWire !== this) {
                 for (const childNode of oldWire.nodes) {
-                    this.nodes.push(childNode);
-                    childNode.wire = this;
+                    if (this.nodes.indexOf(childNode) === -1) {
+                        this.nodes.push(childNode);
+                        childNode.wire = this;
+                    }
                 }
                 oldWire.nodes = [];
                 oldWire.deleteWire();
             } else {
-                this.nodes.push(node);
-                node.wire = this;
+                // Either node had no wire, or it already belongs to this wire.
+                if (this.nodes.indexOf(node) === -1) {
+                    this.nodes.push(node);
+                    node.wire = this;
+                }
             }
+
             if (this.nodes.length >= 2) {
                 this.draw();
             }
-        }catch(err){
-            console.error("error ", err)
+        } catch (err) {
+            console.error("error ", err);
         }
     }
     removeNode(node) {

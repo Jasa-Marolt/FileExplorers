@@ -13,8 +13,24 @@ const gameContainer = ref<HTMLDivElement | null>(null);
 let game: Phaser.Game | null = null;
 
 onMounted(() => {
+  // Patch AudioContext.suspend to avoid "Cannot suspend a closed AudioContext" errors
+  try {
+    const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (AC && !AC.prototype.__suspendPatched) {
+      const origSuspend = AC.prototype.suspend;
+      AC.prototype.suspend = function() {
+        try {
+          if (this.state === 'closed') return Promise.resolve();
+        } catch (e) {}
+        return origSuspend.apply(this, arguments);
+      };
+      AC.prototype.__suspendPatched = true;
+    }
+  } catch (e) {}
+
   if (gameContainer.value) {
-    const config: Phaser.Types.Core.GameConfig = {
+    // @ts-ignore: allow non-standard config fields like 'resolution'
+    const config: any = {
       type: Phaser.AUTO,
       parent: gameContainer.value,
       width: gameContainer.value.offsetWidth,
@@ -34,7 +50,10 @@ onMounted(() => {
       },
     };
 
-    game = new Phaser.Game(config);
+    // set resolution dynamically to avoid GameConfig literal type errors
+    (config as any).resolution = window.devicePixelRatio || 1;
+
+    game = new Phaser.Game(config as Phaser.Types.Core.GameConfig);
   }
 });
 

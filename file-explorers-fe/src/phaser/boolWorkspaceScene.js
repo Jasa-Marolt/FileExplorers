@@ -14,6 +14,7 @@ import switchOffImg from './phaserComponents/boolean/switch-off.svg';
 import BooleanGate from './phaserComponents/boolean/BooleanGate.js';
 import { Wire } from './phaserComponents/wire.js';
 import UIButton from './UI/UIButton.js';
+import { createContextMenu } from './UI/ContextMenu.js';
 
 export default class BoolWorkspaceScene extends Phaser.Scene {
     constructor() {
@@ -40,6 +41,20 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         this.createPanel();
         this.createGrid();
 
+        // Disable browser context menu on the Phaser canvas
+        try {
+            if (this.input && this.input.mouse && typeof this.input.mouse.disableContextMenu === 'function') {
+                this.input.mouse.disableContextMenu();
+            }
+        } catch (e) {}
+        try {
+            const canvas = this.game && this.game.canvas ? this.game.canvas : null;
+            if (canvas && !canvas._rupsContextMenuListenerAdded) {
+                canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
+                canvas._rupsContextMenuListenerAdded = true;
+            }
+        } catch (e) {}
+
         // Listen for scene shutdown and cleanup
         this.events.once('shutdown', () => this.cleanup());
         this.events.once('destroy', () => this.cleanup());
@@ -65,6 +80,107 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 color: '#387aff',
             },
         });
+
+        // Right-click context menu for components
+        this.input.on('pointerdown', (pointer) => {
+            const isRightClick =
+                (pointer.event && pointer.event.button === 2) ||
+                (pointer.rightButtonDown && pointer.rightButtonDown()) ||
+                (typeof pointer.buttons !== 'undefined' && pointer.buttons === 2);
+            if (!isRightClick) return;
+            // prevent browser context menu
+            try { if (pointer && pointer.event && typeof pointer.event.preventDefault === 'function') pointer.event.preventDefault(); } catch (e) {}
+
+            const objects = this.input.hitTestPointer(pointer);
+            const target = objects.find((o) => o && o.getData && (o.getData('logicNode') || o.getData('component') || (o.parentContainer && o.parentContainer.getData && o.parentContainer.getData('logicGate'))));
+            let compContainer = null;
+            if (!target) return;
+            if (target.getData('component')) compContainer = target.getData('component');
+            else if (target.parentContainer && target.parentContainer.getData && target.parentContainer.getData('logicGate')) compContainer = target.parentContainer;
+            else if (target.getData('logicNode') && target.getData('logicNode').componentObject) compContainer = target.getData('logicNode').componentObject;
+
+            if (!compContainer) return;
+
+            // Build context menu items; add switch-specific toggle option when applicable
+            const gate = compContainer.getData('logicGate');
+            let items = [
+                {
+                    label: 'Rotate',
+                    onClick: () => {
+                        rotateComponent(compContainer);
+                    },
+                },
+                {
+                    label: 'Destroy',
+                    onClick: () => {
+                        // remove wires
+                        const gate = compContainer.getData('logicGate');
+                        if (gate) {
+                            gate.inputs.forEach((n) => { if (n && n.wire) n.wire.deleteWire(); });
+                            if (gate.output && gate.output.wire) gate.output.wire.deleteWire();
+                        }
+                        // remove from placedComponents
+                        const idx = this.placedComponents.indexOf(compContainer);
+                        if (idx > -1) this.placedComponents.splice(idx, 1);
+                        compContainer.destroy();
+                    },
+                },
+            ];
+
+            // If this component is a switch, expose a Toggle action in the context menu
+            if (gate && (gate.type === 'switch-on' || gate.type === 'switch-off' || (typeof gate.type === 'string' && gate.type.startsWith('switch')))) {
+                items.unshift({
+                    label: 'Toggle',
+                    onClick: () => {
+                        try {
+                            const newVal = gate.output.bit_value ? 0 : 1;
+                            gate.output.setBit(newVal);
+                            // find image child and update tint
+                            const img = compContainer.list && compContainer.list.find((c) => c && c.texture && typeof c.setTint === 'function');
+                            if (img) img.setTint(newVal ? 0xffffaa : 0xffffff);
+                        } catch (e) {}
+                    },
+                });
+            }
+
+            createContextMenu(this, pointer.worldX, pointer.worldY, items);
+        });
+
+        const rotateComponent = (container) => {
+            const newAngle = (container.angle + 90) % 360;
+            container.angle = newAngle;
+            // update circles positions according to rotated coords
+            const gate = container.getData('logicGate');
+            if (!gate) return;
+            // For each node, recompute position based on its initial offsets (initX/initY)
+            gate.inputs.forEach((n) => {
+                if (n._circle) {
+                    const ox = n.initX || n._circle.x;
+                    const oy = n.initY || n._circle.y;
+                    // rotate (ox,oy) by +90 deg: (x,y)->(y,-x)
+                    const rx = oy;
+                    const ry = -ox;
+                    n._circle.x = rx; n._circle.y = ry;
+                }
+            });
+            if (gate.output && gate.output._circle) {
+                const ox = gate.output.initX || gate.output._circle.x;
+                const oy = gate.output.initY || gate.output._circle.y;
+                gate.output._circle.x = oy; gate.output._circle.y = -ox;
+            }
+
+            // After moving circles, update world node positions
+            gate.inputs.forEach((n) => {
+                if (n._circle) {
+                    const mat = n._circle.getWorldTransformMatrix();
+                    n.x = mat.tx; n.y = mat.ty; if (n.wire) n.wire.draw();
+                }
+            });
+            if (gate.output && gate.output._circle) {
+                const mat = gate.output._circle.getWorldTransformMatrix();
+                gate.output.x = mat.tx; gate.output.y = mat.ty; if (gate.output.wire) gate.output.wire.draw();
+            }
+        };
     }
 
     createPanel() {
@@ -110,10 +226,78 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                 icon.setDisplaySize(48, 48);
             }
 
-            // Make icon interactive: click to add copy to workspace
+            // Make icon interactive and draggable to create new component while dragging
             icon.setInteractive({ useHandCursor: true });
-            icon.on('pointerdown', () => {
-                this.createNewBooleanComponent(panelWidth + 120, y, c.key);
+            this.input.setDraggable(icon);
+
+            // temporary ghost container while dragging from panel
+            icon._ghost = null;
+
+            icon.on('dragstart', (pointer) => {
+                // create a new component at pointer world position
+                const worldX = pointer.worldX || pointer.x;
+                const worldY = pointer.worldY || pointer.y;
+                const ghost = this.createNewBooleanComponent(worldX, worldY, c.key);
+                ghost.setData('fromPanel', true);
+                icon._ghost = ghost;
+                // prevent the icon itself from moving
+                icon.x = panelWidth / 2;
+                icon.y = y;
+            });
+
+            icon.on('drag', (pointer, dragX, dragY) => {
+                if (icon._ghost) {
+                    icon._ghost.x = dragX;
+                    icon._ghost.y = dragY;
+                    // update any node world positions to keep wires reactive while dragging
+                    const gate = icon._ghost.getData('logicGate');
+                    if (gate) {
+                        gate.inputs.forEach((n) => {
+                            if (n._circle) {
+                                const mat = n._circle.getWorldTransformMatrix();
+                                n.x = mat.tx; n.y = mat.ty;
+                                if (n.wire) n.wire.draw();
+                            }
+                        });
+                        if (gate.output && gate.output._circle) {
+                            const mat = gate.output._circle.getWorldTransformMatrix();
+                            gate.output.x = mat.tx; gate.output.y = mat.ty;
+                            if (gate.output.wire) gate.output.wire.draw();
+                        }
+                    }
+                }
+            });
+
+            icon.on('dragend', (pointer) => {
+                const ghost = icon._ghost;
+                if (!ghost) return;
+                // determine drop
+                const isInPanel = ghost.x < panelWidth;
+                if (isInPanel) {
+                    ghost.destroy();
+                } else {
+                    // snap and finalize placement (same behavior as container dragend)
+                    const snapped = this.snapToGrid(ghost.x, ghost.y);
+                    ghost.x = snapped.x; ghost.y = snapped.y;
+                    // update node positions
+                    const gate = ghost.getData('logicGate');
+                    if (gate) {
+                        gate.inputs.forEach((n) => {
+                            if (n._circle) {
+                                const mat = n._circle.getWorldTransformMatrix();
+                                n.x = mat.tx; n.y = mat.ty; if (n.wire) n.wire.draw();
+                            }
+                        });
+                        if (gate.output && gate.output._circle) {
+                            const mat = gate.output._circle.getWorldTransformMatrix();
+                            gate.output.x = mat.tx; gate.output.y = mat.ty; if (gate.output.wire) gate.output.wire.draw();
+                        }
+                    }
+                    this.placedComponents.push(ghost);
+                }
+                icon._ghost = null;
+                // ensure icon returns to original place
+                icon.x = panelWidth / 2; icon.y = y;
             });
         });
     }
@@ -165,8 +349,11 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         container.add(label);
 
         container.setSize(80, 100);
-        container.setInteractive({ draggable: true, useHandCursor: true });
+        // make container draggable by using a bounding rectangle interactive region
+        container.setInteractive(new Phaser.Geom.Rectangle(-img.displayWidth / 2, -img.displayHeight / 2, img.displayWidth, img.displayHeight), Phaser.Geom.Rectangle.Contains);
         this.input.setDraggable(container);
+        container.setData('isDragging', false);
+        container.on('dragstart', () => { container.setData('isDragging', true); });
 
         // Create logic component and nodes
         const id = `${key}_${Math.floor(Math.random() * 100000)}`;
@@ -246,16 +433,12 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         // store gate reference on container for cleanup
         container.setData('logicGate', gate);
 
-        // clicking switch toggles its output
+        // Switch components: do not toggle on click. Use context menu 'Toggle' instead.
         if (key === 'switch-on' || key === 'switch-off') {
             img.setInteractive({ useHandCursor: true });
-            img.on('pointerdown', () => {
-                // toggle output bit
-                const newVal = gate.output.bit_value ? 0 : 1;
-                gate.output.setBit(newVal);
-                // visually indicate state
-                img.setTint(newVal ? 0xffffaa : 0xffffff);
-            });
+            // initialize visual state based on current output
+            try { img.setTint(gate.output.bit_value ? 0xffffaa : 0xffffff); } catch (e) {}
+            container.setData('isSwitch', true);
         }
 
         container.on('drag', (pointer, dragX, dragY) => {
@@ -279,6 +462,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         });
 
         container.on('dragend', () => {
+            container.setData('isDragging', false);
             const isInPanel = container.x < 150;
             if (isInPanel) {
                 // drop back: destroy temporary container and its nodes
