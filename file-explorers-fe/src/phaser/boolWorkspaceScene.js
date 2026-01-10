@@ -156,15 +156,19 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             ];
 
             // If this component is a switch, expose a Toggle action in the context menu
-            if (gate && (gate.type === 'switch-on' || gate.type === 'switch-off' || (typeof gate.type === 'string' && gate.type.startsWith('switch')))) {
+            if (gate && (gate.type === 'switch' || gate.type === 'switch-on' || gate.type === 'switch-off' || (typeof gate.type === 'string' && gate.type.startsWith('switch')))) {
                 items.unshift({
                     label: 'Toggle',
                     onClick: () => {
                         try {
                             const newVal = gate.toggle();
-                            // find image child and update tint
-                            const img = compContainer.list && compContainer.list.find((c) => c && c.texture && typeof c.setTint === 'function');
-                            if (img) img.setTint(newVal ? 0xffffaa : 0xffffff);
+                            // find image child and update texture based on new state
+                            const img = compContainer.list && compContainer.list.find((c) => c && c.texture && typeof c.setTexture === 'function');
+                            if (img) {
+                                const newTexture = newVal ? 'switch-on' : 'switch-off';
+                                img.setTexture(newTexture);
+                                img.setTint(0xffffff); // Reset tint to white
+                            }
                         } catch (e) {
                             console.error('Error toggling switch:', e);
                         }
@@ -225,8 +229,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             { key: 'nand', label: 'NAND' },
             { key: 'nor', label: 'NOR' },
             { key: 'nxor', label: 'NXOR' },
-            { key: 'switch-on', label: 'SW ON' },
-            { key: 'switch-off', label: 'SW OFF' },
+            { key: 'switch-off', label: 'SWITCH' },
         ];
 
         components.forEach((c, idx) => {
@@ -604,12 +607,11 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         container.setData('logicGate', gate);
         container.setData('component', container); // self-reference for easier lookup
 
-        // Switch components: initialize visual state and disable click-to-toggle
+        // Switch components: initialize state based on starting texture
         if (key === 'switch-on' || key === 'switch-off') {
-            // Initialize visual state based on gate type and output
+            // Initialize value based on the initial texture used
             const initialValue = key === 'switch-on' ? 1 : 0;
             gate.output.setBit(initialValue);
-            img.setTint(initialValue ? 0xffffaa : 0xffffff);
             container.setData('isSwitch', true);
         }
 

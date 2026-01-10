@@ -23,8 +23,10 @@ export default class BooleanGate {
         this.output = new Node(`${id}_out`, 0, 0);
         this.output.setup(this);
         
-        // For switches, set initial value
+        // For switches, set initial value based on type
         if (type === 'switch-on' || type === 'switch-off' || (typeof type === 'string' && type.startsWith('switch'))) {
+            // Normalize the type to just 'switch' since we'll track state via output value
+            this.type = 'switch';
             this.output.setBit(type === 'switch-on' ? 1 : 0);
         }
     }
@@ -44,7 +46,7 @@ export default class BooleanGate {
 
     evaluate() {
         // Switches don't need to evaluate based on inputs - they maintain their own state
-        if (this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
+        if (this.type === 'switch' || this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
             return this.output.bit_value || 0;
         }
         
@@ -81,11 +83,9 @@ export default class BooleanGate {
     
     toggle() {
         // Only works for switches
-        if (this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
+        if (this.type === 'switch' || this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
             const newVal = this.output.bit_value ? 0 : 1;
             this.output.setBit(newVal);
-            // Update the type to match the new state
-            this.type = newVal ? 'switch-on' : 'switch-off';
             return newVal;
         }
         return this.output.bit_value || 0;
