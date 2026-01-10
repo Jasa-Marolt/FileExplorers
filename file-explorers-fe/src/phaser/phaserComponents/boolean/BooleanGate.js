@@ -1,4 +1,5 @@
 import { Node } from '../../logic/node.js';
+import { ComponentDirection } from '../ComponentDirection.js';
 
 export default class BooleanGate {
     constructor(type, id, inputCount = 2) {
@@ -6,6 +7,7 @@ export default class BooleanGate {
         this.id = id;
         this.inputs = [];
         this.output = null;
+        this.direction = ComponentDirection.HORIZONTAL; // Boolean gates use horizontal layout (inputs left, output right)
 
         // create placeholder nodes; positions will be set by scene when placing
         let inCount = inputCount;
@@ -28,6 +30,11 @@ export default class BooleanGate {
             // Normalize the type to just 'switch' since we'll track state via output value
             this.type = 'switch';
             this.output.setBit(type === 'switch-on' ? 1 : 0);
+        } else {
+            // For all non-switch components, perform initial evaluation
+            // This ensures the output is calculated when first placed
+            const initialOutput = this.evaluate();
+            this.output.setBit(initialOutput);
         }
     }
 
@@ -50,8 +57,12 @@ export default class BooleanGate {
             return this.output.bit_value || 0;
         }
         
-        // Read current input bit values
-        const vals = this.inputs.map((n) => n.bit_value || 0);
+        // Read current input bit values - treat unconnected inputs as 0
+        const vals = this.inputs.map((n) => {
+            // If node has no wire connection, treat as 0 (off)
+            if (!n.wire) return 0;
+            return n.bit_value || 0;
+        });
         let out = 0;
         switch (this.type) {
             case 'and':

@@ -386,9 +386,9 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         container.setInteractive(interactiveArea, Phaser.Geom.Rectangle.Contains);
 
         // Make the interactive area visible for debugging (reduced opacity)
-        const debugRect = this.add.rectangle(0, 0, 100, 100, 0x00ff00, 0.1).setOrigin(0.5);
-        debugRect.setStrokeStyle(1, 0x00ff00, 0.3);
-        container.add(debugRect);
+        // const debugRect = this.add.rectangle(0, 0, 100, 100, 0x00ff00, 0.1).setOrigin(0.5);
+        // debugRect.setStrokeStyle(1, 0x00ff00, 0.3);
+        // container.add(debugRect);
 
         this.input.setDraggable(container);
         container.setData('isDragging', false);
@@ -613,6 +613,23 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             const initialValue = key === 'switch-on' ? 1 : 0;
             gate.output.setBit(initialValue);
             container.setData('isSwitch', true);
+        } else {
+            // For non-switch components, ensure initial evaluation is performed
+            // This makes sure the output reflects the current state of inputs
+            const initialOutput = gate.evaluate();
+            gate.output.setBit(initialOutput);
+        }
+
+        // Update all node circle colors to reflect their current bit values
+        gate.inputs.forEach((node) => {
+            if (node._circle) {
+                const color = node.bit_value ? 0x00ff00 : 0xff0000;
+                node._circle.setFillStyle(color);
+            }
+        });
+        if (gate.output && gate.output._circle) {
+            const color = gate.output.bit_value ? 0x00ff00 : 0xff0000;
+            gate.output._circle.setFillStyle(color);
         }
 
         return container;
