@@ -8,7 +8,13 @@ export default class BooleanGate {
         this.output = null;
 
         // create placeholder nodes; positions will be set by scene when placing
-        const inCount = type === 'not' ? 1 : inputCount;
+        let inCount = inputCount;
+        if (type === 'not') {
+            inCount = 1;
+        } else if (type === 'switch-on' || type === 'switch-off' || (typeof type === 'string' && type.startsWith('switch'))) {
+            inCount = 0; // switches have no inputs
+        }
+        
         for (let i = 0; i < inCount; i++) {
             const n = new Node(`${id}_in${i}`, 0, 0);
             n.setup(this);
@@ -16,6 +22,11 @@ export default class BooleanGate {
         }
         this.output = new Node(`${id}_out`, 0, 0);
         this.output.setup(this);
+        
+        // For switches, set initial value
+        if (type === 'switch-on' || type === 'switch-off' || (typeof type === 'string' && type.startsWith('switch'))) {
+            this.output.setBit(type === 'switch-on' ? 1 : 0);
+        }
     }
 
     onNodeValueChanged(node) 
@@ -32,6 +43,11 @@ export default class BooleanGate {
     }
 
     evaluate() {
+        // Switches don't need to evaluate based on inputs - they maintain their own state
+        if (this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
+            return this.output.bit_value || 0;
+        }
+        
         // Read current input bit values
         const vals = this.inputs.map((n) => n.bit_value || 0);
         let out = 0;
@@ -61,5 +77,17 @@ export default class BooleanGate {
                 out = 0;
         }
         return out;
+    }
+    
+    toggle() {
+        // Only works for switches
+        if (this.type === 'switch-on' || this.type === 'switch-off' || (typeof this.type === 'string' && this.type.startsWith('switch'))) {
+            const newVal = this.output.bit_value ? 0 : 1;
+            this.output.setBit(newVal);
+            // Update the type to match the new state
+            this.type = newVal ? 'switch-on' : 'switch-off';
+            return newVal;
+        }
+        return this.output.bit_value || 0;
     }
 }

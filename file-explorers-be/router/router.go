@@ -17,7 +17,7 @@ func NewRouter(srv server.Server) *chi.Mux {
 	
 	// CORS middleware
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8081", "http://localhost:8080"},
+		AllowedOrigins:   []string{"http://localhost:8081", "http://localhost:8082", "http://localhost:8080"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
