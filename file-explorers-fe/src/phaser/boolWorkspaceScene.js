@@ -46,14 +46,14 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             if (this.input && this.input.mouse && typeof this.input.mouse.disableContextMenu === 'function') {
                 this.input.mouse.disableContextMenu();
             }
-        } catch (e) {}
+        } catch (e) { }
         try {
             const canvas = this.game && this.game.canvas ? this.game.canvas : null;
             if (canvas && !canvas._rupsContextMenuListenerAdded) {
                 canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
                 canvas._rupsContextMenuListenerAdded = true;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // Listen for scene shutdown and cleanup
         this.events.once('shutdown', () => this.cleanup());
@@ -89,11 +89,11 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 (typeof pointer.buttons !== 'undefined' && pointer.buttons === 2);
             if (!isRightClick) return;
             // prevent browser context menu
-            try { if (pointer && pointer.event && typeof pointer.event.preventDefault === 'function') pointer.event.preventDefault(); } catch (e) {}
+            try { if (pointer && pointer.event && typeof pointer.event.preventDefault === 'function') pointer.event.preventDefault(); } catch (e) { }
 
             const objects = this.input.hitTestPointer(pointer);
             console.log('Right-click objects found:', objects.length);
-            
+
             // Look for a container first, then check its children
             const target = objects.find((o) => {
                 if (!o || !o.getData) return false;
@@ -105,15 +105,15 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 if (o.getData('component')) return true;
                 return false;
             });
-            
+
             let compContainer = null;
             if (!target) {
                 console.log('No valid target found for right-click');
                 return;
             }
-            
+
             console.log('Right-click target found:', target);
-            
+
             if (target.getData('logicGate')) {
                 compContainer = target;
             } else if (target.getData('component')) {
@@ -126,7 +126,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 console.log('Could not find component container');
                 return;
             }
-            
+
             console.log('Found component container for context menu');
 
             // Build context menu items
@@ -179,130 +179,27 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             console.log('Rotating component');
             const newAngle = (container.angle + 90) % 360;
             container.angle = newAngle;
-            
+
             // Get the gate to update node positions
             const gate = container.getData('logicGate');
             if (!gate) return;
-            
-            console.log('Gate type:', gate.type, 'Inputs:', gate.inputs.length, 'New angle:', newAngle);
-            
-            // Calculate rotation matrix for 90-degree clockwise rotation
-            // For 90° rotation: (x,y) -> (y,-x)
-            const rotatePoint = (x, y) => {
-                return { x: y, y: -x };
-            };
-            
-            // For each input node, apply rotation to its base position
-            gate.inputs.forEach((n, idx) => {
-                if (n._circle) {
-                    console.log(`Before rotation - Input ${idx} circle position:`, n._circle.x, n._circle.y);
-                    
-                    // Get the original base position (unrotated)
-                    let baseX, baseY;
-                    if (gate.inputs.length === 1) {
-                        baseX = -40; baseY = 0; // single input (NOT gate)
-                    } else {
-                        baseX = -40; 
-                        baseY = idx === 0 ? -9 : 9; // dual input
+
+            if (gate) {
+                gate.inputs.forEach((n) => {
+                    if (n._circle) {
+                        const mat = n._circle.getWorldTransformMatrix();
+                        n.x = mat.tx; n.y = mat.ty;
+                        if (n.wire) n.wire.draw();
                     }
-                    
-                    console.log(`Input ${idx} base position:`, baseX, baseY);
-                    
-                    // Apply rotation based on current angle
-                    let finalPos = { x: baseX, y: baseY };
-                    const rotations = Math.round(newAngle / 90) % 4;
-                    
-                    for (let r = 0; r < rotations; r++) {
-                        finalPos = rotatePoint(finalPos.x, finalPos.y);
-                    }
-                    
-                    console.log(`Input ${idx} final position:`, finalPos.x, finalPos.y);
-                    
-                    n._circle.x = finalPos.x;
-                    n._circle.y = finalPos.y;
-                    n.initX = finalPos.x;
-                    n.initY = finalPos.y;
-                    
-                    console.log(`After rotation - Input ${idx} circle position:`, n._circle.x, n._circle.y);
+                });
+                if (gate.output && gate.output._circle) {
+                    const mat = gate.output._circle.getWorldTransformMatrix();
+                    gate.output.x = mat.tx; gate.output.y = mat.ty;
+                    if (gate.output.wire) gate.output.wire.draw();
                 }
-            });
-            
-            // For output node
-            if (gate.output && gate.output._circle) {
-                console.log('Before rotation - Output circle position:', gate.output._circle.x, gate.output._circle.y);
-                
-                let baseX = 40, baseY = 0; // output starts on the right
-                
-                console.log('Output base position:', baseX, baseY);
-                
-                // Apply rotation
-                let finalPos = { x: baseX, y: baseY };
-                const rotations = Math.round(newAngle / 90) % 4;
-                
-                for (let r = 0; r < rotations; r++) {
-                    finalPos = rotatePoint(finalPos.x, finalPos.y);
-                }
-                
-                console.log('Output final position:', finalPos.x, finalPos.y);
-                
-                gate.output._circle.x = finalPos.x;
-                gate.output._circle.y = finalPos.y;
-                gate.output.initX = finalPos.x;
-                gate.output.initY = finalPos.y;
-                
-                console.log('After rotation - Output circle position:', gate.output._circle.x, gate.output._circle.y);
             }
 
-            // After repositioning circles, update world node positions and force redraw
-            console.log('Updating world positions after rotation...');
-            gate.inputs.forEach((n, idx) => {
-                if (n._circle) {
-                    const mat = n._circle.getWorldTransformMatrix();
-                    const oldX = n.x, oldY = n.y;
-                    n.x = mat.tx; 
-                    n.y = mat.ty;
-                    console.log(`Input ${idx}: moved from (${oldX}, ${oldY}) to (${n.x}, ${n.y})`);
-                    if (n.wire) {
-                        console.log(`Redrawing wire for input ${idx}`);
-                        n.wire.draw();
-                    }
-                }
-            });
-            if (gate.output && gate.output._circle) {
-                const mat = gate.output._circle.getWorldTransformMatrix();
-                const oldX = gate.output.x, oldY = gate.output.y;
-                gate.output.x = mat.tx; 
-                gate.output.y = mat.ty;
-                console.log(`Output: moved from (${oldX}, ${oldY}) to (${gate.output.x}, ${gate.output.y})`);
-                if (gate.output.wire) {
-                    console.log('Redrawing wire for output');
-                    gate.output.wire.draw();
-                }
-            }
-            
-            // Force a scene update to ensure visual changes are applied
-            this.scene.scene.updateDisplayList();
-            
-            // Add temporary visual indicators for debugging
-            gate.inputs.forEach((n, idx) => {
-                if (n._circle) {
-                    // Create a temporary highlight
-                    const highlight = this.add.circle(n._circle.x, n._circle.y, 10, 0xff0000, 0.5);
-                    container.add(highlight);
-                    this.time.delayedCall(1000, () => {
-                        if (highlight) highlight.destroy();
-                    });
-                }
-            });
-            if (gate.output && gate.output._circle) {
-                const highlight = this.add.circle(gate.output._circle.x, gate.output._circle.y, 10, 0x0000ff, 0.5);
-                container.add(highlight);
-                this.time.delayedCall(1000, () => {
-                    if (highlight) highlight.destroy();
-                });
-            }
-            
-            console.log('Rotation complete');
+
         };
     }
 
@@ -312,7 +209,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         this.add.rectangle(0, 0, panelWidth, height, 0xc0c0c0).setOrigin(0);
         this.add.rectangle(0, 0, panelWidth, height, 0x000000, 0.12).setOrigin(0);
 
-this.add.text(panelWidth / 2, 40, 'Boolean Components', {
+        this.add.text(panelWidth / 2, 40, 'Boolean Components', {
             fontSize: '16px',
             color: '#ffffff',
             align: 'center',
@@ -402,11 +299,11 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                     // snap and finalize placement (same behavior as container dragend)
                     const snapped = this.snapToGrid(ghost.x, ghost.y);
                     ghost.x = snapped.x; ghost.y = snapped.y;
-                    
+
                     // Ensure the ghost component remains interactive and draggable
                     ghost.setInteractive(new Phaser.Geom.Rectangle(-50, -50, 100, 100), Phaser.Geom.Rectangle.Contains);
                     this.input.setDraggable(ghost);
-                    
+
                     // update node positions
                     const gate = ghost.getData('logicGate');
                     if (gate) {
@@ -471,11 +368,11 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         } catch (e) {
             img.setDisplaySize(80, 80);
         }
-        
+
         // Don't make individual elements interactive - let container handle everything
         img.setData('isComponentImage', true);
         img.setData('component', container);
-        
+
         container.add(img);
 
         const label = this.add.text(0, 40, key.toUpperCase(), { fontSize: '12px', color: '#fff', backgroundColor: '#00000088', padding: { x: 4, y: 2 } }).setOrigin(0.5);
@@ -484,24 +381,24 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         // make container draggable with a larger interactive area to ensure dragging works
         const interactiveArea = new Phaser.Geom.Rectangle(-50, -50, 100, 100);
         container.setInteractive(interactiveArea, Phaser.Geom.Rectangle.Contains);
-        
+
         // Make the interactive area visible for debugging (reduced opacity)
         const debugRect = this.add.rectangle(0, 0, 100, 100, 0x00ff00, 0.1).setOrigin(0.5);
         debugRect.setStrokeStyle(1, 0x00ff00, 0.3);
         container.add(debugRect);
-        
+
         this.input.setDraggable(container);
         container.setData('isDragging', false);
         container.setData('component', container); // self-reference for easier lookup
-        
+
         // Add debug for container interactions and handle right-clicks
         container.on('pointerdown', (pointer) => {
             console.log('Container pointerdown:', pointer.button, 'leftButtonDown:', pointer.leftButtonDown());
-            
+
             // Handle right-click for context menu
-            const isRightClick = pointer.button === 2 || 
-                                (pointer.event && pointer.event.button === 2);
-            
+            const isRightClick = pointer.button === 2 ||
+                (pointer.event && pointer.event.button === 2);
+
             if (isRightClick) {
                 console.log('Right click detected on container');
                 // Prevent default dragging for right-clicks
@@ -509,20 +406,21 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                 // We'll let the scene's general right-click handler manage the context menu
             }
         });
-        
-        container.on('dragstart', () => { 
+
+        container.on('dragstart', () => {
             console.log('Container dragstart');
-            container.setData('isDragging', true); 
+            container.setData('isDragging', true);
         });
-        
+
         container.on('drag', (pointer, dragX, dragY) => {
-            console.log('Container drag:', dragX, dragY);
+            console.log('Container drag event triggered:', dragX, dragY, 'isDragging:', container.getData('isDragging'));
             container.x = dragX;
             container.y = dragY;
             // update node world positions
             gate.inputs.forEach((n) => {
                 if (n._circle) {
                     const worldPoint = n._circle.getWorldTransformMatrix();
+                    console.log('Drag event updating node position from rotation values to world transform values');
                     n.x = worldPoint.tx;
                     n.y = worldPoint.ty;
                     if (n.wire) n.wire.draw();
@@ -530,6 +428,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
             });
             if (gate.output._circle) {
                 const worldPoint = gate.output._circle.getWorldTransformMatrix();
+                console.log('Drag event updating output position from rotation values to world transform values');
                 gate.output.x = worldPoint.tx;
                 gate.output.y = worldPoint.ty;
                 if (gate.output.wire) gate.output.wire.draw();
@@ -539,7 +438,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         container.on('dragend', () => {
             console.log('Container dragend');
             container.setData('isDragging', false);
-            
+
             // Check if component was dragged from panel
             const fromPanel = container.getData('fromPanel');
             if (fromPanel) {
@@ -556,7 +455,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                     this.placedComponents.push(container);
                 }
             }
-            
+
             // Snap to grid
             const snapped = this.snapToGrid(container.x, container.y);
             container.x = snapped.x;
@@ -577,7 +476,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                 gate.output.y = worldPoint.ty;
                 if (gate.output.wire) gate.output.wire.draw();
             }
-            
+
             // Ensure the container remains draggable after placement
             if (!this.input.getDragState(container)) {
                 this.input.setDraggable(container);
@@ -609,41 +508,41 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
             // pointerdown to start wiring
             circle.on('pointerdown', (pointer) => {
                 console.log('Circle pointerdown:', pointer.button, 'leftButtonDown:', pointer.leftButtonDown());
-                
+
                 // Only handle left clicks for wiring (button 0 is left click)
                 if (pointer.button !== 0) {
                     console.log('Not left click, ignoring');
                     return;
                 }
-                
+
                 console.log('Starting wire from node');
-                
+
                 // Temporarily disable dragging on the container during wiring
                 const parentContainer = node.componentObject;
                 if (parentContainer) {
                     parentContainer.disableInteractive();
                     console.log('Disabled container dragging for wiring');
                 }
-                
+
                 // Stop event propagation to prevent container dragging during wiring
                 if (pointer.event && pointer.event.stopPropagation) {
                     pointer.event.stopPropagation();
                 }
-                
+
                 circle.setFillStyle(0x999999);
                 let startNode = circle.getData('logicNode');
-                
+
                 // on pointerup try to connect to target node and re-enable container dragging
                 this.input.once('pointerup', (pointer) => {
                     console.log('Wire connection attempt');
-                    
+
                     // Re-enable container dragging
                     if (parentContainer) {
                         const interactiveArea = new Phaser.Geom.Rectangle(-50, -50, 100, 100);
                         parentContainer.setInteractive(interactiveArea, Phaser.Geom.Rectangle.Contains);
                         console.log('Re-enabled container dragging after wiring');
                     }
-                    
+
                     const objects = this.input.hitTestPointer(pointer);
                     const target = objects.find((o) => o && o.getData && o.getData('logicNode'));
                     if (target) {
@@ -675,27 +574,31 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
         // Position nodes: inputs on left, output on right
         const bboxW = img.displayWidth;
         const bboxH = img.displayHeight;
-        
+
         // Position input nodes (if any)
         const inputsCount = gate.inputs.length;
         if (inputsCount > 0) {
             const inOffsets = [];
             if (inputsCount === 1) {
-                inOffsets.push({ x: -bboxW / 2 - 5, y: 0 });
+                inOffsets.push({ x: -bboxW / 2 , y: 0 });
             } else {
-                inOffsets.push({ x: -bboxW / 2 - 5, y: -9 });
-                inOffsets.push({ x: -bboxW / 2 - 5, y: 9 });
+                inOffsets.push({ x: -bboxW / 2 , y: -9 });
+                inOffsets.push({ x: -bboxW / 2 , y: 9 });
             }
 
             gate.inputs.forEach((node, idx) => {
-                const off = inOffsets[idx] || { x: -bboxW / 2 - 9, y: idx * 12 };
+                const off = inOffsets[idx] || { x: -bboxW / 2, y: idx * 12 };
+                console.log(`Creating input ${idx} circle at offset:`, off.x, off.y);
                 const circle = createNodeCircle(node, off.x, off.y, false);
+                console.log(`Created input ${idx} circle at position:`, circle.x, circle.y);
             });
         }
 
         // output circle (always present)
-        const outOff = { x: bboxW / 2 + 3, y: 0 };
+        const outOff = { x: bboxW / 2 , y: 0 };
+        console.log(`Creating output circle at offset:`, outOff.x, outOff.y);
         const outCircle = createNodeCircle(gate.output, outOff.x, outOff.y, true);
+        console.log(`Created output circle at position:`, outCircle.x, outCircle.y);
 
         // store gate reference on container for cleanup and right-click detection
         container.setData('logicGate', gate);
@@ -727,7 +630,7 @@ this.add.text(panelWidth / 2, 40, 'Boolean Components', {
                         if (gate.output && gate.output.wire) gate.output.wire.deleteWire();
                     }
                     if (c.destroy) c.destroy();
-                } catch (e) {}
+                } catch (e) { }
             });
             this.placedComponents = [];
         }
