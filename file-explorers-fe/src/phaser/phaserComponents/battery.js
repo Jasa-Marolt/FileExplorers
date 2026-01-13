@@ -118,9 +118,18 @@ class Battery extends Component {
             this.currentInterval++;
         }
 
-        if (this.voltmeter) this.voltmeter.measure(this.values.voltage);
-        if (this.amperMeter) this.amperMeter.measure(this.values.current);
-        if (this.wattMeter) this.wattMeter.measure(this.values.power.value);
+        const asNumber = (v) => {
+            if (v && typeof v === 'object' && 'value' in v) return v.value;
+            return v;
+        };
+
+        const v = asNumber(this.values.voltage);
+        const i = asNumber(this.values.current);
+        const p = asNumber(this.values.power);
+
+        if (this.voltmeter && typeof v === 'number' && isFinite(v)) this.voltmeter.measure(v);
+        if (this.amperMeter && typeof i === 'number' && isFinite(i)) this.amperMeter.measure(i);
+        if (this.wattMeter && typeof p === 'number' && isFinite(p)) this.wattMeter.measure(p);
     }
 }
 
