@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Sim Test - Power Equations</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #3c3c3c;
+            border-radius: 5px;
+            background: #252526;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ec9b0;
+            margin-bottom: 10px;
+        }
+        .test-pass {
+            color: #4ec9b0;
+        }
+        .test-fail {
+            color: #f48771;
+        }
+        .test-result {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2d2d30;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ Circuit Simulator - Power Equation Tests</h1>
+    <div id="test-results"></div>
+    <div id="summary" class="summary"></div>
+
+    <script>
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.passed = 0;
+                this.failed = 0;
+            }
+
+            test(name, testFn) {
+                try {
+                    const result = testFn();
+                    if (result.success) {
+                        this.passed++;
+                        this.results.push({
+                            name,
+                            status: 'PASS',
+                            message: result.message,
+                            details: result.details
+                        });
+                    } else {
+                        this.failed++;
+                        this.results.push({
+                            name,
+                            status: 'FAIL',
+                            message: result.message,
+                            details: result.details
+                        });
+                    }
+                } catch (error) {
+                    this.failed++;
+                    this.results.push({
+                        name,
+                        status: 'ERROR',
+                        message: error.message,
+                        details: error.stack
+                    });
+                }
+            }
+
+            render() {
+                const resultsDiv = document.getElementById('test-results');
+                const summaryDiv = document.getElementById('summary');
+
+                this.results.forEach(result => {
+                    const section = document.createElement('div');
+                    section.className = 'test-section';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'test-title';
+                    const statusClass = result.status === 'PASS' ? 'test-pass' : 'test-fail';
+                    title.innerHTML = `<span class="${statusClass}">[${result.status}]</span> ${result.name}`;
+                    
+                    const message = document.createElement('div');
+                    message.className = 'test-result';
+                    message.textContent = result.message;
+                    
+                    section.appendChild(title);
+                    section.appendChild(message);
+                    
+                    if (result.details) {
+                        const details = document.createElement('pre');
+                        details.style.fontSize = '12px';
+                        details.style.opacity = '0.8';
+                        details.style.marginTop = '10px';
+                        details.textContent = result.details;
+                        section.appendChild(details);
+                    }
+                    
+                    resultsDiv.appendChild(section);
+                });
+
+                const total = this.passed + this.failed;
+                const passRate = ((this.passed / total) * 100).toFixed(1);
+                summaryDiv.innerHTML = `
+                    <strong>Test Summary:</strong><br>
+                    Total: ${total} | 
+                    <span class="test-pass">Passed: ${this.passed}</span> | 
+                    <span class="test-fail">Failed: ${this.failed}</span> | 
+                    Pass Rate: ${passRate}%
+                `;
+            }
+        }
+
+        // Helper function to check if values are approximately equal (for floating point)
+        function approxEqual(a, b, tolerance = 0.001) {
+            return Math.abs(a - b) < tolerance;
+        }
+
+        // Create test runner
+        const runner = new TestRunner();
+
+        // Test 1: P = V × I
+        runner.test('Power from Voltage and Current (P = V × I)', () => {
+            const V = 12, I = 2;
+            const P = V * I;
+            const expected = 24;
+            
+            return {
+                success: approxEqual(P, expected),
+                message: `P = ${V}V × ${I}A = ${P}W`,
+                details: `Expected: ${expected}W, Got: ${P}W`
+            };
+        });
+
+        // Test 2: P = I² × R
+        runner.test('Power from Current and Resistance (P = I² × R)', () => {
+            const I = 3, R = 4;
+            const P = I * I * R;
+            const expected = 36;
+            
+            return {
+                success: approxEqual(P, expected),
+                message: `P = ${I}A² × ${R}Ω = ${P}W`,
+                details: `Expected: ${expected}W, Got: ${P}W`
+            };
+        });
+
+        // Test 3: P = V² / R
+        runner.test('Power from Voltage and Resistance (P = V² / R)', () => {
+            const V = 10, R = 5;
+            const P = (V * V) / R;
+            const expected = 20;
+            
+            return {
+                success: approxEqual(P, expected),
+                message: `P = ${V}V² / ${R}Ω = ${P}W`,
+                details: `Expected: ${expected}W, Got: ${P}W`
+            };
+        });
+
+        // Test 4: I = √(P / R)
+        runner.test('Current from Power and Resistance (I = √(P / R))', () => {
+            const P = 100, R = 25;
+            const I = Math.sqrt(P / R);
+            const expected = 2;
+            
+            return {
+                success: approxEqual(I, expected),
+                message: `I = √(${P}W / ${R}Ω) = ${I}A`,
+                details: `Expected: ${expected}A, Got: ${I}A`
+            };
+        });
+
+        // Test 5: V = √(P × R)
+        runner.test('Voltage from Power and Resistance (V = √(P × R))', () => {
+            const P = 50, R = 2;
+            const V = Math.sqrt(P * R);
+            const expected = 10;
+            
+            return {
+                success: approxEqual(V, expected),
+                message: `V = √(${P}W × ${R}Ω) = ${V}V`,
+                details: `Expected: ${expected}V, Got: ${V}V`
+            };
+        });
+
+        // Test 6: R = P / I²
+        runner.test('Resistance from Power and Current (R = P / I²)', () => {
+            const P = 72, I = 3;
+            const R = P / (I * I);
+            const expected = 8;
+            
+            return {
+                success: approxEqual(R, expected),
+                message: `R = ${P}W / ${I}A² = ${R}Ω`,
+                details: `Expected: ${expected}Ω, Got: ${R}Ω`
+            };
+        });
+
+        // Test 7: R = V² / P
+        runner.test('Resistance from Voltage and Power (R = V² / P)', () => {
+            const V = 12, P = 24;
+            const R = (V * V) / P;
+            const expected = 6;
+            
+            return {
+                success: approxEqual(R, expected),
+                message: `R = ${V}V² / ${P}W = ${R}Ω`,
+                details: `Expected: ${expected}Ω, Got: ${R}Ω`
+            };
+        });
+
+        // Test 8: Ohm's Law - V = I × R
+        runner.test("Ohm's Law (V = I × R)", () => {
+            const I = 5, R = 10;
+            const V = I * R;
+            const expected = 50;
+            
+            return {
+                success: approxEqual(V, expected),
+                message: `V = ${I}A × ${R}Ω = ${V}V`,
+                details: `Expected: ${expected}V, Got: ${V}V`
+            };
+        });
+
+        // Test 9: Consistency Check - All equations should yield same power
+        runner.test('Power Consistency (P = V×I = I²×R = V²/R)', () => {
+            const V = 12, I = 3, R = 4;
+            const P1 = V * I;        // P = V × I
+            const P2 = I * I * R;    // P = I² × R
+            const P3 = (V * V) / R;  // P = V² / R
+            
+            const allEqual = approxEqual(P1, P2) && approxEqual(P2, P3);
+            
+            return {
+                success: allEqual,
+                message: `All power equations consistent: ${P1}W`,
+                details: `P = V×I = ${P1}W\nP = I²×R = ${P2}W\nP = V²/R = ${P3}W`
+            };
+        });
+
+        // Test 10: Real-world scenario - LED circuit
+        runner.test('Real-world: LED Circuit (5V, 20mA, current-limiting resistor)', () => {
+            const V_supply = 5;
+            const V_led = 2;
+            const I = 0.020; // 20mA
+            
+            // Voltage drop across resistor
+            const V_resistor = V_supply - V_led;
+            
+            // Resistor value needed
+            const R = V_resistor / I;
+            
+            // Power dissipated in resistor
+            const P_resistor = V_resistor * I;
+            
+            // Verify using alternative formula
+            const P_check = (V_resistor * V_resistor) / R;
+            
+            const expected_R = 150;
+            const expected_P = 0.06;
+            
+            const success = approxEqual(R, expected_R) && approxEqual(P_resistor, expected_P) && approxEqual(P_resistor, P_check);
+            
+            return {
+                success,
+                message: `R = ${R.toFixed(1)}Ω, P = ${P_resistor.toFixed(3)}W (${(P_resistor * 1000).toFixed(1)}mW)`,
+                details: `Supply: ${V_supply}V, LED drop: ${V_led}V, Current: ${I * 1000}mA\nResistor drop: ${V_resistor}V\nP (V×I) = ${P_resistor.toFixed(3)}W\nP (V²/R) = ${P_check.toFixed(3)}W`
+            };
+        });
+
+        // Render results
+        runner.render();
+    </script>
+</body>
+</html>

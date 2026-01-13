@@ -101,7 +101,6 @@ class Battery extends Component {
         if (this.values.sourceType == "DC") {
             this.currentInterval = 0;
             this.values.voltage = this.values.maxVoltage;
-            this.values.current = this.values.maxCurrent;
         } else {
             // console.log(
             //     this.values.maxVoltage,
@@ -112,12 +111,6 @@ class Battery extends Component {
             // );
             this.values.voltage =
                 this.values.maxVoltage *
-                Math.sin(
-                    (2 * Math.PI * this.currentInterval) /
-                        (this.values.clockSpeed * this.values.periodTime)
-                );
-            this.values.current =
-                this.values.maxCurrent *
                 Math.sin(
                     (2 * Math.PI * this.currentInterval) /
                         (this.values.clockSpeed * this.values.periodTime)
