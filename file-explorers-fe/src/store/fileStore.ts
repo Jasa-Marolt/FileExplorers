@@ -139,7 +139,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
 
             if (itemToMove) {
                 // Update its parentId
-                itemToMove.parentDirectoryId = payload.newParentId || undefined;
+                itemToMove.parentDirectoryId = payload.newParentId || null;
             } else {
                 console.warn(
                     `[store] MOVE_FILE: Item with id ${payload.itemId} not found.`
@@ -201,7 +201,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
                 id: state.nextId++,
                 name: payload.name,
                 isDirectory: false,
-                parentDirectoryId: state.openFolder ?? undefined,
+                parentDirectoryId: state.openFolder ?? null,
             };
             state.filesystem.push(newFile);
         },
@@ -210,7 +210,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
                 id: state.nextId++,
                 name: payload.name,
                 isDirectory: true,
-                parentDirectoryId: state.openFolder ?? undefined,
+                parentDirectoryId: state.openFolder ?? null,
             };
             state.filesystem.push(newFolder);
         },
@@ -276,7 +276,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
 
             const copyRecursive = (
                 file: FileOrDirectory,
-                newParentId: number | undefined
+                newParentId: number | null
             ): FileOrDirectory => {
                 const newFile: FileOrDirectory = {
                     id: state.nextId++,
@@ -296,7 +296,7 @@ export const fileStoreModule: Module<FileState, RootState> = {
             };
 
             rootItems.forEach((file) => {
-                copyRecursive(file, state.openFolder ?? undefined);
+                copyRecursive(file, state.openFolder ?? null);
             });
         },
         RENAME_FILE(state, payload: { id: number; newName: string }) {
@@ -365,27 +365,36 @@ export const fileStoreModule: Module<FileState, RootState> = {
             commit("PASTE_FILES");
             dispatch("checkSolution");
         },
-        renameFile({ commit, dispatch }, payload: { id: number; newName: string }) {
+        renameFile(
+            { commit, dispatch },
+            payload: { id: number; newName: string }
+        ) {
             commit("RENAME_FILE", payload);
             dispatch("checkSolution");
         },
         checkSolution({ state, rootGetters, dispatch }) {
             const currentLevel = rootGetters["levelStoreModule/currentLevel"];
-            
-            if (!currentLevel || !currentLevel.solution || currentLevel.solved) {
+
+            if (
+                !currentLevel ||
+                !currentLevel.solution ||
+                currentLevel.solved
+            ) {
                 return false;
             }
 
             // Pass the currently open folder ID to the validator
             const isSolved = validateSolution(
-                state.filesystem, 
-                currentLevel.solution, 
+                state.filesystem,
+                currentLevel.solution,
                 state.openFolder
             );
 
             if (isSolved) {
                 console.log("🎉 Level solved!");
-                dispatch("levelStoreModule/solveLevel", currentLevel.level_id, { root: true });
+                dispatch("levelStoreModule/solveLevel", currentLevel.level_id, {
+                    root: true,
+                });
             }
 
             return isSolved;
