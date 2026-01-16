@@ -69,19 +69,19 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         },
         {
             "id": 1,
-            "name": "Civilian",
+            "name": "Civilian_1",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 2,
-            "name": "Civilian",
+            "name": "Civilian_2",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 3,
-            "name": "Civilian",
+            "name": "Civilian_3",
             "isDirectory": false,
             "parentDirectoryId": null
         },
@@ -120,19 +120,19 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         },
         {
             "id": 2,
-            "name": "Civilian",
+            "name": "Civilian_1",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 3,
-            "name": "Civilian",
+            "name": "Civilian_2",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 4,
-            "name": "Civilian",
+            "name": "Civilian_3",
             "isDirectory": false,
             "parentDirectoryId": null
         }
@@ -153,25 +153,25 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         },
         {
             "id": 1,
-            "name": "New folder",
+            "name": "New_folder_1",
             "isDirectory": true,
             "parentDirectoryId": null
         },
         {
             "id": 2,
-            "name": "New folder",
+            "name": "New_folder_2",
             "isDirectory": true,
             "parentDirectoryId": 1
         },
         {
             "id": 3,
-            "name": "New folder",
+            "name": "New_folder_3",
             "isDirectory": true,
             "parentDirectoryId": 2
         },
         {
             "id": 4,
-            "name": "New folder",
+            "name": "New_folder_4",
             "isDirectory": true,
             "parentDirectoryId": 3
         },
@@ -197,25 +197,25 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
         },
         {
             "id": 1,
-            "name": "Civilian",
+            "name": "Civilian_1",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 2,
-            "name": "Civilian",
+            "name": "Civilian_2",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 3,
-            "name": "Civilian",
+            "name": "Civilian_3",
             "isDirectory": false,
             "parentDirectoryId": null
         },
         {
             "id": 4,
-            "name": "Civilian",
+            "name": "Civilian_4",
             "isDirectory": false,
             "parentDirectoryId": null
         }
@@ -227,140 +227,140 @@ INSERT INTO levels (starting_file_system, level_solution, name, description, dif
     ('[
         {
             "id": 0,
-            "name": "New folder",
+            "name": "New_folder_1",
             "isDirectory": true,
             "parentDirectoryId": null
         },
         {
             "id": 1,
-            "name": "New folder",
+            "name": "New_folder_2",
             "isDirectory": true,
             "parentDirectoryId": 0
         },
         {
             "id": 2,
-            "name": "New folder",
+            "name": "New_folder_3",
             "isDirectory": true,
             "parentDirectoryId": 1
         },
         {
             "id": 3,
-            "name": "New folder",
+            "name": "New_folder_4",
             "isDirectory": true,
             "parentDirectoryId": 2
         },
         {
             "id": 4,
-            "name": "New folder",
+            "name": "New_folder_5",
             "isDirectory": true,
             "parentDirectoryId": 3
         },
         {
             "id": 5,
-            "name": "New Folder",
+            "name": "New_folder_6",
             "isDirectory": true,
             "parentDirectoryId": 4
         },
 
         {
             "id": 6,
-            "name": "New folder",
+            "name": "New_folder_7",
             "isDirectory": true,
             "parentDirectoryId": null
         },
         {
             "id": 7,
-            "name": "New folder",
+            "name": "New_folder_8",
             "isDirectory": true,
             "parentDirectoryId": 6
         },
         {
             "id": 8,
-            "name": "New folder",
+            "name": "New_folder_9",
             "isDirectory": true,
             "parentDirectoryId": 7
         },
         {
             "id": 9,
-            "name": "New folder",
+            "name": "New_folder_10",
             "isDirectory": true,
             "parentDirectoryId": 8
         },
         {
             "id": 10,
-            "name": "New folder",
+            "name": "New_folder_11",
             "isDirectory": true,
             "parentDirectoryId": 9
         },
         {
             "id": 11,
-            "name": "New folder",
+            "name": "New_folder_12",
             "isDirectory": true,
             "parentDirectoryId": 10
         },
         {
             "id": 12,
-            "name": "New folder",
+            "name": "New_folder_13",
             "isDirectory": true,
             "parentDirectoryId": null
         },
         {
             "id": 13,
-            "name": "New folder",
+            "name": "New_folder_14",
             "isDirectory": true,
             "parentDirectoryId": 12
         },
         {
             "id": 14,
-            "name": "New folder",
+            "name": "New_folder_15",
             "isDirectory": true,
             "parentDirectoryId": 13
         },
         {
             "id": 15,
-            "name": "New folder",
+            "name": "New_folder_16",
             "isDirectory": true,
             "parentDirectoryId": 14
         },
         {
             "id": 16,
-            "name": "New folder",
+            "name": "New_folder_17",
             "isDirectory": true,
             "parentDirectoryId": 15
         },
         {
             "id": 17,
-            "name": "New folder",
+            "name": "New_folder_18",
             "isDirectory": true,
             "parentDirectoryId": 16
         },
         {
             "id": 18,
-            "name": "New folder",
+            "name": "New_folder_19",
             "isDirectory": true,
             "parentDirectoryId": null
         },
         {
             "id": 19,
-            "name": "New folder",
+            "name": "New_folder_20",
             "isDirectory": true,
             "parentDirectoryId": 18
         },
         {
             "id": 20,
-            "name": "New folder",
+            "name": "New_folder_21",
             "isDirectory": true,
             "parentDirectoryId": 19
         },
         {
             "id": 21,
-            "name": "New folder",
+            "name": "New_folder_22",
             "isDirectory": true,
             "parentDirectoryId": 20
         },
         {
             "id": 22,
-            "name": "New folder",
+            "name": "New_folder_23",
             "isDirectory": true,
             "parentDirectoryId": 21
         },

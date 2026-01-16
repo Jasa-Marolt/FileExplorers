@@ -14,6 +14,12 @@
         @contextmenu.prevent.stop="(event: MouseEvent) => onFileContextMenu(event, file)" />
     </div>
 
+    <button class="terminal-toggle-button" @click="toggleTerminal">
+      {{ isTerminalVisible ? 'Close Terminal' : 'Open Terminal' }}
+    </button>
+
+    <Terminal v-if="isTerminalVisible" class="terminal-section" />
+
     <GameContextMenu v-if="menu.visible" :x="menu.x" :y="menu.y" :items="menu.items" @select="onMenuSelect"
       @close="closeMenu" />
 
@@ -32,6 +38,7 @@ import { useStore } from 'vuex'
 import { type State } from '@/store'
 import GameContextMenu from './GameContextMenu.vue';
 import NameInputDialog from './FileExplorers/NameInputDialog.vue';
+import Terminal from './Terminal.vue';
 import { EContextMenuAction } from "@/components/mainWindow/FileExplorers/helper"
 import { loadSettings } from '@/composables/useSettings';
 import { playSound, SoundEffect, preloadAllSounds } from '@/composables/useSounds';
@@ -39,6 +46,11 @@ const store = useStore<State>()
 const files = computed(() => store.getters['fileStoreModule/getFilesystem'])
 const searchQuery = computed(() => store.getters['fileStoreModule/getSearchQuery'])
 const currentDirectoryId = computed(() => store.getters["fileStoreModule/getCurrentFile"])
+const isTerminalVisible = ref(false)
+
+function toggleTerminal() {
+  isTerminalVisible.value = !isTerminalVisible.value
+}
 onMounted(() => {
   if (files.value.length === 0) {
     store.dispatch('fileStoreModule/generateRandomFilesystem', { count: 100 })
@@ -48,7 +60,7 @@ onMounted(() => {
 })
 const filteredFiles = computed(() => {
   if (searchQuery.value) {
-    
+
     const lowerSearch = searchQuery.value.toLowerCase()
     return files.value.filter((file: FileOrDirectory) =>
       file.name.toLowerCase().includes(lowerSearch)
@@ -180,7 +192,7 @@ function onContextMenu(e: MouseEvent) {
   playSound(SoundEffect.RightClick);
   const settings = loadSettings();
   const useFancyIcons = settings.fancyIcons;
-  
+
   menu.value.items = [
     { label: 'Open', action: EContextMenuAction.Open, icon: useFancyIcons ? 'papa papa-folder-open' : 'pi pi-folder-open' },
     { label: 'Create new folder', action: EContextMenuAction.NewFolder, icon: useFancyIcons ? 'papa papa-new-folder' : 'pi pi-folder-plus' },
@@ -360,5 +372,33 @@ function onMenuSelect(action: string) {
   background-color: var(--element-background);
   border: 2px solid var(--accent, #007bff);
   border-radius: 0.5em;
+}
+
+.terminal-section {
+  width: 100%;
+  height: 300px;
+
+}
+
+.terminal-toggle-button {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 12px 24px;
+  background-color: var(--accent);
+  color: var(--text);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  margin-left: 24px;
+}
+
+.terminal-toggle-button:hover {
+  background-color: var(--element-background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
