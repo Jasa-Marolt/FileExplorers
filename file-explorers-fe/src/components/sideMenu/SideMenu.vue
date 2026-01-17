@@ -11,10 +11,20 @@
         <Divider />
 
         <div class="menu-group">
-            <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
-                :label="level.name ?? `Level ${idx + 1}`"
-                :icon="currentLevel?.level_id === (level.level_id ?? idx + 1) && isGame ? 'pi pi-folder-open' : 'pi pi-folder'"
-                @click="openLevel(level.level_id ?? idx + 1)" />
+            <Button type="button" label="File Explorer" icon="pi pi-folder" @click="toggleLevels" />
+            <Button type="button" label="Elektro" icon="pi pi-bolt" @click="goToElektro" />
+            <Button type="button" label="Boolean" icon="pi pi-sitemap" @click="goToBoolean" />
+        </div>
+
+        <Divider />
+
+        <div class="menu-group">
+            <div v-if="showLevels" class="levels-list">
+                <Button v-for="(level, idx) in levels" :key="level.level_id ?? idx" type="button"
+                    :label="level.name ?? `Level ${idx + 1}`"
+                    :icon="currentLevel?.level_id === (level.level_id ?? idx + 1) && isGame ? 'pi pi-folder-open' : 'pi pi-folder'"
+                    @click="openLevel(level.level_id ?? idx + 1)" class="level-button" />
+            </div>
         </div>
     </div>
 </template>
@@ -58,6 +68,27 @@ const goToSettings = () => {
     router.push({ name: 'settings' });
 };
 
+const goToElektro = () => {
+    showLevels.value = false;
+    router.push({ name: 'gameElektro' });
+};
+
+const goToBoolean = () => {
+    showLevels.value = false;
+    router.push({ name: 'gameBool' });
+};
+
+const showLevels = ref(false);
+
+const toggleLevels = () => {
+    showLevels.value = !showLevels.value;
+    if (showLevels.value && levels.value && levels.value.length > 0) {
+        // Open the first level when expanding the levels list
+        const firstLevelId = levels.value[0].level_id ?? 1;
+        openLevel(firstLevelId);
+    }
+};
+
 const levels = ref<null | Level[]>(null);
 
 const currentLevel = computed(() => store.getters["levelStoreModule/currentLevel"]);
@@ -67,6 +98,17 @@ watch(
     (newLevels) => {
         console.log("levels updated", newLevels);
         levels.value = newLevels;
+    },
+    { immediate: true }
+);
+
+// Watch route changes to show levels when navigating to 'game' route
+watch(
+    () => route.name,
+    (newRouteName) => {
+        if (newRouteName === 'game') {
+            showLevels.value = true;
+        }
     },
     { immediate: true }
 );
@@ -117,5 +159,15 @@ onBeforeMount(() => {
 
 ::v-deep(.p-divider) {
     margin: 0.25rem 0;
+}
+
+.levels-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.level-button {
+    padding-left: 1rem;
 }
 </style>

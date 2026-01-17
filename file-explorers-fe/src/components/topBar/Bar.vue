@@ -45,7 +45,9 @@ const isNotGame = computed(() => {
 
 const resetLevel = async () => {
   const level = store.getters["levelStoreModule/currentLevel"];
-  store.dispatch("fileStoreModule/setFilesystem", level.startingFileSystem);
+  if (level) {
+    store.dispatch("fileStoreModule/setFilesystem", level.startingFileSystem);
+  }
 }
 const pathValue = computed(() => {
   const routeName = route.name as string;
@@ -61,6 +63,10 @@ const pathValue = computed(() => {
       return 'Settings';
     case 'game':
       return breadcrumbsPath.value;
+    case 'gameElektro':
+      return 'Elektro';
+    case 'gameBool':
+      return 'Boolean';
     case 'home':
       return "home";
     default:
@@ -84,7 +90,7 @@ const breadcrumbsPath = computed(() => {
     return "" // Return an empty string if there are no breadcrumbs
   }
   const level = store.getters["levelStoreModule/currentLevel"];
-  const prefix = "C:/ " + level.name + " / "
+  const prefix = level ? "C:/ " + level.name + " / " : "C:/ "
 
   return prefix + breadcrumbs.value.reverse()
     .map((file: FileOrDirectory) => file.name)

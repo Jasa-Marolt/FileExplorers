@@ -195,8 +195,6 @@ export function createComponent(workspace, x, y, type, color, wireGraphics, text
     const glowGraphics = workspace.add.graphics();
     glowGraphics.fillStyle(color, 0.3);
     glowGraphics.fillRoundedRect(-45, -45, 90, 90, 10);
-    glowGraphics.fillStyle(color, 0.15);
-    glowGraphics.fillRoundedRect(-55, -55, 110, 110, 15);
     component.add(glowGraphics);
     component.sendToBack(glowGraphics);
     component.setData("glowGraphics", glowGraphics);

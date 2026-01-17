@@ -34,17 +34,12 @@ class Node {
             for (const n of this.wire.nodes) {
                 if (n !== this && n.bit_value !== intVal) {
                     n.bit_value = intVal;
-                    // update circle colour if present
-                    if (n._circle) n._circle.setFillStyle(intVal ? 0x00ff00 : 0xff0000);
                     if (n.component && typeof n.component.onNodeValueChanged === 'function') {
                         try { n.component.onNodeValueChanged(n); } catch (e) {}
                     }
                 }
             }
         }
-
-        // update own circle colour
-        if (this._circle) this._circle.setFillStyle(intVal ? 0x00ff00 : 0xff0000);
 
         // notify owning component
         if (this.component && typeof this.component.onNodeValueChanged === 'function') {

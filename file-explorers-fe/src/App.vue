@@ -2,19 +2,38 @@
 import { RouterView } from 'vue-router'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import { setToastService } from './service/toastService'
-import { onMounted } from 'vue'
+import { setToastService, setLevelCompleteHandler } from './service/toastService'
+import { onMounted, ref } from 'vue'
+import LevelCompleteDialog from './components/LevelCompleteDialog.vue'
 
 const toast = useToast()
 
+const levelCompleteDialog = ref({
+  visible: false,
+  levelName: '',
+})
+
 onMounted(() => {
   setToastService(toast)
+  setLevelCompleteHandler((levelName: string) => {
+    levelCompleteDialog.value.visible = true
+    levelCompleteDialog.value.levelName = levelName
+  })
 })
+
+const closeLevelCompleteDialog = () => {
+  levelCompleteDialog.value.visible = false
+}
 
 </script>
 
 <template>
   <Toast />
+  <LevelCompleteDialog 
+    :visible="levelCompleteDialog.visible" 
+    :levelName="levelCompleteDialog.levelName"
+    @close="closeLevelCompleteDialog" 
+  />
   <RouterView />
 </template>
 

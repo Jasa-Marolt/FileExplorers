@@ -142,7 +142,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         // Back button with background style
         new UIButton(this, {
             x: panelWidth / 2,
-            y: 20,
+            y: 30,
             text: "Nazaj",
             onClick: () => {
                 this.placedComponents.forEach((comp) => comp.destroy());
@@ -170,7 +170,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         // Buttons above component panel
         new UIButton(this, {
             x: panelWidth / 2,
-            y: 65,
+            y: 75,
             text: "Simulacija",
             onClick: () => this.sim.init(),
             background: {
@@ -188,7 +188,7 @@ export default class WorkspaceScene extends Phaser.Scene {
 
         new UIButton(this, {
             x: panelWidth / 2,
-            y: 105,
+            y: 115,
             text: "Formule",
             onClick: () => this.showCalculationFormulas(),
             background: {
@@ -205,7 +205,7 @@ export default class WorkspaceScene extends Phaser.Scene {
 
         new UIButton(this, {
             x: panelWidth / 2,
-            y: 145,
+            y: 155,
             text: "Export",
             onClick: () => this.exportComponents(),
             background: {
@@ -222,7 +222,7 @@ export default class WorkspaceScene extends Phaser.Scene {
 
         new UIButton(this, {
             x: panelWidth / 2,
-            y: 185,
+            y: 195,
             text: "Import",
             onClick: () => this.importComponents(),
             background: {
@@ -238,7 +238,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         });
 
         this.add
-            .text(panelWidth / 2, 230, "Komponente", {
+            .text(panelWidth / 2, 240, "Komponente", {
                 fontSize: "18px",
                 color: textColor,
                 fontStyle: "bold",

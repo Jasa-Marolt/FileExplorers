@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import router from '@/router';
+import { loadSettings, folderColorMap, textColorMap } from '@/composables/useSettings';
 
 // Asset imports (bundler-resolved)
 import andGateImg from './phaserComponents/boolean/and_gate.svg';
@@ -23,6 +24,26 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         this.gridSize = 40;
     }
 
+    init() {
+        // Load color settings
+        const settings = loadSettings();
+        this.primaryColorHex = folderColorMap[settings.folderColor] || folderColorMap.default;
+        this.primaryColor = parseInt(this.primaryColorHex.replace('#', '0x'), 16);
+        this.textColorHex = textColorMap[settings.textColor] || textColorMap.default;
+        
+        // Calculate derived colors
+        this.darken = (hex, percent) => {
+            const num = parseInt(hex.replace('#', ''), 16);
+            const r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - percent)));
+            const g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - percent)));
+            const b = Math.max(0, Math.floor((num & 0xff) * (1 - percent)));
+            return (r << 16) | (g << 8) | b;
+        };
+        
+        this.deskColor = this.darken(this.primaryColorHex, 0.4);
+        this.gridColor = this.darken(this.primaryColorHex, 0.6);
+    }
+
     preload() {
         // Register assets using imported URLs
         this.load.image('and', andGateImg);
@@ -38,6 +59,10 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.cameras.main;
+        
+        // Add desk background with theme color
+        this.add.rectangle(0, 0, width, height, this.deskColor).setOrigin(0);
+        
         this.createPanel();
         this.createGrid();
 
@@ -59,12 +84,16 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         this.events.once('shutdown', () => this.cleanup());
         this.events.once('destroy', () => this.cleanup());
 
-        // Back button
+        // Back button with background style
+        const panelWidth = 220;
+        const buttonHoverColor = this.darken(this.primaryColorHex, 0.8);
+        
         new UIButton(this, {
-            x: 12,
-            y: 10,
-            text: '↩ Nazaj',
+            x: panelWidth / 2,
+            y: 30,
+            text: "Nazaj",
             onClick: () => {
+                this.placedComponents.forEach((comp) => comp.destroy());
                 this.cameras.main.fade(300, 0, 0, 0);
                 this.time.delayedCall(300, () => {
                     try {
@@ -74,10 +103,15 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                     }
                 });
             },
-            origin: [0, 0],
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
+            },
             style: {
-                fontSize: '18px',
-                color: '#387aff',
+                fontSize: "16px",
+                color: this.textColorHex,
             },
         });
 
@@ -176,7 +210,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 });
             }
 
-            createContextMenu(this, pointer.worldX, pointer.worldY, items);
+            createContextMenu(this, pointer.worldX, pointer.worldY, items, this.textColorHex, this.primaryColor);
         });
 
         const rotateComponent = (container) => {
@@ -208,19 +242,21 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
     }
 
     createPanel() {
-        const panelWidth = 150;
+        const panelWidth = 220;
+        this.panelWidth = panelWidth;
         const { height } = this.cameras.main;
-        this.add.rectangle(0, 0, panelWidth, height, 0xc0c0c0).setOrigin(0);
-        this.add.rectangle(0, 0, panelWidth, height, 0x000000, 0.12).setOrigin(0);
+        this.add.rectangle(0, 0, panelWidth, height, this.primaryColor).setOrigin(0);
+        this.add.rectangle(0, 0, panelWidth, height, 0x000000, 0.2).setOrigin(0);
 
-        this.add.text(panelWidth / 2, 40, 'Boolean Components', {
-            fontSize: '16px',
-            color: '#ffffff',
+        this.add.text(panelWidth / 2, 80, 'Boolean Components', {
+            fontSize: '18px',
+            color: this.textColorHex,
+            fontStyle: 'bold',
             align: 'center',
         }).setOrigin(0.5);
 
-        const startY = 90;
-        const gap = 70;
+        const startY = 150;
+        const gap = 100;
         const components = [
             { key: 'and', label: 'AND' },
             { key: 'or', label: 'OR' },
@@ -234,7 +270,17 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
 
         components.forEach((c, idx) => {
             const y = startY + idx * gap;
-            const icon = this.add.image(panelWidth / 2, y, c.key).setOrigin(0.5);
+            
+            // Create container for icon with glow
+            const container = this.add.container(panelWidth / 2, y);
+            
+            // Add glow effect
+            const innerGlow = this.add.graphics();
+            innerGlow.fillStyle(0xffffff, 0.3);
+            innerGlow.fillRoundedRect(-45, -45, 90, 90, 10);
+            container.add(innerGlow);
+            
+            const icon = this.add.image(0, 0, c.key).setOrigin(0.5);
             // Preserve aspect ratio and set desired width
             const desiredWidth = 48;
             try {
@@ -248,32 +294,47 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 // fallback to square size
                 icon.setDisplaySize(48, 48);
             }
+            
+            container.add(icon);
+            
+            // Add text label below the icon
+            const label = this.add.text(0, 30, c.label, {
+                fontSize: '11px',
+                color: this.textColorHex,
+                backgroundColor: '#00000088',
+                padding: { x: 4, y: 2 }
+            }).setOrigin(0.5);
+            container.add(label);
 
-            // Make icon interactive and draggable to create new component while dragging
-            icon.setInteractive({ useHandCursor: true });
-            this.input.setDraggable(icon);
+            // Make container interactive and draggable to create new component while dragging
+            container.setSize(100, 100);
+            container.setInteractive({ useHandCursor: true });
+            this.input.setDraggable(container);
+            
+            // Store original icon for reference
+            const icon_ref = icon;
 
             // temporary ghost container while dragging from panel
-            icon._ghost = null;
+            container._ghost = null;
 
-            icon.on('dragstart', (pointer) => {
+            container.on('dragstart', (pointer) => {
                 // create a new component at pointer world position
                 const worldX = pointer.worldX || pointer.x;
                 const worldY = pointer.worldY || pointer.y;
                 const ghost = this.createNewBooleanComponent(worldX, worldY, c.key);
                 ghost.setData('fromPanel', true);
-                icon._ghost = ghost;
-                // prevent the icon itself from moving
-                icon.x = panelWidth / 2;
-                icon.y = y;
+                container._ghost = ghost;
+                // prevent the container itself from moving
+                container.x = panelWidth / 2;
+                container.y = y;
             });
 
-            icon.on('drag', (pointer, dragX, dragY) => {
-                if (icon._ghost) {
-                    icon._ghost.x = dragX;
-                    icon._ghost.y = dragY;
+            container.on('drag', (pointer, dragX, dragY) => {
+                if (container._ghost) {
+                    container._ghost.x = dragX;
+                    container._ghost.y = dragY;
                     // update any node world positions to keep wires reactive while dragging
-                    const gate = icon._ghost.getData('logicGate');
+                    const gate = container._ghost.getData('logicGate');
                     if (gate) {
                         gate.inputs.forEach((n) => {
                             if (n._circle) {
@@ -291,10 +352,11 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                 }
             });
 
-            icon.on('dragend', (pointer) => {
-                const ghost = icon._ghost;
+            container.on('dragend', (pointer) => {
+                const ghost = container._ghost;
                 if (!ghost) return;
                 // determine drop
+                const panelWidth = this.panelWidth || 220;
                 const isInPanel = ghost.x < panelWidth;
                 if (isInPanel) {
                     ghost.destroy();
@@ -323,9 +385,9 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                     }
                     this.placedComponents.push(ghost);
                 }
-                icon._ghost = null;
-                // ensure icon returns to original place
-                icon.x = panelWidth / 2; icon.y = y;
+                container._ghost = null;
+                // ensure container returns to original place
+                container.x = panelWidth / 2; container.y = y;
             });
         });
     }
@@ -333,8 +395,10 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
     createGrid() {
         const { width, height } = this.cameras.main;
         const gridGraphics = this.add.graphics();
-        gridGraphics.lineStyle(1, 0x8b7355, 0.35);
-        for (let x = 150; x < width; x += this.gridSize) {
+        const gridColor = this.gridColor || 0x8b7355;
+        gridGraphics.lineStyle(1, gridColor, 0.35);
+        const panelWidth = this.panelWidth || 220;
+        for (let x = panelWidth; x < width; x += this.gridSize) {
             gridGraphics.beginPath();
             gridGraphics.moveTo(x, 0);
             gridGraphics.lineTo(x, height);
@@ -342,7 +406,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
         }
         for (let y = 0; y < height; y += this.gridSize) {
             gridGraphics.beginPath();
-            gridGraphics.moveTo(150, y);
+            gridGraphics.moveTo(panelWidth, y);
             gridGraphics.lineTo(width, y);
             gridGraphics.strokePath();
         }
@@ -358,6 +422,13 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
     createNewBooleanComponent(x, y, key) {
         // Create a container that can be dragged
         const container = this.add.container(x, y);
+        
+        // Add glow effect
+        const innerGlow = this.add.graphics();
+        innerGlow.fillStyle(0xffffff, 0.3);
+        innerGlow.fillRoundedRect(-45, -45, 90, 90, 10);
+        container.add(innerGlow);
+        
         const img = this.add.image(0, 0, key).setOrigin(0.5);
         // Preserve aspect ratio for placed components
         const desiredWidth = 80;
@@ -378,7 +449,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
 
         container.add(img);
 
-        const label = this.add.text(0, 40, key.toUpperCase(), { fontSize: '12px', color: '#fff', backgroundColor: '#00000088', padding: { x: 4, y: 2 } }).setOrigin(0.5);
+        const label = this.add.text(0, 40, key.toUpperCase(), { fontSize: '12px', color: this.textColorHex || '#fff', backgroundColor: '#00000088', padding: { x: 4, y: 2 } }).setOrigin(0.5);
         container.add(label);
 
         // make container draggable with a larger interactive area to ensure dragging works
@@ -445,7 +516,8 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             // Check if component was dragged from panel
             const fromPanel = container.getData('fromPanel');
             if (fromPanel) {
-                const isInPanel = container.x < 150;
+                const panelWidth = this.panelWidth || 220;
+                const isInPanel = container.x < panelWidth;
                 if (isInPanel) {
                     // drop back: destroy temporary container and its nodes
                     container.destroy();
@@ -492,7 +564,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
 
         // helper to create a circle UI for a node
         const createNodeCircle = (node, offsetX, offsetY, isOutput = false) => {
-            const circle = this.add.circle(offsetX, offsetY, 6, isOutput ? 0x0000ff : 0xff0000).setOrigin(0.5);
+            const circle = this.add.circle(offsetX, offsetY, 6, this.primaryColor).setOrigin(0.5);
             circle.setInteractive({ useHandCursor: true });
             circle.setData('logicNode', node);
             circle.setData('component', container);
@@ -567,7 +639,7 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
                             }
                         }
                     }
-                    circle.setFillStyle(isOutput ? 0x0000ff : 0xff0000);
+                    circle.setFillStyle(this.primaryColor);
                 });
             });
 
@@ -620,16 +692,14 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             gate.output.setBit(initialOutput);
         }
 
-        // Update all node circle colors to reflect their current bit values
+        // Update all node circle colors to use primary color
         gate.inputs.forEach((node) => {
             if (node._circle) {
-                const color = node.bit_value ? 0x00ff00 : 0xff0000;
-                node._circle.setFillStyle(color);
+                node._circle.setFillStyle(this.primaryColor);
             }
         });
         if (gate.output && gate.output._circle) {
-            const color = gate.output.bit_value ? 0x00ff00 : 0xff0000;
-            gate.output._circle.setFillStyle(color);
+            gate.output._circle.setFillStyle(this.primaryColor);
         }
 
         return container;

@@ -8,6 +8,8 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import Phaser from 'phaser';
 import BoolWorkspaceScene from '@/phaser/boolWorkspaceScene.js';
+import { loadSettings } from '@/composables/useSettings';
+import { folderColorMap } from '@/composables/useSettings';
 
 const gameContainer = ref<HTMLDivElement | null>(null);
 let game: Phaser.Game | null = null;
@@ -29,6 +31,21 @@ onMounted(() => {
   } catch (e) {}
 
   if (gameContainer.value) {
+    // Load settings and calculate desk color
+    const settings = loadSettings();
+    const primaryColorHex = folderColorMap[settings.folderColor] || folderColorMap.default;
+    
+    // Calculate darker desk color
+    const darken = (hex: string, percent: number) => {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - percent)));
+      const g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - percent)));
+      const b = Math.max(0, Math.floor((num & 0xff) * (1 - percent)));
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    };
+    
+    const deskColor = darken(primaryColorHex, 0.4);
+    
     // @ts-ignore: allow non-standard config fields like 'resolution'
     const config: any = {
       type: Phaser.AUTO,
@@ -43,7 +60,7 @@ onMounted(() => {
           debug: false,
         },
       },
-      backgroundColor: '#e0c9a6',
+      backgroundColor: deskColor,
       // Render at device pixel ratio for crisp SVG scaling
       render: {
         pixelArt: false,
