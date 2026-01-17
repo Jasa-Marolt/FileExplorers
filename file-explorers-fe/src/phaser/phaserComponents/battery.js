@@ -76,7 +76,7 @@ class Battery extends Component {
             name: "Battery",
             sourceType: "DC",
             voltage: 3.3,
-            current: 1,
+            current: { value: 1, automatic: false },
             maxCurrent: 1,
             power: { value: 0, automatic: true },
             resistance: { value: 0, automatic: true },
@@ -101,6 +101,12 @@ class Battery extends Component {
         if (this.values.sourceType == "DC") {
             this.currentInterval = 0;
             this.values.voltage = this.values.maxVoltage;
+            // Set current from maxCurrent for DC
+            if (this.values.current && typeof this.values.current === 'object') {
+                this.values.current.value = this.values.maxCurrent;
+            } else {
+                this.values.current = this.values.maxCurrent;
+            }
         } else {
             // console.log(
             //     this.values.maxVoltage,
@@ -115,6 +121,17 @@ class Battery extends Component {
                     (2 * Math.PI * this.currentInterval) /
                         (this.values.clockSpeed * this.values.periodTime)
                 );
+            // Set current from maxCurrent for AC (using sine wave)
+            const currentValue = this.values.maxCurrent *
+                Math.sin(
+                    (2 * Math.PI * this.currentInterval) /
+                        (this.values.clockSpeed * this.values.periodTime)
+                );
+            if (this.values.current && typeof this.values.current === 'object') {
+                this.values.current.value = currentValue;
+            } else {
+                this.values.current = currentValue;
+            }
             this.currentInterval++;
         }
 
