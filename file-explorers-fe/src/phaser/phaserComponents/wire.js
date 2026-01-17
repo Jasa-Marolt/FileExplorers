@@ -119,6 +119,12 @@ class Wire {
     draw() {
         this.paths = [];
         this.renderer.clear();
+        // Draw glow first (underneath)
+        this.renderer.lineStyle(8, 0x0066cc, 0.3);
+        if (this.nodes.length >= 2) {
+            const glowPath = this.initialDraw(this.nodes[0], this.nodes[1]);
+        }
+        // Draw main wire
         this.renderer.lineStyle(3, 0x000000, 1);
         if (this.nodes.length < 2) return;
 

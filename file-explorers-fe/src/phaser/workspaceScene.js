@@ -14,6 +14,7 @@ import {
 } from "./phaserComponents/ComponentHelper";
 import { CircuitSim } from "./logic/circuit_sim.js";
 import router from '@/router';
+import { loadSettings, folderColorMap, textColorMap } from '@/composables/useSettings';
 
 // Asset imports (bundler will replace these with URLs)
 import baterijaImg from './phaserComponents/battery.svg';
@@ -35,6 +36,24 @@ export default class WorkspaceScene extends Phaser.Scene {
         const savedIndex = localStorage.getItem("currentChallengeIndex");
         this.currentChallengeIndex =
             savedIndex !== null ? parseInt(savedIndex) : 0;
+        
+        // Load color settings
+        const settings = loadSettings();
+        this.primaryColorHex = folderColorMap[settings.folderColor] || folderColorMap.default;
+        this.primaryColor = parseInt(this.primaryColorHex.replace('#', '0x'), 16);
+        this.textColorHex = textColorMap[settings.textColor] || textColorMap.default;
+        
+        // Calculate derived colors
+        this.darken = (hex, percent) => {
+            const num = parseInt(hex.replace('#', ''), 16);
+            const r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - percent)));
+            const g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - percent)));
+            const b = Math.max(0, Math.floor((num & 0xff) * (1 - percent)));
+            return (r << 16) | (g << 8) | b;
+        };
+        
+        this.deskColor = this.darken(this.primaryColorHex, 0.4);
+        this.gridColor = this.darken(this.primaryColorHex, 0.6);
     }
 
     preload() {
@@ -55,13 +74,15 @@ export default class WorkspaceScene extends Phaser.Scene {
         this.sim = new CircuitSim();
         this.clearAllComponents();
 
-        // površje mize
+        // površje mize - use darker version of primary color
+        const deskColor = this.deskColor || 0xe0c9a6;
         const desk = this.add
-            .rectangle(0, 0, width, height, 0xe0c9a6)
+            .rectangle(0, 0, width, height, deskColor)
             .setOrigin(0);
 
         const gridGraphics = this.add.graphics();
-        gridGraphics.lineStyle(1, 0x8b7355, 0.35);
+        const gridColor = this.gridColor || 0x8b7355;
+        gridGraphics.lineStyle(1, gridColor, 0.35);
         const gridSize = 40;
         for (let x = 0; x < width; x += gridSize) {
             gridGraphics.beginPath();
@@ -82,10 +103,11 @@ export default class WorkspaceScene extends Phaser.Scene {
         // ozadje info okna
         const infoBox = this.add.rectangle(0, 0, 200, 80, 0x2c2c2c, 0.95);
         infoBox.setStrokeStyle(2, 0xffffff);
+        const textColor = this.textColorHex || "#ffffff";
         const infoText = this.add
             .text(0, 0, "", {
                 fontSize: "14px",
-                color: "#ffffff",
+                color: textColor,
                 align: "left",
                 wordWrap: { width: 180 },
             })
@@ -105,150 +127,177 @@ export default class WorkspaceScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-
-        new UIButton(this, {
-            x: width - 140,
-            y: 125,
-            text: "Simulacija",
-            onClick: () => this.sim.init(),
-            background: {
-                width: 180,
-                height: 45,
-            },
-        });
-        window.sim = this.sim; // DEBUGGING PURPOSES
-
-        // new UIButton(this, {
-        //     x: width - 140,
-        //     y: 275,
-        //     text: "new_sim",
-        //     onClick: () => this.sim.generate_tree(),
-        //     background: {
-        //         width: 180,
-        //         height: 45,
-        //     },
-        // });
-        // window.sim = this.sim; // DEBUGGING PURPOSES
-
-        new UIButton(this, {
-            x: width - 140,
-            y: 175,
-            text: "Formule",
-            onClick: () => this.showCalculationFormulas(),
-            background: {
-                width: 180,
-                height: 45,
-            },
-        });
-
-        new UIButton(this, {
-            x: width - 140,
-            y: 225,
-            text: "Export",
-            onClick: () => this.exportComponents(),
-            background: {
-                width: 180,
-                height: 45,
-            },
-        });
-
-        new UIButton(this, {
-            x: width - 140,
-            y: 275,
-            text: "Import",
-            onClick: () => this.importComponents(),
-            background: {
-                width: 180,
-                height: 45,
-            },
-        });
-
         // stranska vrstica na levi
-        const panelWidth = 150;
-        this.add.rectangle(0, 0, panelWidth, height, 0xc0c0c0).setOrigin(0);
+        const panelWidth = 220;
+        this.panelWidth = panelWidth;
+        const panelColor = this.primaryColor || 0x294e26;
+        this.add.rectangle(0, 0, panelWidth, height, panelColor).setOrigin(0);
         this.add
             .rectangle(0, 0, panelWidth, height, 0x000000, 0.2)
             .setOrigin(0);
 
-        this.add
-            .text(panelWidth / 2, 60, "Komponente", {
-                fontSize: "18px",
-                color: "#ffffff",
-                fontStyle: "bold",
-            })
-            .setOrigin(0.5);
+        // Button colors
+        const buttonHoverColor = this.darken(this.primaryColorHex, 0.8);
 
-        // komponente v stranski vrstici
-        this.createNewComponent(panelWidth / 2, 100 + 20, "baterija", 0xffcc00);
-        this.createNewComponent(panelWidth / 2, 180 + 20, "upor", 0xff6600);
-        this.createNewComponent(panelWidth / 2, 260 + 20, "svetilka", 0xff0000);
-        this.createNewComponent(
-            panelWidth / 2,
-            340 + 20,
-            "stikalo-on",
-            0x666666
-        );
-        // this.createNewComponent(panelWidth / 2, 420, "stikalo-off", 0x666666);
-        // this.createNewComponent(panelWidth / 2, 500, "žica", 0x0066cc);
-        this.createNewComponent(
-            panelWidth / 2,
-            420 + 20,
-            "ampermeter",
-            0x00cc66
-        );
-        this.createNewComponent(
-            panelWidth / 2,
-            500 + 20,
-            "voltmeter",
-            0x00cc66
-        );
-
+        // Back button with background style
         new UIButton(this, {
-            x: 12,
-            y: 10,
-            text: "↩ Nazaj",
+            x: panelWidth / 2,
+            y: 20,
+            text: "Nazaj",
             onClick: () => {
-
                 this.placedComponents.forEach((comp) => comp.destroy());
-
                 this.cameras.main.fade(300, 0, 0, 0);
                 this.time.delayedCall(300, () => {
-                    // Navigate back to main window (File Explorer)
                     try {
                         router.push({ name: 'landing' });
                     } catch (e) {
-                        // fallback: go to landing page
                         window.location.href = '/';
                     }
                 });
             },
-            origin: [0, 0],
-            style: {
-                fontSize: "20px",
-                color: "#387affff",
-                padding: { x: 20, y: 10 },
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
             },
-            hover: {
-                color: "#0054fdff",
+            style: {
+                fontSize: "16px",
+                color: this.textColorHex,
             },
         });
 
+        // Buttons above component panel
+        new UIButton(this, {
+            x: panelWidth / 2,
+            y: 65,
+            text: "Simulacija",
+            onClick: () => this.sim.init(),
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
+            },
+            style: {
+                fontSize: "14px",
+                color: this.textColorHex,
+            },
+        });
+        window.sim = this.sim; // DEBUGGING PURPOSES
+
+        new UIButton(this, {
+            x: panelWidth / 2,
+            y: 105,
+            text: "Formule",
+            onClick: () => this.showCalculationFormulas(),
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
+            },
+            style: {
+                fontSize: "14px",
+                color: this.textColorHex,
+            },
+        });
+
+        new UIButton(this, {
+            x: panelWidth / 2,
+            y: 145,
+            text: "Export",
+            onClick: () => this.exportComponents(),
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
+            },
+            style: {
+                fontSize: "14px",
+                color: this.textColorHex,
+            },
+        });
+
+        new UIButton(this, {
+            x: panelWidth / 2,
+            y: 185,
+            text: "Import",
+            onClick: () => this.importComponents(),
+            background: {
+                width: 190,
+                height: 35,
+                color: this.primaryColor,
+                hoverColor: buttonHoverColor,
+            },
+            style: {
+                fontSize: "14px",
+                color: this.textColorHex,
+            },
+        });
 
         this.add
-            .text(
-                width / 2 + 50,
-                30,
-                "Povleci komponente na mizo in zgradi svoj električni krog!",
-                {
-                    fontSize: "20px",
-                    color: "#333",
-                    fontStyle: "bold",
-                    align: "center",
-                    backgroundColor: "#ffffff88",
-                    padding: { x: 15, y: 8 },
-                }
-            )
+            .text(panelWidth / 2, 230, "Komponente", {
+                fontSize: "18px",
+                color: textColor,
+                fontStyle: "bold",
+            })
             .setOrigin(0.5);
+
+        // Create scrollable area for components
+        const componentStartY = 260;
+        const componentAreaHeight = height - componentStartY;
+        
+        this.componentScrollOffset = 0;
+        this.panelComponents = [];
+        
+        // Create mask for scrollable area
+        const maskShape = this.make.graphics();
+        maskShape.fillStyle(0xffffff);
+        maskShape.fillRect(0, componentStartY, panelWidth, componentAreaHeight);
+        const mask = maskShape.createGeometryMask();
+        this.panelComponentMask = mask;
+        
+        // komponente v stranski vrstici with larger spacing
+        const componentSpacing = 100;
+        const components = [
+            { y: componentStartY + 50, type: "baterija", color: 0xffcc00 },
+            { y: componentStartY + 50 + componentSpacing, type: "upor", color: 0xff6600 },
+            { y: componentStartY + 50 + componentSpacing * 2, type: "svetilka", color: 0xff0000 },
+            { y: componentStartY + 50 + componentSpacing * 3, type: "stikalo-on", color: 0x666666 },
+            { y: componentStartY + 50 + componentSpacing * 4, type: "ampermeter", color: 0x00cc66 },
+            { y: componentStartY + 50 + componentSpacing * 5, type: "voltmeter", color: 0x00cc66 },
+        ];
+        
+        components.forEach(comp => {
+            const component = this.createNewComponent(panelWidth / 2, comp.y, comp.type, comp.color);
+            if (component) {
+                component.setMask(mask);
+                component.setDepth(100); // Ensure components are above the scroll zone
+                this.panelComponents.push({ obj: component, baseY: comp.y });
+            }
+        });
+        
+        // Add scroll functionality - zone should be below components
+        const scrollZone = this.add.zone(panelWidth / 2, (componentStartY + height) / 2, panelWidth, componentAreaHeight);
+        scrollZone.setDepth(-1); // Put zone below components so it doesn't block drag
+        scrollZone.setInteractive();
+        scrollZone.on('wheel', (pointer, deltaX, deltaY) => {
+            const totalComponentHeight = componentSpacing * 6 + 100;
+            const maxScroll = Math.max(0, totalComponentHeight - componentAreaHeight);
+            
+            this.componentScrollOffset = Phaser.Math.Clamp(
+                this.componentScrollOffset + deltaY * 0.5,
+                -maxScroll,
+                0
+            );
+            
+            // Update positions of panel components
+            this.panelComponents.forEach(comp => {
+                comp.obj.y = comp.baseY + this.componentScrollOffset;
+            });
+        });
 
         // shrani komponente na mizi
         this.placedComponents = [];
@@ -273,7 +322,8 @@ export default class WorkspaceScene extends Phaser.Scene {
                     this,
                     target,
                     pointer.worldX,
-                    pointer.worldY
+                    pointer.worldY,
+                    this.textColorHex
                 );
                 try {
                     if (
@@ -416,11 +466,13 @@ export default class WorkspaceScene extends Phaser.Scene {
             y,
             type,
             color,
-            this.wireGraphics
+            this.wireGraphics,
+            this.textColorHex
         );
         if (!window.components) window.components = [];
         console.log("Created component:", component);
         window.components.push(component.getData("logicComponent"));
+        return component;
     }
 
     showCalculationFormulas() {
@@ -471,7 +523,7 @@ export default class WorkspaceScene extends Phaser.Scene {
             {
                 fontSize: "28px",
                 fontStyle: "bold",
-                color: "#333333",
+                color: this.textColorHex,
             }
         );
         title.setOrigin(0.5);
@@ -492,20 +544,20 @@ export default class WorkspaceScene extends Phaser.Scene {
                 style: {
                     fontSize: "20px",
                     fontStyle: "bold",
-                    color: "#0066cc",
+                    color: this.textColorHex,
                 },
             },
             {
                 text: "U = I × R    (Napetost = Tok × Upor)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "I = U / R     (Tok = Napetost / Upor)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "R = U / I     (Upor = Napetost / Tok)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             { text: "", style: {} },
 
@@ -514,20 +566,20 @@ export default class WorkspaceScene extends Phaser.Scene {
                 style: {
                     fontSize: "20px",
                     fontStyle: "bold",
-                    color: "#0066cc",
+                    color: this.textColorHex,
                 },
             },
             {
                 text: "R_skupni = R₁ + R₂ + R₃ + ...",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "I_skupni = I₁ = I₂ = I₃ = ... (enak tok)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "U_skupni = U₁ + U₂ + U₃ + ...",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             { text: "", style: {} },
 
@@ -536,20 +588,20 @@ export default class WorkspaceScene extends Phaser.Scene {
                 style: {
                     fontSize: "20px",
                     fontStyle: "bold",
-                    color: "#0066cc",
+                    color: this.textColorHex,
                 },
             },
             {
                 text: "1/R_skupni = 1/R₁ + 1/R₂ + 1/R₃ + ...",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "U_skupni = U₁ = U₂ = U₃ = ...(enaka napetost)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "I_skupni = I₁ + I₂ + I₃ + ...",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             { text: "", style: {} },
 
@@ -558,20 +610,20 @@ export default class WorkspaceScene extends Phaser.Scene {
                 style: {
                     fontSize: "20px",
                     fontStyle: "bold",
-                    color: "#0066cc",
+                    color: this.textColorHex,
                 },
             },
             {
                 text: "P = U × I    (Moč = Napetost × Tok)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "P = I² × R   (Moč = Tok² × Upor)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
             {
                 text: "P = U² / R   (Moč = Napetost² / Upor)",
-                style: { fontSize: "16px", color: "#333333" },
+                style: { fontSize: "16px", color: this.textColorHex },
             },
         ];
 

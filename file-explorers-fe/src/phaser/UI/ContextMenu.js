@@ -1,4 +1,4 @@
-export function createContextMenu(scene, worldX, worldY, items) {
+export function createContextMenu(scene, worldX, worldY, items, textColor = "#ffffff", primaryColor = 0x1e1e1e) {
     // items: [{ label: string, onClick: (pointer) => void }]
     // destroy any existing menu
     if (scene._contextMenu) {
@@ -16,7 +16,7 @@ export function createContextMenu(scene, worldX, worldY, items) {
             0,
             menuWidth,
             items.length * itemHeight + 8,
-            0x1e1e1e,
+            primaryColor,
             0.95
         )
         .setOrigin(0, 0);
@@ -32,7 +32,7 @@ export function createContextMenu(scene, worldX, worldY, items) {
         const txt = scene.add
             .text(8, y, it.label, {
                 fontSize: "14px",
-                color: "#ffffff",
+                color: textColor,
             })
             .setOrigin(0, 0);
 

@@ -23,6 +23,7 @@ export default class Oscilloscope {
         this.y = config.y;
         this.name = config.name || "Oscilloscope";
         this.inputType = config.inputType || "volt"; // 'volt', 'amper', or 'watt'
+        this.textColor = config.textColor || "#ffffff";
 
         this.maxMeasurements = config.maxMeasurements || 10;
         this.minVoltage =
@@ -106,7 +107,7 @@ export default class Oscilloscope {
             this.name,
             {
                 fontSize: "14px",
-                color: "#ffffff",
+                color: this.textColor,
                 fontFamily: "Arial, sans-serif",
                 fontStyle: "bold",
                 backgroundColor: "#000000",
@@ -123,7 +124,7 @@ export default class Oscilloscope {
             "V: 0.00 V",
             {
                 fontSize: "14px",
-                color: "#00ff00",
+                color: this.textColor,
                 fontFamily: "Courier New, monospace",
                 backgroundColor: "#000000",
                 padding: { x: 8, y: 4 },

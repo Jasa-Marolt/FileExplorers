@@ -4,7 +4,9 @@ export function openPropertiesPanel(
     fields,
     initialValues = {},
     onSave,
-    onCancel
+    onCancel,
+    textColor = "#ffffff",
+    bgColor = "rgba(30,30,30,0.95)"
 ) {
     // Create a centered DOM modal panel (ignore worldX/worldY).
     const canvas = scene.game && scene.game.canvas ? scene.game.canvas : null;
@@ -24,12 +26,32 @@ export function openPropertiesPanel(
     panel.style.maxHeight = "80vh"; // keep within viewport
     panel.style.overflowY = "auto";
     panel.style.padding = "12px";
-    panel.style.background = "rgba(30,30,30,0.95)";
-    panel.style.color = "#fff";
+    panel.style.background = bgColor;
+    panel.style.color = textColor;
     panel.style.border = "1px solid #444";
     panel.style.borderRadius = "6px";
     panel.style.zIndex = 9999;
     panel.style.fontFamily = "Arial, sans-serif";
+    
+    // Helper to darken a hex color for input backgrounds
+    const darkenHex = (hex, percent = 0.3) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - percent)));
+        const g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - percent)));
+        const b = Math.max(0, Math.floor((num & 0xff) * (1 - percent)));
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    };
+    
+    // Extract base color from bgColor rgba string or use default
+    let baseColorHex = '#1e1e1e';
+    if (bgColor.includes('rgba')) {
+        const match = bgColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (match) {
+            const [, r, g, b] = match;
+            baseColorHex = '#' + ((1 << 24) + (parseInt(r) << 16) + (parseInt(g) << 8) + parseInt(b)).toString(16).slice(1);
+        }
+    }
+    const inputBgColor = darkenHex(baseColorHex, 0.3);
 
     const title = document.createElement("div");
     title.textContent = "Properties";
@@ -85,10 +107,10 @@ export function openPropertiesPanel(
             input.value = initial;
             input.style.width = "98%";
             input.style.padding = "6px";
-            input.style.border = "1px solid #666";
+            input.style.border = `1px solid ${darkenHex(baseColorHex, 0.5)}`;
             input.style.borderRadius = "4px";
-            input.style.background = "#222";
-            input.style.color = "#fff";
+            input.style.background = inputBgColor;
+            input.style.color = textColor;
             row.appendChild(input);
 
             // If this field supports automatic mode, add a checkbox that toggles the input
@@ -99,6 +121,7 @@ export function openPropertiesPanel(
                 automaticLabel.style.fontSize = "12px";
                 automaticLabel.style.display = "inline-flex";
                 automaticLabel.style.alignItems = "center";
+                automaticLabel.style.color = textColor;
 
                 const automaticCheckbox = document.createElement("input");
                 automaticCheckbox.type = "checkbox";
@@ -134,6 +157,7 @@ export function openPropertiesPanel(
                 const labelEl = document.createElement("label");
                 labelEl.style.marginRight = "8px";
                 labelEl.style.fontSize = "13px";
+                labelEl.style.color = textColor;
 
                 const input = document.createElement("input");
                 input.type = field.type === "select" ? "select" : "radio";
@@ -167,10 +191,17 @@ export function openPropertiesPanel(
     const cancelBtn = document.createElement("button");
     cancelBtn.textContent = "Cancel";
     cancelBtn.style.padding = "6px 10px";
-    cancelBtn.style.border = "1px solid #666";
-    cancelBtn.style.background = "#444";
-    cancelBtn.style.color = "#fff";
+    cancelBtn.style.border = `1px solid ${inputBgColor}`;
+    cancelBtn.style.background = inputBgColor;
+    cancelBtn.style.color = textColor;
     cancelBtn.style.borderRadius = "4px";
+    cancelBtn.style.cursor = "pointer";
+    cancelBtn.onmouseover = () => {
+        cancelBtn.style.background = darkenHex(inputBgColor, 0.2);
+    };
+    cancelBtn.onmouseout = () => {
+        cancelBtn.style.background = inputBgColor;
+    };
     cancelBtn.onclick = () => {
         cleanup();
         if (typeof onCancel === "function") onCancel();
@@ -179,10 +210,17 @@ export function openPropertiesPanel(
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Save";
     saveBtn.style.padding = "6px 10px";
-    saveBtn.style.border = "1px solid #0a84ff";
-    saveBtn.style.background = "#0a84ff";
-    saveBtn.style.color = "#fff";
+    saveBtn.style.border = `1px solid ${inputBgColor}`;
+    saveBtn.style.background = inputBgColor;
+    saveBtn.style.color = textColor;
     saveBtn.style.borderRadius = "4px";
+    saveBtn.style.cursor = "pointer";
+    saveBtn.onmouseover = () => {
+        saveBtn.style.background = darkenHex(inputBgColor, 0.2);
+    };
+    saveBtn.onmouseout = () => {
+        saveBtn.style.background = inputBgColor;
+    };
     saveBtn.onclick = () => {
         const result = {};
         fields.forEach((field) => {

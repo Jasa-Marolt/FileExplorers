@@ -12,7 +12,7 @@ import { createContextMenu } from "../UI/ContextMenu.js";
 import { openPropertiesPanel } from "../UI/PropertiesPanel.js";
 import Oscilloscope from "../UI/Oscilloscope";
 
-export function createComponent(workspace, x, y, type, color, wireGraphics) {
+export function createComponent(workspace, x, y, type, color, wireGraphics, textColorHex = "#ffffff") {
     const component = workspace.add.container(x, y);
 
     // Ensure the browser context menu is disabled for the workspace so
@@ -191,6 +191,16 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
             break;
     }
 
+    // Add rectangular glow/underglow effect
+    const glowGraphics = workspace.add.graphics();
+    glowGraphics.fillStyle(color, 0.3);
+    glowGraphics.fillRoundedRect(-45, -45, 90, 90, 10);
+    glowGraphics.fillStyle(color, 0.15);
+    glowGraphics.fillRoundedRect(-55, -55, 110, 110, 15);
+    component.add(glowGraphics);
+    component.sendToBack(glowGraphics);
+    component.setData("glowGraphics", glowGraphics);
+
     component.on("pointerover", () => {
         console.log(
             "Pointer over component:",
@@ -223,7 +233,7 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
     const label = workspace.add
         .text(0, 30, type, {
             fontSize: "11px",
-            color: "#fff",
+            color: textColorHex,
             backgroundColor: "#00000088",
             padding: { x: 4, y: 2 },
         })
@@ -247,6 +257,8 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
 
     component.on("dragstart", () => {
         component.setData("isDragging", true);
+        // Clear mask when dragging starts so component can be dragged anywhere
+        component.clearMask();
     });
 
     component.on("drag", (pointer, dragX, dragY) => {
@@ -255,18 +267,30 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
     });
 
     component.on("dragend", () => {
-        const isInPanel = component.x < 200;
+        const panelWidth = workspace.panelWidth || 220;
+        const isInPanel = component.x < panelWidth;
 
         if (isInPanel && !component.getData("isInPanel")) {
             // če je ob strani, se odstrani
             const comp = component.getData("logicComponent");
             if (comp.type == "battery") {
-                workspace.createNewComponent(
+                const newComp = workspace.createNewComponent(
                     component.getData("originalX"),
                     component.getData("originalY"),
                     component.getData("type"),
                     component.getData("color")
                 );
+                // Apply mask and add to panel components for scrolling
+                if (newComp && workspace.panelComponentMask) {
+                    newComp.setMask(workspace.panelComponentMask);
+                    newComp.setDepth(100); // Ensure above scroll zone
+                    if (workspace.panelComponents) {
+                        workspace.panelComponents.push({ 
+                            obj: newComp, 
+                            baseY: component.getData("originalY")
+                        });
+                    }
+                }
 
                 workspace.placedComponents.push(component);
             }
@@ -303,12 +327,23 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
 
             // Create new component in panel for non-battery components
             if (comp.type != "battery") {
-                workspace.createNewComponent(
+                const newComp = workspace.createNewComponent(
                     component.getData("originalX"),
                     component.getData("originalY"),
                     component.getData("type"),
                     component.getData("color")
                 );
+                // Apply mask and add to panel components for scrolling
+                if (newComp && workspace.panelComponentMask) {
+                    newComp.setMask(workspace.panelComponentMask);
+                    newComp.setDepth(100); // Ensure above scroll zone
+                    if (workspace.panelComponents) {
+                        workspace.panelComponents.push({ 
+                            obj: newComp, 
+                            baseY: component.getData("originalY")
+                        });
+                    }
+                }
             }
         } else if (!component.getData("isInPanel")) {
             // na mizi in se postavi na mrežo
@@ -327,6 +362,11 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
             component.y = component.getData("originalY");
 
             workspace.updateLogicNodePositions(component);
+            
+            // Reapply mask when component returns to panel
+            if (workspace.panelComponentMask) {
+                component.setMask(workspace.panelComponentMask);
+            }
         }
 
         workspace.time.delayedCall(500, () => {
@@ -451,7 +491,7 @@ export function createComponent(workspace, x, y, type, color, wireGraphics) {
     // });
 }
 
-export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
+export function openComponentContextMenu(workspace, compObj, worldX, worldY, textColorHex = "#ffffff") {
     const logic = compObj.getData("logicComponent");
     const items = [
         {
@@ -466,6 +506,17 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
 
                 let properties = logicComp.properties;
                 console.log("PROPERTIES |", properties);
+                
+                // Convert primary color to rgba for properties panel
+                const primaryHex = workspace.primaryColorHex || '#1e1e1e';
+                const bgColor = `rgba(${
+                    parseInt(primaryHex.slice(1, 3), 16)
+                }, ${
+                    parseInt(primaryHex.slice(3, 5), 16)
+                }, ${
+                    parseInt(primaryHex.slice(5, 7), 16)
+                }, 0.95)`;
+                
                 openPropertiesPanel(
                     workspace,
 
@@ -508,7 +559,9 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                     () => {
                         // cancelled
                         console.log("Properties cancelled");
-                    }
+                    },
+                    textColorHex,
+                    bgColor
                 );
             },
         },
@@ -562,6 +615,7 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         maxMeasurements: maxMeasurements,
                         minVoltage: -maxV,
                         maxVoltage: maxV,
+                        textColor: textColorHex,
                     });
                     logic.voltmeter = voltmeter;
                     logic.startInterval();
@@ -593,6 +647,7 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         maxMeasurements: maxMeasurements,
                         minVoltage: -maxI,
                         maxVoltage: maxI,
+                        textColor: textColorHex,
                     });
                     logic.amperMeter = amperMeter;
                     logic.startInterval();
@@ -628,6 +683,7 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         maxMeasurements: maxMeasurements,
                         minVoltage: -maxP,
                         maxVoltage: maxP,
+                        textColor: textColorHex,
                     });
                     logic.wattMeter = wattMeter;
                     logic.startInterval();
@@ -661,5 +717,8 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
             window.components = window.components.filter((c) => c !== logic);
         },
     });
-    createContextMenu(workspace, worldX, worldY, items);
+    
+    // Get theme colors from workspace
+    const bgColor = workspace.primaryColor || 0x1e1e1e;
+    createContextMenu(workspace, worldX, worldY, items, textColorHex, bgColor);
 }
