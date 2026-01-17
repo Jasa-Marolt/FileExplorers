@@ -692,14 +692,14 @@ export default class BoolWorkspaceScene extends Phaser.Scene {
             gate.output.setBit(initialOutput);
         }
 
-        // Update all node circle colors to use primary color
+        // Update all node circle colors based on initial state
         gate.inputs.forEach((node) => {
             if (node._circle) {
-                node._circle.setFillStyle(this.primaryColor);
+                node.updateVisualState();
             }
         });
         if (gate.output && gate.output._circle) {
-            gate.output._circle.setFillStyle(this.primaryColor);
+            gate.output.updateVisualState();
         }
 
         return container;

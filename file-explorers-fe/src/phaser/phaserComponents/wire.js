@@ -119,13 +119,19 @@ class Wire {
     draw() {
         this.paths = [];
         this.renderer.clear();
+        
+        // Determine wire color based on bit values
+        const hasActiveBit = this.nodes.some(node => node.bit_value === 1);
+        const wireColor = hasActiveBit ? 0x005500 : 0x000000; 
+        const glowColor = hasActiveBit ? 0x005500 : 0x000000;
+        
         // Draw glow first (underneath)
-        this.renderer.lineStyle(8, 0x0066cc, 0.3);
+        // this.renderer.lineStyle(8, glowColor, 0.3);
         if (this.nodes.length >= 2) {
             const glowPath = this.initialDraw(this.nodes[0], this.nodes[1]);
         }
-        // Draw main wire
-        this.renderer.lineStyle(3, 0x000000, 1);
+        // Draw main wire with dynamic color
+        this.renderer.lineStyle(3, wireColor, 1);
         if (this.nodes.length < 2) return;
 
         this.paths.push(this.initialDraw(this.nodes[0], this.nodes[1]));

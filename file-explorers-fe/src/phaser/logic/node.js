@@ -29,16 +29,23 @@ class Node {
         if (this.bit_value === intVal) return;
         this.bit_value = intVal;
 
+        // Update visual appearance if circle exists
+        this.updateVisualState();
+
         // propagate over wire
         if (this.wire && this.wire.nodes) {
             for (const n of this.wire.nodes) {
                 if (n !== this && n.bit_value !== intVal) {
                     n.bit_value = intVal;
+                    // Update visual state for other nodes too
+                    n.updateVisualState();
                     if (n.component && typeof n.component.onNodeValueChanged === 'function') {
                         try { n.component.onNodeValueChanged(n); } catch (e) {}
                     }
                 }
             }
+            // Redraw wire with new colors
+            this.wire.draw();
         }
 
         // notify owning component
@@ -46,6 +53,17 @@ class Node {
             try {
                 this.component.onNodeValueChanged(this);
             } catch (e) {}
+        }
+    }
+
+    /**
+     * Update the visual state of the node circle based on bit_value
+     */
+    updateVisualState() {
+        if (this._circle) {
+            const activeColor = 0x005500;   // Green for active (1)
+            const inactiveColor = 0x101010; // Gray for inactive (0)
+            this._circle.setFillStyle(this.bit_value ? activeColor : inactiveColor);
         }
     }
 }
