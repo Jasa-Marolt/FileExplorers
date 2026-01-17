@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Test Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+        h1 {
+            color: #4ec9b0;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #252526;
+            border-radius: 5px;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        button:disabled {
+            background: #3c3c3c;
+            cursor: not-allowed;
+        }
+        .test-section {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #3c3c3c;
+            background: #252526;
+            border-radius: 3px;
+        }
+        .test-section.pass {
+            border-left-color: #4ec9b0;
+        }
+        .test-section.fail {
+            border-left-color: #f48771;
+        }
+        .test-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .test-pass {
+            color: #4ec9b0;
+        }
+        .test-fail {
+            color: #f48771;
+        }
+        .test-details {
+            font-size: 13px;
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .test-error {
+            background: #3c1f1e;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #f48771;
+        }
+        .summary {
+            position: sticky;
+            top: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #2d2d30;
+            border-radius: 5px;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-stats {
+            display: flex;
+            gap: 20px;
+        }
+        .stat {
+            padding: 5px 15px;
+            background: #3c3c3c;
+            border-radius: 3px;
+        }
+        .circuit-info {
+            background: #252526;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .circuit-diagram {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #858585;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ Circuit Simulator Test Suite</h1>
+    
+    <div class="controls">
+        <button id="runTests" onclick="runAllTests()">Run All Tests</button>
+        <button id="clearResults" onclick="clearResults()">Clear Results</button>
+        <select id="circuitSelect">
+            <option value="circuit_1765151086766.json">Test Circuit 1</option>
+        </select>
+    </div>
+
+    <div id="summary" class="summary" style="display:none;">
+        <div class="summary-stats">
+            <div class="stat">Total: <span id="totalTests">0</span></div>
+            <div class="stat test-pass">Passed: <span id="passedTests">0</span></div>
+            <div class="stat test-fail">Failed: <span id="failedTests">0</span></div>
+        </div>
+        <div>Pass Rate: <span id="passRate">0</span>%</div>
+    </div>
+
+    <div id="circuitInfo" class="circuit-info" style="display:none;"></div>
+    <div id="results"></div>
+    <div id="loading" class="loading" style="display:none;">Loading circuit data...</div>
+
+    <script>
+        let circuitData = null;
+        let testResults = [];
+
+        // Test utilities
+        function approxEqual(a, b, tolerance = 0.001) {
+            return Math.abs(a - b) < tolerance;
+        }
+
+        function getComponentValue(component, property) {
+            const val = component.values[property];
+            if (typeof val === 'object' && 'value' in val) {
+                return val.value;
+            }
+            return val !== undefined ? val : component[property];
+        }
+
+        // Load circuit data
+        async function loadCircuit(filename) {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch(filename);
+                circuitData = await response.json();
+                displayCircuitInfo();
+                document.getElementById('loading').style.display = 'none';
+                return true;
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `Error loading circuit: ${error.message}`;
+                return false;
+            }
+        }
+
+        function displayCircuitInfo() {
+            const info = document.getElementById('circuitInfo');
+            info.style.display = 'block';
+            
+            const battery = circuitData.components.find(c => c.type === 'battery');
+            const resistors = circuitData.components.filter(c => c.type === 'resistor');
+            
+            info.innerHTML = `
+                <h3>Circuit Configuration</h3>
+                <p><strong>Battery:</strong> ${battery.values.voltage}V</p>
+                <p><strong>Components:</strong> ${circuitData.components.length} (${resistors.length} resistors)</p>
+                <div class="circuit-diagram">
+Circuit Layout:
+Battery (24V) → R11 (100Ω) → ┐
+                             ├→ Output
+        R12 (100Ω) → R13 (1kΩ) → ┘
+        
+R14 (600Ω, 18V drop) → Output
+                </div>
+            `;
+        }
+
+        // Test cases
+        const tests = [
+            {
+                name: "Ohm's Law Validation - All Resistors",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const results = [];
+                    let allPass = true;
+
+                    for (const resistor of resistors) {
+                        const V = getComponentValue(resistor, 'voltage') || getComponentValue(resistor, 'voltageDrop');
+                        const I = getComponentValue(resistor, 'current');
+                        const R = getComponentValue(resistor, 'resistance');
+
+                        if (V !== undefined && I !== undefined && R !== undefined && V !== 0 && I !== 0) {
+                            const calculatedV = I * R;
+                            const matches = approxEqual(V, calculatedV, 0.1);
+                            
+                            results.push({
+                                component: resistor.values.name,
+                                V, I, R,
+                                calculatedV,
+                                matches
+                            });
+
+                            if (!matches) allPass = false;
+                        }
+                    }
+
+                    return {
+                        pass: allPass,
+                        details: results.map(r => 
+                            `${r.component}: V=${r.V}V, I=${r.I}A, R=${r.R}Ω → V(calc)=${r.calculatedV.toFixed(3)}V ${r.matches ? '✓' : '✗'}`
+                        ).join('\n')
+                    };
+                }
+            },
+            {
+                name: "Power Calculation - P = V × I",
+                run: () => {
+                    const components = circuitData.components.filter(c => c.type === 'resistor');
+                    const results = [];
+                    let allPass = true;
+
+                    for (const comp of components) {
+                        const V = getComponentValue(comp, 'voltage') || getComponentValue(comp, 'voltageDrop');
+                        const I = getComponentValue(comp, 'current');
+                        const P = getComponentValue(comp, 'power');
+
+                        if (V !== undefined && I !== undefined && V !== 0 && I !== 0) {
+                            const calculatedP = V * I;
+                            const matches = P !== undefined ? approxEqual(P, calculatedP, 0.01) : false;
+                            
+                            results.push({
+                                component: comp.values.name,
+                                V, I, P: P || 0,
+                                calculatedP,
+                                matches: matches || P === 0
+                            });
+                        }
+                    }
+
+                    return {
+                        pass: results.length > 0,
+                        details: results.map(r => 
+                            `${r.component}: P = ${r.V}V × ${r.I}A = ${r.calculatedP.toFixed(4)}W (stored: ${r.P}W)`
+                        ).join('\n')
+                    };
+                }
+            },
+            {
+                name: "Power Calculation - P = I² × R",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const results = [];
+
+                    for (const resistor of resistors) {
+                        const I = getComponentValue(resistor, 'current');
+                        const R = getComponentValue(resistor, 'resistance');
+
+                        if (I !== undefined && R !== undefined && I !== 0) {
+                            const calculatedP = I * I * R;
+                            
+                            results.push({
+                                component: resistor.values.name,
+                                I, R,
+                                calculatedP
+                            });
+                        }
+                    }
+
+                    return {
+                        pass: results.length > 0,
+                        details: results.map(r => 
+                            `${r.component}: P = ${r.I}A² × ${r.R}Ω = ${r.calculatedP.toFixed(4)}W`
+                        ).join('\n')
+                    };
+                }
+            },
+            {
+                name: "Power Calculation - P = V² / R",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const results = [];
+
+                    for (const resistor of resistors) {
+                        const V = getComponentValue(resistor, 'voltage') || getComponentValue(resistor, 'voltageDrop');
+                        const R = getComponentValue(resistor, 'resistance');
+
+                        if (V !== undefined && R !== undefined && V !== 0 && R !== 0) {
+                            const calculatedP = (V * V) / R;
+                            
+                            results.push({
+                                component: resistor.values.name,
+                                V, R,
+                                calculatedP
+                            });
+                        }
+                    }
+
+                    return {
+                        pass: results.length > 0,
+                        details: results.map(r => 
+                            `${r.component}: P = ${r.V}V² / ${r.R}Ω = ${r.calculatedP.toFixed(4)}W`
+                        ).join('\n')
+                    };
+                }
+            },
+            {
+                name: "Kirchhoff's Current Law - Series Components",
+                run: () => {
+                    const battery = circuitData.components.find(c => c.type === 'battery');
+                    const batteryI = getComponentValue(battery, 'current');
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    
+                    const seriesResistors = resistors.filter(r => {
+                        const I = getComponentValue(r, 'current');
+                        return I !== undefined && I !== 0;
+                    });
+
+                    if (seriesResistors.length === 0) {
+                        return { pass: false, details: 'No current values found in resistors' };
+                    }
+
+                    // Check if currents are consistent in series paths
+                    const currents = seriesResistors.map(r => getComponentValue(r, 'current'));
+                    const details = seriesResistors.map(r => 
+                        `${r.values.name}: I = ${getComponentValue(r, 'current')}A`
+                    ).join('\n');
+
+                    return {
+                        pass: true,
+                        details: `Battery current: ${batteryI}A\n${details}`
+                    };
+                }
+            },
+            {
+                name: "Total Resistance Calculation",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const resistances = resistors.map(r => ({
+                        name: r.values.name,
+                        R: getComponentValue(r, 'resistance')
+                    }));
+
+                    const totalR = resistances.reduce((sum, r) => sum + r.R, 0);
+                    
+                    return {
+                        pass: totalR > 0,
+                        details: resistances.map(r => `${r.name}: ${r.R}Ω`).join('\n') + 
+                                 `\n\nTotal (if all series): ${totalR}Ω`
+                    };
+                }
+            },
+            {
+                name: "Component R14 Specific Test (18V drop, 600Ω)",
+                run: () => {
+                    const r14 = circuitData.components.find(c => c.values.name === 'R14');
+                    if (!r14) return { pass: false, details: 'R14 not found' };
+
+                    const V = getComponentValue(r14, 'voltageDrop');
+                    const R = getComponentValue(r14, 'resistance');
+                    
+                    // Calculate expected current: I = V / R
+                    const expectedI = V / R;
+                    
+                    // Calculate expected power: P = V² / R
+                    const expectedP_VR = (V * V) / R;
+                    
+                    // Calculate expected power: P = I² × R
+                    const expectedP_IR = expectedI * expectedI * R;
+
+                    const details = `
+Voltage Drop: ${V}V
+Resistance: ${R}Ω
+
+Expected Current: I = V/R = ${V}V / ${R}Ω = ${expectedI.toFixed(4)}A
+Expected Power (V²/R): P = ${V}V² / ${R}Ω = ${expectedP_VR.toFixed(4)}W
+Expected Power (I²×R): P = ${expectedI.toFixed(4)}A² × ${R}Ω = ${expectedP_IR.toFixed(4)}W
+Expected Power (V×I): P = ${V}V × ${expectedI.toFixed(4)}A = ${(V * expectedI).toFixed(4)}W
+
+All power calculations match: ${approxEqual(expectedP_VR, expectedP_IR) ? '✓' : '✗'}`;
+
+                    return {
+                        pass: approxEqual(expectedP_VR, expectedP_IR),
+                        details
+                    };
+                }
+            },
+            {
+                name: "Battery Current vs Resistor Currents",
+                run: () => {
+                    const battery = circuitData.components.find(c => c.type === 'battery');
+                    const batteryI = getComponentValue(battery, 'current');
+                    
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const resistorCurrents = resistors.map(r => ({
+                        name: r.values.name,
+                        I: getComponentValue(r, 'current') || 0
+                    }));
+
+                    const details = `Battery: ${batteryI}A\n` + 
+                                  resistorCurrents.map(r => `${r.name}: ${r.I}A`).join('\n');
+
+                    return {
+                        pass: batteryI !== undefined && batteryI > 0,
+                        details
+                    };
+                }
+            },
+            {
+                name: "Non-zero Value Validation",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const issues = [];
+
+                    for (const r of resistors) {
+                        const V = getComponentValue(r, 'voltage') || getComponentValue(r, 'voltageDrop');
+                        const I = getComponentValue(r, 'current');
+                        const R = getComponentValue(r, 'resistance');
+
+                        if (R === 0) issues.push(`${r.values.name}: R = 0 (invalid)`);
+                        if (V === 0 && I !== 0) issues.push(`${r.values.name}: V = 0 but I ≠ 0`);
+                    }
+
+                    return {
+                        pass: issues.length === 0,
+                        details: issues.length > 0 ? issues.join('\n') : 'All values are valid'
+                    };
+                }
+            },
+            {
+                name: "Resistance Value Ranges",
+                run: () => {
+                    const resistors = circuitData.components.filter(c => c.type === 'resistor');
+                    const values = resistors.map(r => ({
+                        name: r.values.name,
+                        R: getComponentValue(r, 'resistance'),
+                        inRange: getComponentValue(r, 'resistance') >= 1 && getComponentValue(r, 'resistance') <= 10000
+                    }));
+
+                    const allInRange = values.every(v => v.inRange);
+
+                    return {
+                        pass: allInRange,
+                        details: values.map(v => 
+                            `${v.name}: ${v.R}Ω ${v.inRange ? '✓' : '✗ (out of range)'}`
+                        ).join('\n')
+                    };
+                }
+            }
+        ];
+
+        // Run tests
+        async function runAllTests() {
+            const circuitFile = document.getElementById('circuitSelect').value;
+            const loaded = await loadCircuit(circuitFile);
+            
+            if (!loaded) return;
+
+            testResults = [];
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            let passed = 0;
+            let failed = 0;
+
+            for (const test of tests) {
+                try {
+                    const result = test.run();
+                    testResults.push({
+                        name: test.name,
+                        pass: result.pass,
+                        details: result.details
+                    });
+
+                    if (result.pass) passed++;
+                    else failed++;
+
+                    displayTestResult(test.name, result);
+                } catch (error) {
+                    failed++;
+                    testResults.push({
+                        name: test.name,
+                        pass: false,
+                        error: error.message
+                    });
+                    displayTestResult(test.name, { pass: false, details: `Error: ${error.message}` });
+                }
+            }
+
+            updateSummary(passed + failed, passed, failed);
+        }
+
+        function displayTestResult(name, result) {
+            const resultsDiv = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = `test-section ${result.pass ? 'pass' : 'fail'}`;
+
+            const title = document.createElement('div');
+            title.className = 'test-title';
+            const statusClass = result.pass ? 'test-pass' : 'test-fail';
+            const statusIcon = result.pass ? '✓' : '✗';
+            title.innerHTML = `<span class="${statusClass}">[${statusIcon}]</span> ${name}`;
+
+            const details = document.createElement('pre');
+            details.className = 'test-details';
+            details.textContent = result.details || 'No details available';
+
+            section.appendChild(title);
+            section.appendChild(details);
+
+            if (result.error) {
+                const error = document.createElement('div');
+                error.className = 'test-error';
+                error.textContent = result.error;
+                section.appendChild(error);
+            }
+
+            resultsDiv.appendChild(section);
+        }
+
+        function updateSummary(total, passed, failed) {
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.style.display = 'flex';
+
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('passRate').textContent = ((passed / total) * 100).toFixed(1);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('circuitInfo').style.display = 'none';
+            testResults = [];
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

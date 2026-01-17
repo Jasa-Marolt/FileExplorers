@@ -549,6 +549,9 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                             ? logic.values.shownTime * logic.values.clockSpeed
                             : logic.values.measuraments *
                               logic.values.shownTime;
+                    // Get battery to determine voltage scale
+                    const battery = window.components.find(c => c.type === 'battery' && !c.componentObject.getData('isInPanel'));
+                    const maxV = battery?.values?.maxVoltage || 10;
                     const voltmeter = new Oscilloscope(workspace, {
                         name: logic.values.name,
                         inputType: "volt",
@@ -557,8 +560,8 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         width: 300,
                         height: 200,
                         maxMeasurements: maxMeasurements,
-                        minVoltage: -5,
-                        maxVoltage: 5,
+                        minVoltage: -maxV,
+                        maxVoltage: maxV,
                     });
                     logic.voltmeter = voltmeter;
                     logic.startInterval();
@@ -577,6 +580,9 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                             ? logic.values.shownTime * logic.values.clockSpeed
                             : logic.values.measuraments *
                               logic.values.shownTime;
+                    // Get battery to determine current scale
+                    const battery = window.components.find(c => c.type === 'battery' && !c.componentObject.getData('isInPanel'));
+                    const maxI = battery?.values?.maxCurrent || 1;
                     const amperMeter = new Oscilloscope(workspace, {
                         name: logic.values.name,
                         inputType: "amper",
@@ -585,8 +591,8 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         width: 300,
                         height: 200,
                         maxMeasurements: maxMeasurements,
-                        minVoltage: -5,
-                        maxVoltage: 5,
+                        minVoltage: -maxI,
+                        maxVoltage: maxI,
                     });
                     logic.amperMeter = amperMeter;
                     logic.startInterval();
@@ -607,6 +613,11 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                             ? logic.values.shownTime * logic.values.clockSpeed
                             : logic.values.measuraments *
                               logic.values.shownTime;
+                    // Get battery to determine power scale (V * I)
+                    const battery = window.components.find(c => c.type === 'battery' && !c.componentObject.getData('isInPanel'));
+                    const maxV = battery?.values?.maxVoltage || 10;
+                    const maxI = battery?.values?.maxCurrent || 1;
+                    const maxP = maxV * maxI;
                     const wattMeter = new Oscilloscope(workspace, {
                         name: logic.values.name,
                         inputType: "watt",
@@ -615,8 +626,8 @@ export function openComponentContextMenu(workspace, compObj, worldX, worldY) {
                         width: 300,
                         height: 200,
                         maxMeasurements: maxMeasurements,
-                        minVoltage: -5,
-                        maxVoltage: 5,
+                        minVoltage: -maxP,
+                        maxVoltage: maxP,
                     });
                     logic.wattMeter = wattMeter;
                     logic.startInterval();

@@ -1,0 +1,121 @@
+{
+  "version": "2.0",
+  "timestamp": "2026-01-12T18:30:00.000Z",
+  "components": [
+    {
+      "id": "bat_ac_1",
+      "type": "battery",
+      "x": 480,
+      "y": 160,
+      "rotation": 0,
+      "start": {
+        "id": "bat_ac_1_start",
+        "x": 440,
+        "y": 160,
+        "wireId": "wire_1"
+      },
+      "end": {
+        "id": "bat_ac_1_end",
+        "x": 520,
+        "y": 160,
+        "wireId": "wire_2"
+      },
+      "values": {
+        "name": "AC Source",
+        "sourceType": "AC",
+        "frequency": 60,
+        "maxVoltage": 120,
+        "current": {
+          "value": 5,
+          "automatic": false
+        },
+        "power": {
+          "value": 600,
+          "automatic": true
+        },
+        "voltage": 120
+      },
+      "voltage": 120
+    },
+    {
+      "id": "res_ac_1",
+      "type": "resistor",
+      "x": 680,
+      "y": 160,
+      "rotation": 0,
+      "start": {
+        "id": "res_ac_1_start",
+        "x": 640,
+        "y": 160,
+        "wireId": "wire_2"
+      },
+      "end": {
+        "id": "res_ac_1_end",
+        "x": 720,
+        "y": 160,
+        "wireId": "wire_3"
+      },
+      "values": {
+        "name": "R_AC_1",
+        "voltage": {
+          "value": 60,
+          "automatic": false
+        },
+        "current": {
+          "value": 5,
+          "automatic": false
+        },
+        "power": {
+          "value": 300,
+          "automatic": false
+        },
+        "resistance": {
+          "value": 12,
+          "automatic": false
+        },
+        "voltageDrop": 60
+      },
+      "resistance": 12
+    },
+    {
+      "id": "res_ac_2",
+      "type": "resistor",
+      "x": 480,
+      "y": 320,
+      "rotation": 0,
+      "start": {
+        "id": "res_ac_2_start",
+        "x": 440,
+        "y": 320,
+        "wireId": "wire_3"
+      },
+      "end": {
+        "id": "res_ac_2_end",
+        "x": 520,
+        "y": 320,
+        "wireId": "wire_1"
+      },
+      "values": {
+        "name": "R_AC_2",
+        "voltage": {
+          "value": 60,
+          "automatic": false
+        },
+        "current": {
+          "value": 5,
+          "automatic": false
+        },
+        "power": {
+          "value": 300,
+          "automatic": false
+        },
+        "resistance": {
+          "value": 12,
+          "automatic": false
+        },
+        "voltageDrop": 60
+      },
+      "resistance": 12
+    }
+  ]
+}

@@ -76,7 +76,7 @@ class Battery extends Component {
             name: "Battery",
             sourceType: "DC",
             voltage: 3.3,
-            current: 1,
+            current: { value: 1, automatic: false },
             maxCurrent: 1,
             power: { value: 0, automatic: true },
             resistance: { value: 0, automatic: true },
@@ -101,7 +101,12 @@ class Battery extends Component {
         if (this.values.sourceType == "DC") {
             this.currentInterval = 0;
             this.values.voltage = this.values.maxVoltage;
-            this.values.current = this.values.maxCurrent;
+            // Set current from maxCurrent for DC
+            if (this.values.current && typeof this.values.current === 'object') {
+                this.values.current.value = this.values.maxCurrent;
+            } else {
+                this.values.current = this.values.maxCurrent;
+            }
         } else {
             // console.log(
             //     this.values.maxVoltage,
@@ -116,18 +121,32 @@ class Battery extends Component {
                     (2 * Math.PI * this.currentInterval) /
                         (this.values.clockSpeed * this.values.periodTime)
                 );
-            this.values.current =
-                this.values.maxCurrent *
+            // Set current from maxCurrent for AC (using sine wave)
+            const currentValue = this.values.maxCurrent *
                 Math.sin(
                     (2 * Math.PI * this.currentInterval) /
                         (this.values.clockSpeed * this.values.periodTime)
                 );
+            if (this.values.current && typeof this.values.current === 'object') {
+                this.values.current.value = currentValue;
+            } else {
+                this.values.current = currentValue;
+            }
             this.currentInterval++;
         }
 
-        if (this.voltmeter) this.voltmeter.measure(this.values.voltage);
-        if (this.amperMeter) this.amperMeter.measure(this.values.current);
-        if (this.wattMeter) this.wattMeter.measure(this.values.power.value);
+        const asNumber = (v) => {
+            if (v && typeof v === 'object' && 'value' in v) return v.value;
+            return v;
+        };
+
+        const v = asNumber(this.values.voltage);
+        const i = asNumber(this.values.current);
+        const p = asNumber(this.values.power);
+
+        if (this.voltmeter && typeof v === 'number' && isFinite(v)) this.voltmeter.measure(v);
+        if (this.amperMeter && typeof i === 'number' && isFinite(i)) this.amperMeter.measure(i);
+        if (this.wattMeter && typeof p === 'number' && isFinite(p)) this.wattMeter.measure(p);
     }
 }
 

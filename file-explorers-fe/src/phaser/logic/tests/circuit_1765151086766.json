@@ -1,0 +1,208 @@
+{
+  "version": "2.0",
+  "timestamp": "2025-12-07T23:44:46.764Z",
+  "components": [
+    {
+      "id": "bat_6780",
+      "type": "battery",
+      "x": 480,
+      "y": 160,
+      "rotation": 0,
+      "start": {
+        "id": "bat_6780_start",
+        "x": 440,
+        "y": 160,
+        "wireId": "wire_3114"
+      },
+      "end": {
+        "id": "bat_6780_end",
+        "x": 520,
+        "y": 160,
+        "wireId": "wire_7409"
+      },
+      "values": {
+        "name": "Battery",
+        "sourceType": "DC",
+        "maxVoltage": 24,
+        "current": {
+          "value": 0.04,
+          "automatic": false
+        },
+        "power": {
+          "value": 0,
+          "automatic": true
+        },
+        "clockSpeed": 20,
+        "periodTime": 1,
+        "shownTime": 5,
+        "voltage": 24
+      },
+      "voltage": 24
+    },
+    {
+      "id": "res_5749",
+      "type": "resistor",
+      "x": 680,
+      "y": 160,
+      "rotation": 0,
+      "start": {
+        "id": "res_5749_start",
+        "x": 640,
+        "y": 160,
+        "wireId": "wire_7409"
+      },
+      "end": {
+        "id": "res_5749_end",
+        "x": 720,
+        "y": 160,
+        "wireId": "wire_825"
+      },
+      "values": {
+        "name": "R11",
+        "voltage": {
+          "value": 0,
+          "automatic": true
+        },
+        "current": {
+          "value": 0,
+          "automatic": true
+        },
+        "power": {
+          "value": 0,
+          "automatic": true
+        },
+        "resistance": {
+          "value": 100,
+          "automatic": true
+        },
+        "measuraments": 20,
+        "shownTime": 5
+      },
+      "resistance": 100
+    },
+    {
+      "id": "res_7240",
+      "type": "resistor",
+      "x": 480,
+      "y": 320,
+      "rotation": 0,
+      "start": {
+        "id": "res_7240_start",
+        "x": 440,
+        "y": 320,
+        "wireId": "wire_3114"
+      },
+      "end": {
+        "id": "res_7240_end",
+        "x": 520,
+        "y": 320,
+        "wireId": "wire_8582"
+      },
+      "values": {
+        "name": "R12",
+        "voltage": {
+          "value": 0,
+          "automatic": true
+        },
+        "current": {
+          "value": 0.01,
+          "automatic": false
+        },
+        "power": {
+          "value": 0,
+          "automatic": true
+        },
+        "resistance": {
+          "value": 100,
+          "automatic": true
+        },
+        "measuraments": 20,
+        "shownTime": 5
+      },
+      "resistance": 100
+    },
+    {
+      "id": "res_5852",
+      "type": "resistor",
+      "x": 680,
+      "y": 320,
+      "rotation": 0,
+      "start": {
+        "id": "res_5852_start",
+        "x": 640,
+        "y": 320,
+        "wireId": "wire_8582"
+      },
+      "end": {
+        "id": "res_5852_end",
+        "x": 720,
+        "y": 320,
+        "wireId": "wire_825"
+      },
+      "values": {
+        "name": "R13",
+        "voltage": {
+          "value": 0,
+          "automatic": true
+        },
+        "current": {
+          "value": 0,
+          "automatic": true
+        },
+        "power": {
+          "value": 0,
+          "automatic": true
+        },
+        "resistance": {
+          "value": 1000,
+          "automatic": false
+        },
+        "measuraments": 20,
+        "shownTime": 5
+      },
+      "resistance": 1000
+    },
+    {
+      "id": "res_8644",
+      "type": "resistor",
+      "x": 560,
+      "y": 440,
+      "rotation": 0,
+      "start": {
+        "id": "res_8644_start",
+        "x": 520,
+        "y": 440,
+        "wireId": "wire_3114"
+      },
+      "end": {
+        "id": "res_8644_end",
+        "x": 600,
+        "y": 440,
+        "wireId": "wire_825"
+      },
+      "values": {
+        "name": "R14",
+        "voltage": {
+          "value": 18,
+          "automatic": false
+        },
+        "current": {
+          "value": 0,
+          "automatic": true
+        },
+        "power": {
+          "value": 0,
+          "automatic": true
+        },
+        "resistance": {
+          "value": 600,
+          "automatic": false
+        },
+        "measuraments": 20,
+        "shownTime": 5,
+        "voltageDrop": 18
+      },
+      "resistance": 600
+    }
+  ]
+}

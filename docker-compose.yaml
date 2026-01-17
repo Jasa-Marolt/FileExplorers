@@ -1,11 +1,11 @@
-name: "fileExplorers"
+name: "file-explorers"
 services:
   fe-mysql:
     container_name: fe-mysql
     image: percona:8.0.27-18-centos
     platform: linux/amd64
     ports:
-      - "20000:3306"
+      - "23306:3306"
     volumes:
       - "./file-explorers-db:/docker-entrypoint-initdb.d/"
     environment:

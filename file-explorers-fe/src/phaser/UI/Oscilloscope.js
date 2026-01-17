@@ -263,10 +263,9 @@ export default class Oscilloscope {
 
         const { x, y, width, height } = this.screenBounds;
 
-        const maxAbsVoltage =
-            Math.max(...this.measurements.map((v) => Math.abs(v)), 0.1) * 1.15;
-        const dynamicMinVoltage = -maxAbsVoltage;
-        const dynamicMaxVoltage = maxAbsVoltage;
+        // Use configured scale, which should be consistent across all oscilloscopes of the same type
+        const scaleMin = this.minVoltage;
+        const scaleMax = this.maxVoltage;
 
         // Calculate points for the waveform
         const points = [];
@@ -277,14 +276,14 @@ export default class Oscilloscope {
 
             // Clamp voltage to min/max range
             const clampedVoltage = Math.max(
-                dynamicMinVoltage,
-                Math.min(dynamicMaxVoltage, voltage)
+                scaleMin,
+                Math.min(scaleMax, voltage)
             );
 
             // Map voltage to Y position (inverted because Y increases downward)
             const normalizedVoltage =
-                (clampedVoltage - dynamicMinVoltage) /
-                (dynamicMaxVoltage - dynamicMinVoltage);
+                (clampedVoltage - scaleMin) /
+                (scaleMax - scaleMin);
             const pointX = x + stepX * i;
             const pointY = y + height - normalizedVoltage * height;
 
